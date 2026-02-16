@@ -1,0 +1,75 @@
+### LaTeX / latexmk (LuaLaTeX, pdfLaTeX, XeLaTeX) ###
+
+# Core aux files
+*.aux
+*.log
+*.out
+*.toc
+*.lof
+*.lot
+*.lol
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.synctex(busy)
+
+# Bibliography (BibTeX / Biber)
+*.bbl
+*.blg
+*.bcf
+*.run.xml
+*.bib.bak
+*.bbl-SAVE-ERROR
+
+# Glossaries / indexes / acronyms
+*.acn
+*.acr
+*.alg
+*.glg
+*.glo
+*.gls
+*.glsdefs
+*.ist
+*.xdy
+*.idx
+*.ind
+*.ilg
+
+# Hyperref / bookmarks
+*.nav
+*.snm
+*.vrb
+
+# Listings / minted
+_minted*
+*.pyg
+
+# Latexmk / build helpers
+*.dvi
+*.xdv
+*.ps
+
+# Temporary / backup files
+*~
+*.bak
+*.backup
+*.tmp
+*.swp
+*.swo
+
+# Package-specific / misc
+*.cp
+*.cps
+*.lb
+*.lof
+*.lot
+*.maf
+*.mtc
+*.mtc0
+*.nlo
+*.nls
+*.thm
+*.brf
+*.synctex.gz(busy)
+
+*.pdf
