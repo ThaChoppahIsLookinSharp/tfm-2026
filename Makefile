@@ -15,5 +15,5 @@ $(MAIN).pdf:
 
 clean:
 	$(LATEXMK) -c $(TEX)
-	rm -f *.synctex.gz *.fls
+	rm -f *.synctex.gz *.fls *.pdf
 
