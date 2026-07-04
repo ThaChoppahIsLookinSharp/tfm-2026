@@ -1,7 +1,7 @@
 %%% METHODOLOGY %%%
 \clearpage
-\section{Methodology / project development}
-This section explains how the solution was built and the process followed to arrive at the current approach.
+\section{Methodology}
+This section defines the methodological plan followed in the thesis. The process is organized into phases that move from requirements analysis to design, implementation, and validation, while keeping an iterative structure.
 
 \subsection{Development process}
 The nature of the solution is software, therefore the approach followed its usual software engineering process.
@@ -20,98 +20,21 @@ Then, after the low-level design, \textbf{implementation} begins. This is where 
 
 Finally, the different modules are progressively integrated and refined until they fit into a coherent tool structure.
 
-\subsubsection{Requirements analysis}
-The first phase of the project consisted of defining the requirements of the tool. At this stage, the objective was not yet to design specific hardware instances, but to determine what kind of problem the tool had to solve and which limitations of existing approaches it should address.
+\subsection{Planned phases}
+The planned methodology can be summarized through several phases. This section only defines the role of each phase in the process. The concrete decisions taken during the project are described in the following chapter.
 
-From the beginning, one of the main requirements was not only to provide a valid design space exploration flow for DNN accelerators, but also to build the solution on top of a software architecture of sufficient quality. Since this project is intended as a tool and not just as a one-off prototype, the codebase had to be understandable, maintainable, and easy to modify by a third party.
+\begin{enumerate}
+\item \textbf{Requirements analysis.} This phase defines the problem, the objectives, and the limits of the work. Its main output is a set of requirements that makes the rest of the development less ambiguous.
 
-This was especially important in the context of a research project, where requirements may evolve as new ideas appear. For that reason, the solution had to avoid a monolithic structure and instead be organized in a way that made future modifications possible without having to redesign the whole system.
+\item \textbf{High-level design.} This phase turns the requirements into a global structure. Its main output is the definition of the two-level flow and the responsibilities of the main blocks of the tool.
 
-Another concern was to find a way to explore the vast solution space in a reasonable time frame. DNN accelerator design involves many parameters, including PE array dimensions, memory hierarchy, dataflow, bandwidth, and hardware IP selection. Exploring all of them directly at a detailed hardware level would make the problem difficult to manage.
+\item \textbf{Technical decisions and tooling selection.} This phase selects the language, libraries, and external tools that will be used. Its main output is a practical development stack that avoids rebuilding existing solutions when they can be reused.
 
-For that reason, an additional requirement was to separate the exploration into two abstraction levels. The first level had to remain lightweight enough to explore architectural candidates, while the second level had to introduce hardware IP information only after a candidate architecture had already been defined.
+\item \textbf{Low-level design.} This phase defines the internal representations and the interfaces between modules. Its main output is a design detailed enough to start implementation without forcing every decision to be final from the beginning.
 
-All these decisions influenced the next step, the high-level design decisions.
+\item \textbf{Implementation.} This phase builds the modules progressively and connects them into a first working flow. Its main output is a prototype that can be executed and evaluated.
 
-\subsubsection{High-level design decisions}
-Once the requirements were defined, the high-level design phase started. In this stage, several possible approaches were considered regarding how the tool should be structured and how existing tools could be reused.
+\item \textbf{Iterative refinement.} This phase revisits earlier decisions when implementation exposes problems or better alternatives. Its main output is a more coherent structure, obtained by adjusting the design instead of treating the initial plan as fixed.
 
-At this stage, the priority was to define a general architecture that was clear and consistent. Rather than focusing on isolated implementation details, the goal was to establish the main modules of the tool, the responsibility of each one, and the way information would flow between them.
-
-One of the main design discussions was the approach to the exploration of the space of solutions. After evaluating different possibilities, the final decision was to adopt a two-level architecture. The first level focuses on architectural exploration, reducing the design space by exploring accelerator organizations, memory hierarchies, dataflows, and PE array configurations. The second level focuses on a more hardware-oriented evaluation of the most promising candidates through abstract hardware IP models. Both will use a NSGA-II algorithm to explore the space of solutions.
-
-This decision was relevant because it allowed the solution to preserve flexibility while avoiding an early commitment to low-level implementation details. It also provided a clearer separation between architectural reasoning and hardware characterization, which became one of the central ideas of the solution.
-
-\subsubsection{Technical decisions and tooling selection}
-Between the high-level design and the detailed design of each module, several technical decisions had to be taken. These decisions were necessary to make the proposed architecture implementable in practice.
-
-At the software level, the tool was designed with special attention to maintainability. The intention was not only to obtain a working prototype, but to define an internal architecture that could be understood and extended by another developer. This led to prioritizing clear module boundaries, simple interfaces between components, and a structure in which future modifications could be introduced with limited impact on the rest of the system. In order to keep access to the tool easy, Python was selected as the main language of the tool.
-However, there are some drawbacks, such as the execution speed.
-
-A key decision was to use existing state-of-the-art tools as conceptual and practical references for each level of the solution. ZigZag was selected as the main reference for the first level because it already provides architectural and mapping design space exploration capabilities, including the study of memory hierarchies, PE arrays, and dataflows. For the second level, the design was influenced by the idea of using characterized hardware IP blocks, similarly to generator-oriented approaches such as AutoDNNchip, but without attempting to implement a complete RTL generation flow.
-
-For NSGA-II, since it is a popular algorithm, different implementations are available. In this case, \texttt{pymoo} was chosen because it provides a practical implementation of multi-objective evolutionary algorithms and allows the optimization problem to be described with custom objective functions.
-
-\subsubsection{Low-level design}
-After defining the global structure of the tool, the low-level design of each feature was addressed. In this phase, the focus shifted from the abstract architecture of the project to the internal representation of the design objects and the interfaces between modules.
-
-One of the most important tasks in this phase was defining how an accelerator candidate should be represented inside the tool. Since the tool had to support exploration and later evaluation, the internal representation had to be expressive enough to capture architectural parameters while remaining simple enough to be manipulated and modified.
-
-Another relevant part of this phase was the definition of the interaction between both levels of the tool. The output of the first level had to be structured in such a way that the second level could reuse it without ambiguity. Therefore, the low-level design included not only class and module definitions, but also the interfaces between stages: which parameters are explored in the first level, which are preserved for the second one, and how candidate designs are passed from one stage to the next.
-
-A major concern during this stage was keeping the software architecture understandable. Rather than optimizing only for short-term implementation speed, the design aimed to make the system easier to extend and modify by third parties. This required defining the responsibilities of each module carefully, limiting hidden dependencies, and ensuring that each component had a clear role inside the overall flow.
-
-The Level 1 representation was defined as a discrete genome. Each gene selects one value from a predefined set of architectural options. In the current version, this genome contains seven genes: PE array dimensions, register file size and bandwidth, global buffer size and bandwidth, and the dimensions served by the global buffer. The external DRAM bandwidth was intentionally left out of the genome and treated as a fixed platform parameter, because the current model does not yet account for the physical cost of the external memory interface.
-
-The connection between Level 1 and Level 2 was defined through an abstract accelerator representation. This representation contains abstract components such as the PE array, register files, and global buffer. These components express the requirements of the architecture, while the second level is responsible for selecting compatible IP blocks from the available IP pool.
-
-The Level 2 representation was therefore designed differently from the first one. Instead of having a fixed genome, the Level 2 genome is generated from the abstract accelerator itself. Each gene corresponds to one abstract component and selects one compatible IP implementation. This makes the second level flexible enough to handle accelerator candidates with different component sets.
-
-\subsubsection{Implementation}
-Once the detailed design of the modules was sufficiently clear, implementation began. This phase covered the actual construction of the tool structure, the definition of the project modules, and the first integration work with the selected exploration approach.
-
-The implementation started from the basic software skeleton of the project and progressively incorporated the main concepts defined in the previous phases. In particular, effort was dedicated not only to implementing functionality, but also to preserving the architectural qualities defined during the design stages. This meant keeping the code organized around well-separated components and maintaining a structure that would remain understandable as the project evolved.
-
-At this stage, implementation was not a purely mechanical translation of the design into code. On the contrary, coding exposed practical issues that were not completely evident during design, such as how to represent candidate architectures, how to connect the different exploration stages, or how to preserve code clarity while introducing new features. For that reason, implementation also acted as a source of feedback for refining previous design decisions.
-
-The implementation was built progressively. First, the architectural genome and its decoder were implemented. Then, the generation of ZigZag-compatible accelerator descriptions was added. After that, the evaluator and objective extraction logic were introduced, allowing raw evaluation results to be exposed as different optimization objectives.
-
-Once the first level was functional, the second level was implemented. This included the abstract accelerator model, abstract hardware components, IP block descriptions, IP pool loading, compatibility checks, Level 2 genome generation, and the preliminary PPA aggregation model.
-
-\subsubsection{Iterative refinement}
-Although the development process followed a clear sequence of phases, it was intentionally iterative. In practice, the implementation of each feature provided feedback that often required revisiting previous design choices.
-
-This happened, for example, when refining the architectural representation of candidate accelerators, discussing how the design variables should be encoded, or deciding how much information should belong to the architectural exploration level and how much should be deferred to the hardware-oriented evaluation level.
-
-One concrete example of this refinement was the treatment of external DRAM. Initially, DRAM bandwidth was considered as part of the architectural genome. However, this allowed the optimizer to increase off-chip bandwidth without paying any corresponding area or power cost for the external interface. To avoid this unrealistic optimization path, DRAM bandwidth was removed from the genome and fixed as a platform parameter. The DRAM is still present in the ZigZag memory hierarchy to model off-chip accesses, but it is not considered part of the on-chip accelerator area or Level 2 IP instantiation.
-
-Another example was the introduction of the objective adapter. Instead of hard-coding a single objective into the evaluator, this component separates raw evaluation results from the objectives used by the optimizer. This makes it easier to test different optimization criteria without modifying the evaluator itself.
-
-These iterations were not treated as deviations from the process, but as a natural part of it. This was especially important in a research-oriented software project such as this one, where some design decisions could only be properly assessed after attempting a concrete implementation.
-
-As a result, the final methodology was not a strictly linear flow, but a controlled iteration between requirements, design, and implementation until a coherent tool structure was obtained.
-
-\subsubsection{Integration and validation}
-A final phase of the work consisted of integrating the different parts of the tool and validating that the proposed approach was coherent with the original objectives.
-
-At the current stage of the project, this validation has focused mainly on confirming that the methodology is viable: the hierarchical structure has been defined, the modular architecture of the tool has been established, ZigZag has been integrated as the exploration engine for the first level, and the hardware IP characterization approach for the second level has been implemented in a preliminary form.
-
-The validation was carried out through unit tests and smoke tests. Unit tests were used to check individual modules, such as IP validation, IP pool loading, compatibility checks, genome decoding, implemented accelerator construction, and PPA evaluation. Smoke tests were used to verify that a Level 1 architecture could be converted into an abstract accelerator and then evaluated in Level 2 using an example IP pool.
-
-% Therefore, validation in this thesis is centred on functional and architectural consistency rather than on a complete end-to-end RTL generation flow. Even so, this phase is relevant because it connects the present work with future developments. Although the tool is designed with design exploration in mind, future work may extend it towards more detailed hardware generation and evaluation flows.
-\todo[inline]{Si al final genero RTL, aquí iría otro parrafito}
-
-\subsubsection{Development milestones}
-The development of the tool can be summarized through several milestones. 
-
-The first milestone is the definition of the hierarchical methodology, separating architectural exploration from hardware IP instantiation. 
-
-The second milestone is the implementation of the Level 1 architectural genome and its decoding into accelerator configurations. 
-
-The third milestone is the integration with ZigZag, including the generation of accelerator descriptions and the extraction of evaluation metrics.
-
-The next milestone is the definition of the abstract accelerator representation used to connect both levels. After that, the IP pool and compatibility logic were implemented, allowing abstract components to be matched with concrete hardware blocks. Finally, the Level 2 genome and preliminary PPA evaluator were added, and the complete flow is validated through tests and smoke examples.
-
-These milestones show that the project evolved from a methodological proposal into a working software prototype.
-\todo{Aqui si genero RTL, pues lo amplio}
-%The current result does not yet generate RTL, but it establishes the structure needed to continue towards more detailed hardware evaluation and generation flows.
+\item \textbf{Integration and validation.} This phase checks that the different modules work together and that the result is aligned with the original objectives. Its main output is a validated prototype and a clearer view of the remaining limitations.
+\end{enumerate}
