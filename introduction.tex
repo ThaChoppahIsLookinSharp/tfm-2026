@@ -1,36 +1,47 @@
 \clearpage
 \newpage
 \section{Introduction}
+\subsection{Motivation}
 
-{An Introduction that clearly states the rationale of the thesis that includes:}
+%{An Introduction that clearly states the rationale of the thesis that includes:}
+AI is ine everyones lips. ChatGPT, Claude, Deepkseek. Deep Neural Networks have become a very common solution to complex tasks such as computer vision, speech recognition or natural language processing. The recent breakthroughs of AI results in a increasing demand of accelerators. However, the increasing accuracy of latest DNN models comes at the cost of higher computational and memory requirements.
 
-\begin{enumerate}
-\item {Statement of purpose (objectives).}
-\item {Requirements and specifications.}
-\item {Methods and procedures, citing if this work is a continuation of another project or it uses applications, algorithms,
-software or hardware previously developed by other authors.}
-\item {Work plan with tasks, milestones and a Gantt diagram.}
-\item {Description of the deviations from the initial plan and incidences that may have occurred. }
-\end{enumerate}
+Executing these tasks efficiently is a challenge in itself. A general purpouse accelerator such a CPU or a GPU is often inefficient, and can become critical in certain scenarios such as edge computing or embedded systems, where power consumption or area are a big constraint. As a result, a big portion of the market has focused in the development of domain-specific hardware accelerators, tailored to certain DNNs workloads or models.
 
-\bigskip
+\subsection{Challenges in Accelerator Design}
+Designing an accelerator is no easy feat. These devices can be defined by numerous design parameters: size, topology of the processing elements, memory hierarchy, algorithm to hardware mapping, pipeline structure, etc.
+The bast number of variables results in a bast design space, making manual exploration impractical.
+\subsection{Design Space Exploration Frameworks}
+To address this challenge, several Design Space Exploration (DSE) frameworks have been 
+proposed. Tools such as the Chip Predictor \todo[inline]{Añadir} \cite{chippredictor}and 
+ZigZag\cite{zigzag} tackle this issue by enabling a fast exploration of the design space.
+These tools allow designers to evaluate a large number of architectures without performing
+full hardware implementation or evaluations manually.
 
-{The minimum chapters that this thesis document should have are described below, nevertheless they can have different
-names and more chapters can be added.}
+\subsection{Automatic Accelerator Generation}
+Other solutions aim at directly automating the complete generation of DNN accelerators. Works such as AutoDNNChip \cite{autodnnchip} and AutoAI2C\cite{autoai2c}. AutoDNNChip introduces a framework composed of a Chip Predictor and a Chip Builder, capable of exploring accelerator configurations and generating synthesizable hardware implementations based on a given DNN model and platform constraints.
 
-\bigskip
+\subsection{Limitations of Existing Approaches}
+Despite these advances, exploring the full design space of DNN accelerators remains challenging due to the tight coupling between architectural decisions and low-level hardware implementation details such as IP selection and pipeline configuration.
 
-\subsection{Gantt Diagram}
-\label{ssec:gantt}
-\begin{figure}[H]
-    \centering
-    %\includegraphics[width=13cm]{img/diagram_gantt.png}
-    \input{gantt_diagrama.tex}
-    \caption[Project's Gantt diagram]{\footnotesize{Gantt diagram of the project}}
-    \label{fig:gantt}
-    For more information read the manual \cite{skalagantt} of Skala.
-\end{figure}
+In many existing frameworks, the evaluation models and optimization objectives are tightly tied to the tool implementation. As a result, adapting these tools to new optimization criteria, hardware technologies or cost models could require significant changes to the internal code base.
 
-\bigskip
+\subsection{Objective \& milestones}
+The objetive of this thesis is to explore the development of a tool that helps to overcome the mentioned challenges.
 
-\subsection{Topic}
+In order to acomplish this, the objective has been splitted in different milestones.
+\todo[inline]{esto eran objetivos, revisar ahora como milestones}
+\begin{itemize}
+    \item Develop a mechanism to automatically generate and evaluate candidate accelerator architectures using an existing DSE engine.
+    \item Define a hierarchical exploration methodology that decouples high-level architecture exploration from low-level hardware instantiation.
+    \item Develop a hardware characterization representation capable of containing enough information related to PPA while maintaining a high-level approach.
+    \item Design the framework with modular components and pluggable evaluation functions to allow users to adapt optimization criteria and hardware models.
+\end{itemize}
+
+\todo[inline]{Estructura del doc, si quiero algo, saber donde buscarlo}
+
+\subsection{Hypothesis \& propossed approach}
+The hypothesis of this thesis is: it is possible to create such tool that could overcome these challenges? \todo{dont like how this is phrased}
+The proposal of this thesis is Talos, a two-level generation framework. It separates the exploration of accelerator architectures from the instantiation of concrete hardware IPs. In the first phase, Talos identifies a set of promising abstract architectures using ZigZag\cite{zigzag} as guidance, cutting down a large part of the design space. The second level, the selected architectures are re-evaluated using a high-level characterization model of hardware IP blocks to estimate PPA. Talos is designed with modularity in mind, so anyone is free to add their own evaluation expressions to support their specific optimization objectives.
+
+This hierarchical approach enables a more scalable exploration of the DNN accelerator design space while maintaining enough accuracy for guiding hardware design decisions and enough modularity to be extended in a simple way.
