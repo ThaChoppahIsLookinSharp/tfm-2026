@@ -21,12 +21,12 @@ Once the requirements were defined, the high-level design phase started. In this
 
 At this stage, the priority was to define a general architecture that was clear and consistent. Rather than focusing on isolated implementation details, the goal was to establish the main modules of the tool, the responsibility of each one, and the way information would flow between them.
 
-One of the main design discussions was the approach to the exploration of the space of solutions. After evaluating different possibilities, the final decision was to adopt a two-level architecture. The first level focuses on architectural exploration, reducing the design space by exploring accelerator organizations, memory hierarchies, dataflows, and PE array configurations. The second level focuses on a more hardware-oriented evaluation of the most promising candidates through abstract hardware IP models. Both will use a NSGA-II algorithm to explore the space of solutions.
+One of the main design discussions was the approach to the exploration of the space of solutions. After evaluating different possibilities, the final decision was to adopt a two-level architecture. The first level focuses on architectural exploration, reducing the design space by exploring accelerator organizations, memory hierarchies, dataflows, and PE array configurations. The second level focuses on a more hardware-oriented evaluation of the most promising candidates through abstract hardware IP models. Both were designed to use a NSGA-II algorithm to explore the space of solutions.
 
 This decision was relevant because it allowed the solution to preserve flexibility while avoiding an early commitment to low-level implementation details. It also provided a clearer separation between architectural reasoning and hardware characterization, which became one of the central ideas of the solution.
 
 \subsection{Technical decisions and tooling selection}
-Between the high-level design and the detailed design of each module, several technical decisions had to be taken. These decisions were necessary to make the proposed architecture implementable in practice.
+Between the high-level design and the detailed design of each module, several technical decisions were taken. These decisions were necessary to make the proposed architecture implementable in practice.
 
 At the software level, the tool was designed with special attention to maintainability. The intention was not only to obtain a working prototype, but to define an internal architecture that could be understood and extended by another developer. This led to prioritizing clear module boundaries, simple interfaces between components, and a structure in which future modifications could be introduced with limited impact on the rest of the system. In order to keep access to the tool easy, Python was selected as the main language of the tool.
 However, there are some drawbacks, such as the execution speed.
@@ -72,10 +72,10 @@ Another example was the introduction of the objective adapter. Instead of hard-c
 
 These iterations were not treated as deviations from the process, but as a natural part of it. This was especially important in a research-oriented software project such as this one, where some design decisions could only be properly assessed after attempting a concrete implementation.
 
-As a result, the final methodology was not a strictly linear flow, but a controlled iteration between requirements, design, and implementation until a coherent tool structure was obtained.
+As a result, the final development process was not a strictly linear flow, but a controlled iteration between requirements, design, and implementation until a coherent tool structure was obtained.
 
 \subsection{Integration and validation}
-A final phase of the work consisted of integrating the different parts of the tool and validating that the proposed approach was coherent with the original objectives.
+The final part of the work integrated the different parts of the tool and validated that the proposed approach was coherent with the original objectives.
 
 At the current stage of the project, this validation has focused mainly on confirming that the methodology is viable: the hierarchical structure has been defined, the modular architecture of the tool has been established, ZigZag has been integrated as the exploration engine for the first level, and the hardware IP characterization approach for the second level has been implemented in a preliminary form.
 
@@ -87,13 +87,13 @@ The validation was carried out through unit tests and smoke tests. Unit tests we
 \subsection{Development milestones}
 The development of the tool can be summarized through several milestones.
 
-The first milestone is the definition of the hierarchical methodology, separating architectural exploration from hardware IP instantiation.
+The first milestone was the definition of the hierarchical methodology, separating architectural exploration from hardware IP instantiation.
 
-The second milestone is the implementation of the Level 1 architectural genome and its decoding into accelerator configurations.
+The second milestone was the implementation of the Level 1 architectural genome and its decoding into accelerator configurations.
 
-The third milestone is the integration with ZigZag, including the generation of accelerator descriptions and the extraction of evaluation metrics.
+The third milestone was the integration with ZigZag, including the generation of accelerator descriptions and the extraction of evaluation metrics.
 
-The next milestone is the definition of the abstract accelerator representation used to connect both levels. After that, the IP pool and compatibility logic were implemented, allowing abstract components to be matched with concrete hardware blocks. Finally, the Level 2 genome and preliminary PPA evaluator were added, and the complete flow is validated through tests and smoke examples.
+The next milestone was the definition of the abstract accelerator representation used to connect both levels. After that, the IP pool and compatibility logic were implemented, allowing abstract components to be matched with concrete hardware blocks. Finally, the Level 2 genome and preliminary PPA evaluator were added, and the complete flow was validated through tests and smoke examples.
 
 These milestones show that the project evolved from a methodological proposal into a working software prototype.
 \todo{Aqui si genero RTL, pues lo amplio}

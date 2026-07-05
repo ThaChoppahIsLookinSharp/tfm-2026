@@ -6,19 +6,9 @@ This section defines the methodological plan followed in the thesis. The process
 \subsection{Development process}
 The nature of the solution is software, therefore the approach followed its usual software engineering process.
 
-There are multiple methodologies used in the industry, such as SAFe, cascade, and others. However, the approach followed for this project was more straightforward, while still being iterative.
+There are multiple methodologies used in the industry, such as SAFe, waterfall, and others. However, the approach followed for this project was more straightforward, while still being iterative.
 
-The process starts with the high-level definition of the project, that is, the requirements and specifications that the tool must satisfy. These requirements were derived from the objectives of the thesis: building a modular tool for the exploration of DNN accelerator architectures and connecting this exploration with a more hardware-oriented evaluation stage.
-
-After this, the \textbf{high-level design} phase starts. Different approaches are evaluated and a very abstract architecture is defined. This architecture can then be broken down into different features and modules.
-
-Between this and the next phase, several technical decisions have to be made regarding, for example, the language used for development, the libraries to rely on, and the general structure of the codebase.
-
-For each feature, a \textbf{low-level design} stage is carried out. This is a more concrete approach on how the code will look and how the modules will interact. However, the aim of the process is to be iterative, so this design remains flexible.
-
-Then, after the low-level design, \textbf{implementation} begins. This is where the actual coding work takes place. In practice, implementation often provides insights about the low-level design itself, and may even lead to reconsidering some parts of it. This is the iterative part of the process.
-
-Finally, the different modules are progressively integrated and refined until they fit into a coherent tool structure.
+The process was structured around a sequence of software engineering phases, but it was not treated as a rigid waterfall. Each phase provided context for the next one, while still allowing earlier decisions to be revisited when implementation exposed practical issues.
 
 \subsection{Planned phases}
 The planned methodology can be summarized through several phases. This section only defines the role of each phase in the process. The concrete decisions taken during the project are described in the following chapter.
@@ -36,5 +26,5 @@ The planned methodology can be summarized through several phases. This section o
 
 \item \textbf{Iterative refinement.} This phase revisits earlier decisions when implementation exposes problems or better alternatives. Its main output is a more coherent structure, obtained by adjusting the design instead of treating the initial plan as fixed.
 
-\item \textbf{Integration and validation.} This phase checks that the different modules work together and that the result is aligned with the original objectives. Its main output is a validated prototype and a clearer view of the remaining limitations.
+\item \textbf{Integration and validation.} This phase checks that the different modules work together and that the result is aligned with the original objectives. Its main output is a validated implementation and a clearer view of the remaining limitations.
 \end{enumerate}
