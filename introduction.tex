@@ -26,22 +26,61 @@ Despite these advances, exploring the full design space of DNN accelerators rema
 
 In many existing frameworks, the evaluation models and optimization objectives are tightly tied to the tool implementation. As a result, adapting these tools to new optimization criteria, hardware technologies or cost models could require significant changes to the internal code base.
 
-\subsection{Objective \& milestones}
-The objetive of this thesis is to explore the development of a tool that helps to overcome the mentioned challenges.
-
-In order to acomplish this, the objective has been splitted in different milestones.
-\todo[inline]{esto eran objetivos, revisar ahora como milestones}
-\begin{itemize}
-    \item Develop a mechanism to automatically generate and evaluate candidate accelerator architectures using an existing DSE engine.
-    \item Define a hierarchical exploration methodology that decouples high-level architecture exploration from low-level hardware instantiation.
-    \item Develop a hardware characterization representation capable of containing enough information related to PPA while maintaining a high-level approach.
-    \item Design the framework with modular components and pluggable evaluation functions to allow users to adapt optimization criteria and hardware models.
-\end{itemize}
-
 \todo[inline]{Estructura del doc, si quiero algo, saber donde buscarlo}
 
-\subsection{Hypothesis \& propossed approach}
-The hypothesis of this thesis is: it is possible to create such tool that could overcome these challenges? \todo{dont like how this is phrased}
-The proposal of this thesis is Talos, a two-level generation framework. It separates the exploration of accelerator architectures from the instantiation of concrete hardware IPs. In the first phase, Talos identifies a set of promising abstract architectures using ZigZag\cite{zigzag} as guidance, cutting down a large part of the design space. The second level, the selected architectures are re-evaluated using a high-level characterization model of hardware IP blocks to estimate PPA. Talos is designed with modularity in mind, so anyone is free to add their own evaluation expressions to support their specific optimization objectives.
+\subsection{Hypothesis}
 
-This hierarchical approach enables a more scalable exploration of the DNN accelerator design space while maintaining enough accuracy for guiding hardware design decisions and enough modularity to be extended in a simple way.
+The hypothesis of this thesis is that a hierarchical exploration flow can make DNN accelerator 
+design more manageable by separating technology-independent architectural exploration 
+from technology-dependent hardware IP instantiation, 
+while still being modular to allow custom estimations on both levels.
+
+
+
+\todo[inline]{Con como ha quedado esta parte no me gusta como han quedado los objetivos, 
+donde pongo milestones? acaso las pongo? otra cosa es que aquí, activamente, evito mencionar
+Talos ya que es la propuesta, esto queda raro o está bien?}
+\subsection{Objective \& milestones}
+The objective of this thesis is to assess the proposed hypothesis 
+through the design and implementation of a tool based on 
+a hierarchical design space exploration framework for DNN accelerators.
+
+The hypothesis is examined through the development proccess of a tool that 
+separates high-level architectural exploration from the selection 
+and evaluation of hardware IP implementations, allowing both stages to be 
+explored in a structured and extensible way.
+
+
+Therefore, the contribution of the prototype is not only the implementation of a tool, but also 
+the validation of a structured methodology for separating architectural 
+and hardware-oriented design decisions.
+\todo[inline]{Milestones, deberían ir in el propossed approach?}
+\begin{itemize}
+    \item Develop a mechanism to automatically generate 
+    and evaluate candidate accelerator architectures using an existing DSE engine.
+    \item Define a hierarchical exploration methodology that 
+    decouples high-level architecture exploration from low-level hardware instantiation.
+    \item Develop a hardware characterization representation capable of 
+    containing enough information related to PPA while maintaining a high-level approach.
+    \item Design the framework with modular components and pluggable 
+    evaluation functions to allow users to adapt optimization criteria and hardware models.
+\end{itemize}
+
+
+\subsection{Propossed approach}
+The proposal of this thesis is Talos, a two-level generation framework.
+The inputs of the tool are the DNN workload specification, 
+provided as an ONNX file, together with the performance requirements
+that the accelerator solution must satisfy.
+
+The output is blablabla
+\todo[inline]{Aquí pongo RTL, que era la idea inicial, o una arquitectura y luego digo hasta donde llegué}
+
+It separates the exploration of accelerator architectures from the instantiation of 
+specific hardware IPs. In the first phase, Talos identifies a set of promising 
+abstract architectures, cutting down a large part of the design space. The second level, 
+the selected architectures are re-evaluated using a high-level characterization 
+model of hardware IP blocks to estimate PPA. 
+Talos is designed with modularity in mind, so anyone is free to add their own evaluation 
+expressions to support their specific optimization objectives.
+
