@@ -26,8 +26,6 @@ Despite these advances, exploring the full design space of DNN accelerators rema
 
 In many existing frameworks, the evaluation models and optimization objectives are tightly tied to the tool implementation. As a result, adapting these tools to new optimization criteria, hardware technologies or cost models could require significant changes to the internal code base.
 
-\todo[inline]{Estructura del doc, si quiero algo, saber donde buscarlo}
-
 \subsection{Hypothesis}
 
 The hypothesis of this thesis is that a hierarchical exploration flow can make DNN accelerator 
@@ -84,3 +82,5 @@ model of hardware IP blocks to estimate PPA.
 Talos is designed with modularity in mind, so anyone is free to add their own evaluation 
 expressions to support their specific optimization objectives.
 
+\subsection{Document Organization}
+The rest of this document is organized as follows. The next chapter reviews the state of the art related to DNN accelerator exploration and generation. Then, the methodology chapter describes the development process followed in the thesis, and the project development chapter explains how this methodology was applied during the construction of Talos. After that, the results chapter presents the current implementation of the tool, its flow, and its limitations. Finally, the conclusion summarizes the main contributions and possible future work.
