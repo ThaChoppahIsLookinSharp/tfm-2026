@@ -1,55 +1,141 @@
 \clearpage
 \section{Project development}
 
-This section describes the decisions taken during the development of the project. The previous chapter defined the methodology. In this chapter, the focus is how the requirements were translated into the structure of the tool: why the exploration was divided into two levels, how the different parts are connected, and the scope that guided the implementation.
+This section describes the decisions taken during the development of
+the project. The previous chapter defined the methodology. In this
+chapter, the focus is how the requirements were translated into the
+structure of the tool: why the exploration was divided into two
+levels, how the different parts are connected, and the scope that
+guided the implementation.
 
-The contribution of the thesis is Talos, a Python tool for hierarchical design space exploration of DNN accelerators. Talos is intended as an architectural exploration tool: its purpose is to compare accelerator alternatives for a workload and a set of design constraints, first at an abstract architectural level and later using characterized hardware IP blocks. Generating synthesizable RTL or producing a single final accelerator is outside the intended scope.
+The contribution of the thesis is Talos, a Python tool for
+hierarchical design space exploration of DNN accelerators. Talos is
+intended as an architectural exploration tool: its purpose is to
+compare accelerator alternatives for a workload and a set of design
+constraints, first at an abstract architectural level and later using
+characterized hardware IP blocks. Generating synthesizable RTL or
+producing a single final accelerator is outside the intended scope.
 
 \subsection{Tool Overview}
-Talos is programmed in Python. The idea behind the software design is to make Talos easy to work on and modifiable without having to have broad knowledge about the full implementation. This is important because the tool is intended to be extended with new evaluation models, optimization objectives, workloads, and IP libraries.
+Talos is programmed in Python. The idea behind the software design is
+to make Talos easy to work on and modifiable without having to have
+broad knowledge about the full implementation. This is important
+because the tool is intended to be extended with new evaluation
+models, optimization objectives, workloads, and IP libraries.
 
-The intended state of Talos is that a user can provide a DNN workload, a set of optimization objectives and constraints, and an IP library, and obtain a traceable set of feasible architectural alternatives. The tool is therefore designed to support architectural decisions and comparisons, rather than to hide the exploration process behind a single generated design.
+The intended state of Talos is that a user can provide a DNN
+workload, a set of optimization objectives and constraints, and an IP
+library, and obtain a traceable set of feasible architectural
+alternatives. The tool is therefore designed to support architectural
+decisions and comparisons, rather than to hide the exploration
+process behind a single generated design.
 
-Talos is composed of two different stages, or levels. The first level is the Architectural Exploration. This level reduces the design space by evaluating candidates at an architectural level, without stopping to consider the possible IPs that could be used.
+Talos is composed of two different stages, or levels. The first level
+is the Architectural Exploration. This level reduces the design space
+by evaluating candidates at an architectural level, without stopping
+to consider the possible IPs that could be used.
 
-The second level is the IP-Based Hardware Evaluation. This step evaluates the candidates selected by the previous level taking into account the different IPs available.
+The second level is the IP-Based Hardware Evaluation. This step
+evaluates the candidates selected by the previous level taking into
+account the different IPs available.
 
-The intended output is a set of candidate architectures with specific IP choices and comparable metrics. Each candidate is represented internally as an implemented accelerator composed of selected hardware IP blocks. This representation does not correspond to synthesizable RTL; it is the final abstraction needed by Talos to evaluate and compare architectural alternatives.
+The intended output is a set of candidate architectures with specific
+IP choices and comparable metrics. Each candidate is represented
+internally as an implemented accelerator composed of selected
+hardware IP blocks. This representation does not correspond to
+synthesizable RTL; it is the final abstraction needed by Talos to
+evaluate and compare architectural alternatives.
 
 The adopted flow can be summarized as follows:
 
 \begin{enumerate}
-\item A genome describes an accelerator candidate at an architectural level.
-\item The genome is decoded into an internal architecture configuration.
-\item This configuration is translated into a ZigZag-compatible accelerator description.
-\item ZigZag is used to evaluate the candidate in terms of energy, latency, and area-related cost.
-\item The architectural candidate can be converted into an abstract accelerator representation.
-\item The second level selects compatible hardware IP blocks for the abstract components.
-\item The implemented accelerator is evaluated with a workload-aware PPA model and checked against the user constraints.
+\item A genome describes an accelerator candidate at an architectural
+level.
+\item The genome is decoded into an internal architecture
+configuration.
+\item This configuration is translated into a ZigZag-compatible
+accelerator description.
+\item ZigZag is used to evaluate the candidate in terms of energy,
+latency, and area-related cost.
+\item The architectural candidate can be converted into an abstract
+accelerator representation.
+\item The second level selects compatible hardware IP blocks for the
+abstract components.
+\item The implemented accelerator is evaluated with a workload-aware
+PPA model and checked against the user constraints.
 \end{enumerate}
 
-This structure reflects the main idea of the project: keeping architectural exploration separated from hardware IP instantiation while maintaining a path between both stages.
+This structure reflects the main idea of the project: keeping
+architectural exploration separated from hardware IP instantiation
+while maintaining a path between both stages.
 
 \subsection{Abstract Architecture Representation}
-In order to evaluate the different architectures, an abstract representation that does not contain specific IPs is needed. Since ZigZag is used in the first level, the decision was to keep this representation close to ZigZag's hardware model.
+In order to evaluate the different architectures, an abstract
+representation that does not contain specific IPs is needed. Since
+ZigZag is used in the first level, the decision was to keep this
+representation close to ZigZag's hardware model.
 
-This thesis will not go in depth about all the technical details of their work, but a brief overview is useful to understand how Talos represents the accelerator before moving to the IP-based evaluation stage.
+This thesis will not go in depth about all the technical details of
+their work, but a brief overview is useful to understand how Talos
+represents the accelerator before moving to the IP-based evaluation
+stage.
 
-In Talos, this abstract representation appears at two different points. First, in Level 1, an architecture is represented through a compact genome and then decoded into a configuration that can be exported to ZigZag. Second, when moving to Level 2, the same candidate is translated into an internal \texttt{AbstractAccelerator}. This object contains abstract components such as the PE array, register files, and global buffer, but it does not yet select concrete IP implementations.
+In Talos, this abstract representation appears at two different
+points. First, in Level 1, an architecture is represented through a
+compact genome and then decoded into a configuration that can be
+exported to ZigZag. Second, when moving to Level 2, the same
+candidate is translated into an internal
+\texttt{AbstractAccelerator}. This object contains abstract
+components such as the PE array, register files, and global buffer,
+but it does not yet select concrete IP implementations.
 
-This separation is important because the first level only needs to know what the architecture looks like, while the second level needs to know which hardware blocks could implement it.
+This separation is important because the first level only needs to
+know what the architecture looks like, while the second level needs
+to know which hardware blocks could implement it.
 
 \subsection{Hardware architecture representation in ZigZag}
 
-ZigZag models the hardware architecture of a DNN accelerator using a hierarchical representation that starts from the smallest compute primitive and progressively builds the full accelerator. At the lowest level, the \textit{operational unit} represents the basic compute element, typically a multiplier, and is characterized by attributes such as energy and area. Multiple operational units are then organized into an \textit{operational array}, whose dimensions define the available spatial parallelism.
+ZigZag models the hardware architecture of a DNN accelerator using a
+hierarchical representation that starts from the smallest compute
+primitive and progressively builds the full accelerator. At the
+lowest level, the \textit{operational unit} represents the basic
+compute element, typically a multiplier, and is characterized by
+attributes such as energy and area. Multiple operational units are
+then organized into an \textit{operational array}, whose dimensions
+define the available spatial parallelism.
 
-The memory system is described through \textit{memory instances}, each one parameterized by capacity, read and write bandwidth, access cost, area, and number of ports. These memory instances are connected into a \textit{memory hierarchy}, which captures both storage properties and the connectivity between memory levels and the operational array. A relevant concept in this representation is that of \textit{memory operands}, which decouples the hardware memory organization from the algorithmic tensors and later links them through the mapping specification.
+The memory system is described through \textit{memory instances},
+each one parameterized by capacity, read and write bandwidth, access
+cost, area, and number of ports. These memory instances are connected
+into a \textit{memory hierarchy}, which captures both storage
+properties and the connectivity between memory levels and the
+operational array. A relevant concept in this representation is that
+of \textit{memory operands}, which decouples the hardware memory
+organization from the algorithmic tensors and later links them
+through the mapping specification.
 
-ZigZag also models how memories are spatially distributed with respect to the compute array by means of the \texttt{served\_dimensions} attribute. This allows the framework to represent different organizations, from private memories attached to each operational unit to shared buffers serving one or more array dimensions. In addition, the hierarchy explicitly models the allowed data movements between adjacent levels, including transfers from higher to lower levels and vice versa.
+ZigZag also models how memories are spatially distributed with
+respect to the compute array by means of the
+\texttt{served\_dimensions} attribute. This allows the framework to
+represent different organizations, from private memories attached to
+each operational unit to shared buffers serving one or more array
+dimensions. In addition, the hierarchy explicitly models the allowed
+data movements between adjacent levels, including transfers from
+higher to lower levels and vice versa.
 
-Finally, the combination of the operational array and the memory hierarchy forms a \textit{core}, and this core is wrapped into the top-level \textit{accelerator} object. This representation is especially relevant because it provides an explicit and structured description of the compute resources, memory organization, and communication patterns of the accelerator, which are key aspects during design space exploration and mapping evaluation.
+Finally, the combination of the operational array and the memory
+hierarchy forms a \textit{core}, and this core is wrapped into the
+top-level \textit{accelerator} object. This representation is
+especially relevant because it provides an explicit and structured
+description of the compute resources, memory organization, and
+communication patterns of the accelerator, which are key aspects
+during design space exploration and mapping evaluation.
 
-The generated ZigZag accelerator follows a simple and fixed memory structure. It contains a PE array, one register file for input activations, one register file for weights, one register file for outputs and partial sums, a shared global buffer, and an external DRAM level.
+The generated ZigZag accelerator follows a simple and fixed memory
+structure. It contains a PE array, one register file for input
+activations, one register file for weights, one register file for
+outputs and partial sums, a shared global buffer, and an external
+DRAM level.
 
 The operand links used by Talos are:
 
@@ -59,44 +145,109 @@ The operand links used by Talos are:
 \item outputs are mapped to \texttt{O}.
 \end{itemize}
 
-The external DRAM is kept in the ZigZag description because it is needed to model off-chip traffic. However, it is not treated as part of the accelerator area. In the current model, the DRAM has zero area and a fixed bandwidth. This decision avoids letting the optimizer increase off-chip bandwidth without modelling the physical cost of the external memory interface.
+The external DRAM is kept in the ZigZag description because it is
+needed to model off-chip traffic. However, it is not treated as part
+of the accelerator area. In the current model, the DRAM has zero area
+and a fixed bandwidth. This decision avoids letting the optimizer
+increase off-chip bandwidth without modelling the physical cost of
+the external memory interface.
 
 \subsection{Level 1: Architecture Exploration}
-The first level of Talos performs architectural exploration. Its objective is to generate and evaluate accelerator candidates without selecting concrete hardware IP blocks yet.
+The first level of Talos performs architectural exploration. Its
+objective is to generate and evaluate accelerator candidates without
+selecting concrete hardware IP blocks yet.
 
-The architecture is encoded as a discrete genome. Each gene is an index into a catalogue of possible values. This representation was selected because it is simple, compatible with evolutionary optimization, and avoids generating arbitrary values that do not correspond to the current design space.
+The architecture is encoded as a discrete genome. Each gene is an
+index into a catalogue of possible values. This representation was
+selected because it is simple, compatible with evolutionary
+optimization, and avoids generating arbitrary values that do not
+correspond to the current design space.
 
-The current Level 1 genome contains seven genes, shown in Table~\ref{tab:level1_genome}.
-\todo[inline]{Revisitar genoma, ya que este register file puede estar dentro del PE}
+The current Level 1 genome contains seven genes, shown in
+Table~\ref{tab:level1_genome}.
+\todo[inline]{Revisitar genoma, ya que este register file puede estar
+dentro del PE}
 \begin{table}[h]
 \centering
 \begin{tabular}{lll}
 \hline
 Gene & Meaning & Role \\
 \hline
-\texttt{pe\_x\_code} & PE array size in the first dimension & Explored \\
-\texttt{pe\_y\_code} & PE array size in the second dimension & Explored \\
+\texttt{pe\_x\_code} & PE array size in the first dimension &
+Explored \\
+\texttt{pe\_y\_code} & PE array size in the second dimension &
+Explored \\
 \texttt{rf\_size\_code} & Register file capacity & Explored \\
 \texttt{rf\_bw\_code} & Register file bandwidth & Explored \\
 \texttt{gb\_size\_code} & Global buffer capacity & Explored \\
 \texttt{gb\_bw\_code} & Global buffer bandwidth & Explored \\
-\texttt{gb\_served\_dims\_code} & Dimensions served by the global buffer & Explored \\
+\texttt{gb\_served\_dims\_code} & Dimensions served by the global
+buffer & Explored \\
 \hline
 \end{tabular}
 \caption{Current Level 1 genome used by Talos.}
 \label{tab:level1_genome}
 \end{table}
 
-The DRAM bandwidth was intentionally removed from the genome. In previous iterations it was considered as an architectural gene, but this introduced an unrealistic optimization possibility: the optimizer could improve latency by selecting a higher off-chip bandwidth without paying any area or power cost for the corresponding interface. In the current version, DRAM bandwidth is therefore treated as a fixed platform parameter.
+The DRAM bandwidth was intentionally removed from the genome. In
+previous iterations it was considered as an architectural gene, but
+this introduced an unrealistic optimization possibility: the
+optimizer could improve latency by selecting a higher off-chip
+bandwidth without paying any area or power cost for the corresponding
+interface. In the current version, DRAM bandwidth is therefore
+treated as a fixed platform parameter.
 
-After decoding the genome, Talos builds an architecture configuration. This configuration is then used to generate the accelerator description consumed by ZigZag. The Level 1 evaluation produces metrics such as energy, latency, and area-related information. When an area value is not directly available, Talos uses a simple fallback area model to keep the flow executable.
+After decoding the genome, Talos builds an architecture
+configuration. This configuration is then used to generate the
+accelerator description consumed by ZigZag. The Level 1 evaluation
+produces metrics such as energy, latency, and area-related
+information. When an area value is not directly available, Talos uses
+a simple fallback area model to keep the flow executable.
 
-The first level also includes an objective adapter. This component allows the same raw evaluation result to be exposed as different optimization objectives, such as latency, energy, area, energy-delay product, energy-area product, or area-latency product. This avoids hard-coding a single objective into the evaluator and makes the optimization process easier to extend.
+Before starting the Level 1 exploration, Talos calibrates its energy
+model with CACTI. The technology node is not fixed in the tool. It is
+read from the \texttt{technology\_nm} field of the selected IP pool,
+so the calibration uses the same technology as the hardware blocks
+used later in the flow. CACTI is executed once before the optimization
+workers and characterizes every combination of global buffer capacity
+and bandwidth available in the Level 1 genome. The obtained read and
+write costs are then included in the accelerator description evaluated
+by ZigZag.
+
+CACTI provides the memory access costs, but the Level 1 model also
+requires values for the MAC operation, register file, and external
+DRAM. To keep these values coherent, Talos uses the approximate
+relative costs reported for 16-bit operations in Eyeriss
+\cite{eyeriss}:
+
+\[
+E_{\mathrm{MAC}} : E_{\mathrm{RF}} : E_{\mathrm{GB}} :
+E_{\mathrm{DRAM}} = 1 : 1 : 6 : 200.
+\]
+
+A 128 KiB global buffer with a 16-bit word is characterized with CACTI
+and used as the reference for this ratio. Its average read and write
+energy defines the global buffer cost, from which the base MAC,
+register file, and DRAM costs are obtained. Each explored global
+buffer still uses its own CACTI read and write values, while the
+register file and DRAM costs are scaled according to their access
+width. In this way, the Level 1 energy model depends on both the
+selected technology and the architecture being evaluated.
+
+The first level also includes an objective adapter. This component
+allows the same raw evaluation result to be exposed as different
+optimization objectives, such as latency, energy, area, energy-delay
+product, energy-area product, or area-latency product. This avoids
+hard-coding a single objective into the evaluator and makes the
+optimization process easier to extend.
 
 \subsection{IP representation and hardware pool}
-The second level of Talos requires a representation of the available hardware blocks. For that reason, an IP pool was implemented.
+The second level of Talos requires a representation of the available
+hardware blocks. For that reason, an IP pool was implemented.
 
-Each IP block represents a possible hardware component that can be selected to implement part of the accelerator. The current IP representation contains the following information:
+Each IP block represents a possible hardware component that can be
+selected to implement part of the accelerator. The current IP
+representation contains the following information:
 
 \begin{itemize}
 \item IP name;
@@ -107,22 +258,42 @@ Each IP block represents a possible hardware component that can be selected to i
 \item throughput;
 \item reference frequency;
 \item optional capacity;
-\item optional bandwidth;ion voltage, temperatu
-%\item characterizatre, and process corner.
+\item optional bandwidth.
 \end{itemize}
 
-The IP type is used to match hardware blocks with abstract accelerator components. For example, a register file component must be matched with a compatible memory IP, and a PE array component must be matched with a compatible compute IP.
+The IP type is used to match hardware blocks with abstract
+accelerator components. For example, a register file component must
+be matched with a compatible memory IP, and a PE array component must
+be matched with a compatible compute IP.
 
-Capacity and bandwidth are optional fields because not all IP types require them in the same way. However, when they are present, they are used during compatibility checking. For example, if an abstract memory component requires a minimum capacity or bandwidth, an IP block that does not satisfy those requirements is rejected.
+Capacity and bandwidth are optional fields because not all IP types
+require them in the same way. However, when they are present, they
+are used during compatibility checking. For example, if an abstract
+memory component requires a minimum capacity or bandwidth, an IP
+block that does not satisfy those requirements is rejected.
 
-The IP pool is loaded from a structured description file. This makes it possible to modify the set of available IPs without changing the code. The intended use is to populate this pool with values obtained from a coherent characterization flow, such as synthesis, memory compilers, CACTI, or other estimation tools.
+The IP pool is loaded from a structured description file. This makes
+it possible to modify the set of available IPs without changing the
+code. The intended use is to populate this pool with values obtained
+from a coherent characterization flow, such as synthesis, memory
+compilers, or other estimation tools. The description also defines one
+technology node for the complete pool. Talos uses this value to
+parameterize the CACTI calibration performed before Level 1, keeping
+both exploration levels aligned with the same technology.
 
-During the early stages of development, synthetic characterization values were used only to implement and validate the exploration flow. Once the flow was stable, the IP pool used for the final evaluation was populated with real characterization values.
+During the early stages of development, synthetic characterization
+values were used only to implement and validate the exploration flow.
+Once the flow was stable, the IP pool used for the final evaluation
+was populated with real characterization values.
 
 \subsection{Level 2: IP-Based Hardware Evaluation}
-The second level evaluates an architectural candidate using the available hardware IP pool. The input to this level is not the original genome, but an abstract accelerator generated from the Level 1 architecture.
+The second level evaluates an architectural candidate using the
+available hardware IP pool. The input to this level is not the
+original genome, but an abstract accelerator generated from the Level
+1 architecture.
 
-This abstract accelerator is composed of several abstract components. In the current implementation, these components usually include:
+This abstract accelerator is composed of several abstract components.
+In the current implementation, these components usually include:
 
 \begin{itemize}
 \item the PE array;
@@ -132,22 +303,56 @@ This abstract accelerator is composed of several abstract components. In the cur
 \item one shared global buffer.
 \end{itemize}
 
-The external DRAM is intentionally not instantiated as a Level 2 IP block. It is part of the memory environment used during ZigZag evaluation, but it is not considered an on-chip accelerator component. This is consistent with the area model used in Level 1.
+The external DRAM is intentionally not instantiated as a Level 2 IP
+block. It is part of the memory environment used during ZigZag
+evaluation, but it is not considered an on-chip accelerator
+component. This is consistent with the area model used in Level 1.
 
-The Level 2 genome is generated dynamically from the abstract accelerator and the IP pool. Instead of having a fixed number of genes, each gene corresponds to one abstract component. The value of each gene selects one compatible IP implementation for that component.
+The Level 2 genome is generated dynamically from the abstract
+accelerator and the IP pool. Instead of having a fixed number of
+genes, each gene corresponds to one abstract component. The value of
+each gene selects one compatible IP implementation for that component.
 
-This design allows the second level to adapt to different accelerator candidates. If the abstract accelerator changes, the Level 2 genome changes with it. This is useful because the number and type of components may evolve as the architectural representation becomes richer.
+This design allows the second level to adapt to different accelerator
+candidates. If the abstract accelerator changes, the Level 2 genome
+changes with it. This is useful because the number and type of
+components may evolve as the architectural representation becomes
+richer.
 
-Once a Level 2 genome is decoded, Talos builds an implemented accelerator. This implemented accelerator contains the selected IP block for each abstract component. The evaluator then computes the physical metrics and checks whether the candidate satisfies the user constraints.
+Once a Level 2 genome is decoded, Talos builds an implemented
+accelerator. This implemented accelerator contains the selected IP
+block for each abstract component. The evaluator then computes the
+physical metrics and checks whether the candidate satisfies the user
+constraints.
 
-Area is accumulated across the selected components, taking into account the number of instances. Delay is approximated using the maximum delay among the selected blocks, throughput using the minimum throughput, and the implementation frequency using the lowest maximum frequency of its components.
+Area is accumulated across the selected components, taking into
+account the number of instances. Delay is approximated using the
+maximum delay among the selected blocks, throughput using the minimum
+throughput, and the implementation frequency using the lowest maximum
+frequency of its components.
 
-For workload-aware energy and power, Talos reuses the mapping selected by ZigZag. For each layer, it considers its execution time, the number of active PEs, and the accesses to the register files and global buffer. These values are combined with the idle and active power characterization of each selected IP. Dynamic DRAM access energy is also included, although DRAM remains outside the on-chip area and IP selection. All selected IPs use a common characterization frequency and compatible voltage, temperature, and process corner so that the comparison remains coherent.
+For workload-aware energy and power, Talos reuses the mapping
+selected by ZigZag. For each layer, it considers its execution time,
+the number of active PEs, and the accesses to the register files and
+global buffer. These values are combined with the idle and active
+power characterization of each selected IP. Dynamic DRAM access
+energy is also included, although DRAM remains outside the on-chip
+area and IP selection. All selected IPs use a common characterization
+frequency and compatible voltage, temperature, and process corner so
+that the comparison remains coherent.
 
 \subsection{Optimization Objective Interface}
-The original objective of this part of the tool was to provide a modular fitness framework. In the current version, this idea is implemented as an objective interface that separates evaluation from objective selection.
+The original objective of this part of the tool was to provide a
+modular fitness framework. In the current version, this idea is
+implemented as an objective interface that separates evaluation from
+objective selection.
 
-This separation is useful because the evaluator may return several metrics, but the optimizer may not always use the same ones. For example, one experiment may optimize latency and energy, while another may optimize area and energy-delay product. Instead of modifying the evaluator for each case, Talos exposes different objective functions on top of the same evaluation result.
+This separation is useful because the evaluator may return several
+metrics, but the optimizer may not always use the same ones. For
+example, one experiment may optimize latency and energy, while
+another may optimize area and energy-delay product. Instead of
+modifying the evaluator for each case, Talos exposes different
+objective functions on top of the same evaluation result.
 
 In Level 1, the available objectives include:
 
@@ -160,34 +365,59 @@ In Level 1, the available objectives include:
 \item area-latency product.
 \end{itemize}
 
-In Level 2, the objectives are based on the values obtained after selecting IP blocks. They include area, energy per inference, average workload power, delay, and inverse throughput. Inverse throughput is used because the optimizer follows a minimization convention.
+In Level 2, the objectives are based on the values obtained after
+selecting IP blocks. They include area, energy per inference, average
+workload power, delay, and inverse throughput. Inverse throughput is
+used because the optimizer follows a minimization convention.
 
-A cache mechanism is also included so that the same candidate does not need to be evaluated multiple times when several objectives are requested from the same result. This is especially useful when the evaluation step is expensive.
+A cache mechanism is also included so that the same candidate does
+not need to be evaluated multiple times when several objectives are
+requested from the same result. This is especially useful when the
+evaluation step is expensive.
 
 \subsection{Design Flow}
-The current Talos flow starts with the Level 1 architectural genome. This genome is decoded into an architecture configuration and exported to ZigZag. ZigZag evaluates the candidate architecture and returns the architectural metrics used by the optimizer.
+The current Talos flow starts with the Level 1 architectural genome.
+This genome is decoded into an architecture configuration and
+exported to ZigZag. ZigZag evaluates the candidate architecture and
+returns the architectural metrics used by the optimizer.
 
-After this, the candidate can be imported into Level 2. The importer converts the architecture into an abstract accelerator representation. This representation is then compared against the IP pool to find compatible implementations for each component.
+After this, the candidate can be imported into Level 2. The importer
+converts the architecture into an abstract accelerator
+representation. This representation is then compared against the IP
+pool to find compatible implementations for each component.
 
-The Level 2 genome is created from those compatibility lists. Each candidate genome selects one IP block per abstract component. The selected IPs are used to build an implemented accelerator, and the Level 2 evaluator computes its physical and workload-aware values.
+The Level 2 genome is created from those compatibility lists. Each
+candidate genome selects one IP block per abstract component. The
+selected IPs are used to build an implemented accelerator, and the
+Level 2 evaluator computes its physical and workload-aware values.
 
 The complete flow can therefore be seen as a hierarchical exploration:
 
 \begin{enumerate}
 \item Level 1 explores architectural candidates.
-\item ZigZag evaluates the mapping and memory behaviour of those candidates.
-\item Selected candidates are converted into abstract accelerator components.
+\item ZigZag evaluates the mapping and memory behaviour of those
+candidates.
+\item Selected candidates are converted into abstract accelerator
+components.
 \item Level 2 explores possible IP implementations.
 \item A workload-aware PPA model evaluates the implemented candidate.
 \item User constraints discard architectures that are not feasible.
-\item The feasible alternatives and their metrics are exported for comparison.
+\item The feasible alternatives and their metrics are exported for
+comparison.
 \end{enumerate}
 
-Level 1 uses NSGA-II through \texttt{pymoo} and a fixed-length architectural genome. Level 2 uses a dynamic IP-selection genome and can use either NSGA-II or exhaustive enumeration. Exhaustive exploration is useful when the compatible IP pool is small, while NSGA-II preserves the same flow when the number of combinations becomes too large. The output is a set of feasible alternatives, including non-dominated candidates, rather than a single architecture selected by the tool.
+Level 1 uses NSGA-II through \texttt{pymoo} and a fixed-length
+architectural genome. Level 2 uses a dynamic IP-selection genome and
+can use either NSGA-II or exhaustive enumeration. Exhaustive
+exploration is useful when the compatible IP pool is small, while
+NSGA-II preserves the same flow when the number of combinations
+becomes too large. The output is a set of feasible alternatives,
+including non-dominated candidates, rather than a single architecture
+selected by the tool.
 
 \subsection{Challenges and Problems Encountered}
-One of the main challenges was keeping the meaning of the metrics 
-coherent between both levels. Level 1 evaluates an abstract 
+One of the main challenges was keeping the meaning of the metrics
+coherent between both levels. Level 1 evaluates an abstract
 architecture with ZigZag, while Level 2 evaluates concrete IP choices.
 When the available IP combinations are introduced, an architecture
 that appears less promising at the abstract level may produce a better
@@ -196,48 +426,57 @@ may offer less favourable IP combinations. For this reason, the
 connection between levels was designed to preserve several candidate
 architectures instead of passing only one apparent optimum.
 
-Another problem was the distinction between energy and power. 
-In an early version of the flow, ZigZag energy was used as a proxy 
-for a power-oriented objective. This produced misleading 
-comparisons because a large architecture may consume less 
-energy by finishing earlier while still requiring more average 
-power. The decision was to keep energy and power as different 
-quantities and to make the Level 2 model workload-aware, 
+Another problem was the distinction between energy and power.
+In an early version of the flow, ZigZag energy was used as a proxy
+for a power-oriented objective. This produced misleading
+comparisons because a large architecture may consume less
+energy by finishing earlier while still requiring more average
+power. The decision was to keep energy and power as different
+quantities and to make the Level 2 model workload-aware,
 using the execution time and activity of each layer.
 
-Frequency also required special attention. The maximum frequency 
+Frequency also required special attention. The maximum frequency
 of an IP indicates whether it can operate at a given point,
-but it is not automatically the frequency at which its power 
-was characterized. Combining power values from one frequency 
-with execution time calculated at another produced inconsistent 
-energy estimations. Talos therefore evaluates workload time at 
+but it is not automatically the frequency at which its power
+was characterized. Combining power values from one frequency
+with execution time calculated at another produced inconsistent
+energy estimations. Talos therefore evaluates workload time at
 the common reference frequency of the selected IP characterizations
 and uses maximum frequency as a feasibility condition.
 
-The treatment of DRAM exposed a similar modelling issue. 
-Allowing the optimizer to change external bandwidth without 
-assigning a physical cost created an unrealistic path to lower latency. Fixing DRAM bandwidth as a platform parameter avoided this problem. Later, the dynamic energy associated with off-chip accesses also had to be propagated from the ZigZag mapping, because ignoring it favoured small on-chip architectures with high external traffic.
+The treatment of DRAM exposed a similar modelling issue.
+Allowing the optimizer to change external bandwidth without
+assigning a physical cost created an unrealistic path to lower
+latency. Fixing DRAM bandwidth as a platform parameter avoided this
+problem. Later, the dynamic energy associated with off-chip accesses
+also had to be propagated from the ZigZag mapping, because ignoring
+it favoured small on-chip architectures with high external traffic.
 
-The optimization algorithms introduced practical problems 
-as well. Although the Level 1 genome is discrete, generic 
-genetic operators can produce floating-point individuals 
-that decode into repeated architectures and reduce population 
-diversity. The genome operators were therefore kept integer 
-throughout the search. In Level 2, NSGA-II could miss feasible 
-combinations when constraints were strict, even when the small 
-IP pool allowed all combinations to be checked. An exhaustive strategy was added for this case, leaving NSGA-II for larger pools where enumeration is no longer practical.
+The optimization algorithms introduced practical problems
+as well. Although the Level 1 genome is discrete, generic
+genetic operators can produce floating-point individuals
+that decode into repeated architectures and reduce population
+diversity. The genome operators were therefore kept integer
+throughout the search. In Level 2, NSGA-II could miss feasible
+combinations when constraints were strict, even when the small
+IP pool allowed all combinations to be checked. An exhaustive
+strategy was added for this case, leaving NSGA-II for larger pools
+where enumeration is no longer practical.
 
-Finally, the accuracy of the exploration depends on the quality of 
-the external models. ZigZag does not always provide the required 
-area information, automatic memory characterization is 
-not equally portable in every environment, and a complete real 
-IP library was not available during the early stages of development. 
-Talos keeps the source of the estimates explicit: synthetic values 
-were used while developing the flow, while the final evaluation 
+Finally, the accuracy of the exploration depends on the quality of
+the external models. ZigZag does not always provide the required
+area information, automatic memory characterization is
+not equally portable in every environment, and a complete real
+IP library was not available during the early stages of development.
+Talos keeps the source of the estimates explicit: synthetic values
+were used while developing the flow, while the final evaluation
 used the pool obtained from real characterization.
 
 \subsection{Validation of the Design Decisions}
-The validation focuses on functional correctness and integration between modules. The goal is not to claim final physical accuracy, but to verify that the adopted structure works as an architectural exploration tool.
+The validation focuses on functional correctness and integration
+between modules. The goal is not to claim final physical accuracy,
+but to verify that the adopted structure works as an architectural
+exploration tool.
 
 The implemented tests cover several parts of the flow:
 
@@ -245,49 +484,98 @@ The implemented tests cover several parts of the flow:
 \item validation of IP block definitions;
 \item loading of IP pools from YAML files;
 \item compatibility checks between abstract components and IP blocks;
-\item rejection of invalid candidates when no compatible IP is available;
+\item rejection of invalid candidates when no compatible IP is
+available;
 \item generation and decoding of Level 2 genomes;
 \item construction of implemented accelerators;
-\item computation of area, delay, throughput, workload energy, and average power;
+\item computation of area, delay, throughput, workload energy, and
+average power;
 \item application of area, power, latency, and frequency constraints;
-\item consistency between characterization frequency, workload time, energy, and power;
-\item conversion from Level 1 architectures to Level 2 abstract accelerators.
+\item consistency between characterization frequency, workload time,
+energy, and power;
+\item conversion from Level 1 architectures to Level 2 abstract
+accelerators.
 \end{itemize}
 
-In addition to unit tests, smoke tests are used to verify that the modules can be connected in practice. One smoke test creates an architecture from the Level 1 representation, converts it into an abstract accelerator, loads an example IP pool, generates the corresponding Level 2 genome, and evaluates the resulting implementation.
+In addition to unit tests, smoke tests are used to verify that the
+modules can be connected in practice. One smoke test creates an
+architecture from the Level 1 representation, converts it into an
+abstract accelerator, loads an example IP pool, generates the
+corresponding Level 2 genome, and evaluates the resulting
+implementation.
 
-These tests check that Talos can represent, transform, and evaluate accelerator candidates through both levels. They also check an important modelling decision: the DRAM is preserved in the ZigZag architecture for off-chip traffic modelling, but it is not imported as an IP block in Level 2.
+These tests check that Talos can represent, transform, and evaluate
+accelerator candidates through both levels. They also check an
+important modelling decision: the DRAM is preserved in the ZigZag
+architecture for off-chip traffic modelling, but it is not imported
+as an IP block in Level 2.
 
 \subsection{Current Limitations}
-The current version of Talos should be understood as a working prototype of an architectural exploration tool. Some parts are intentionally simplified and define how its evaluations should be interpreted.
+The current version of Talos should be understood as a working
+prototype of an architectural exploration tool. Some parts are
+intentionally simplified and define how its evaluations should be
+interpreted.
 
-First, the Level 1 area model is still preliminary. ZigZag provides useful architectural evaluation, but area extraction may not always be directly available or sufficiently detailed. For that reason, Talos includes a fallback area model. This is useful for exploration, but it is not a replacement for a technology-accurate area model.
+First, the Level 1 area model is still preliminary. ZigZag provides
+useful architectural evaluation, but area extraction may not always
+be directly available or sufficiently detailed. For that reason,
+Talos includes a fallback area model. This is useful for exploration,
+but it is not a replacement for a technology-accurate area model.
 
-Second, the Level 1 design space is defined through a fixed catalogue of discrete values. This keeps candidate generation valid and manageable, but it also makes the exploration rigid and may leave relevant architectural values outside the search.
+Second, the Level 1 design space is defined through a fixed catalogue
+of discrete values. This keeps candidate generation valid and
+manageable, but it also makes the exploration rigid and may leave
+relevant architectural values outside the search.
 
-Third, the Level 2 evaluator does not yet model pipeline effects, interconnect and clock-tree cost, memory arbitration, control logic, DRAM idle power, or the physical memory interface. These aspects are necessary for a more accurate hardware evaluation. Although the final IP pool uses real characterization values, its accuracy is limited by the components and operating conditions covered by that characterization.
+Third, the Level 2 evaluator does not yet model pipeline effects,
+interconnect and clock-tree cost, memory arbitration, control logic,
+DRAM idle power, or the physical memory interface. These aspects are
+necessary for a more accurate hardware evaluation. Although the final
+IP pool uses real characterization values, its accuracy is limited by
+the components and operating conditions covered by that
+characterization.
 
-Finally, the separation between levels makes the exploration manageable by applying the more detailed IP evaluation only to a representative set of architectural candidates. Preserving a diverse set of Level 1 candidates allows Level 2 to compare different architectural alternatives and concrete IP combinations without requiring an exhaustive joint exploration of both spaces.
+Finally, the separation between levels makes the exploration
+manageable by applying the more detailed IP evaluation only to a
+representative set of architectural candidates. Preserving a diverse
+set of Level 1 candidates allows Level 2 to compare different
+architectural alternatives and concrete IP combinations without
+requiring an exhaustive joint exploration of both spaces.
 
 \subsection{Summary of Project Decisions}
-The development of Talos was guided by the decision to build a modular architectural exploration tool rather than a generator of one final accelerator.
+The development of Talos was guided by the decision to build a
+modular architectural exploration tool rather than a generator of one
+final accelerator.
 
 The main decisions taken during the project were:
 
 \begin{itemize}
-\item to divide the exploration into an architectural level and an IP-based level;
-\item to reuse ZigZag for workload mapping and architectural evaluation;
-\item to encode Level 1 as a discrete genome and keep DRAM as a fixed external platform resource;
-\item to connect both levels through an abstract accelerator representation;
-\item to describe physical alternatives through a characterized IP pool and a dynamic Level 2 genome;
-\item to keep evaluation metrics separate from optimization objectives;
-\item to evaluate energy and power from workload activity and coherent IP characterization;
-\item to use NSGA-II for large spaces and exhaustive Level 2 exploration when the IP pool is small;
-\item to preserve several feasible alternatives and report their trade-offs and constraint status.
+\item to divide the exploration into an architectural level and an
+IP-based level;
+\item to reuse ZigZag for workload mapping and architectural
+evaluation;
+\item to encode Level 1 as a discrete genome and keep DRAM as a fixed
+external platform resource;
+\item to connect both levels through an abstract accelerator
+representation;
+\item to describe physical alternatives through a characterized IP
+pool and a dynamic Level 2 genome;
+\item to keep evaluation metrics separate from optimization
+objectives;
+\item to evaluate energy and power from workload activity and
+coherent IP characterization;
+\item to use NSGA-II for large spaces and exhaustive Level 2
+exploration when the IP pool is small;
+\item to preserve several feasible alternatives and report their
+trade-offs and constraint status.
 \end{itemize}
 
-The intended state of Talos is therefore a tool that helps a designer explore and compare DNN accelerator architectures with traceable assumptions. 
-Its endpoint is a set of feasible architectural alternatives with concrete IP choices and comparable metrics; RTL generation and sign-off physical 
+The intended state of Talos is therefore a tool that helps a designer
+explore and compare DNN accelerator architectures with traceable
+assumptions.
+Its endpoint is a set of feasible architectural alternatives with
+concrete IP choices and comparable metrics; RTL generation and
+sign-off physical
 estimation remain outside this scope.
 
 %\include{codi_tempdistrib}
