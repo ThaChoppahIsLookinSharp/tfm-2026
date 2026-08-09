@@ -161,6 +161,8 @@ Table~\ref{tab:level1_genome}.
 dentro del PE}
 \begin{table}[h]
 \centering
+\todo[inline]{Arreglar tabla, esta me la ha generado claude,
+que es Role?}
 \begin{tabular}{lll}
 \hline
 Gene & Meaning & Role \\
@@ -393,28 +395,9 @@ preserved in the ZigZag architecture for off-chip traffic modelling,
 but it is not imported as an IP block in Level 2.
 
 \subsection{Current Limitations}
-\todo[inline]{Esto basicamente refleja el estado de ahora mismo.
-Podría cambiar en el futuro, también a lo mejor que la generación
-de individuos es algo rígida}
-The current version of Talos should be understood as a working
-prototype of the proposed methodology. Some parts are intentionally
-simplified and should be improved in future work.
+\todo[inline]{Ni idea de si meter algo aquí en general. Haré de 
+esto una lista de cosas que se pueden mejorar o derivar}
 
-First, the Level 1 area model is still preliminary. ZigZag provides
-useful architectural evaluation, but area extraction may not always
-be directly available or sufficiently detailed. For that reason,
-Talos includes a fallback area model. This is useful for exploration,
-but it is not a replacement for a technology-accurate area model.
-
-Second, the on-chip memory bandwidth genes are still abstract
-architectural knobs. They are useful for constraining the
-architecture and studying design alternatives, but their physical
-impact on area and power is not yet fully modelled.
-
-Third, the Level 2 PPA evaluator uses a simplified aggregation model.
-It does not yet model pipeline effects, interconnect cost, memory
-arbitration, control logic, or timing interaction between components.
-These aspects are necessary for a more accurate hardware evaluation.
 
 Finally, Talos does not currently generate synthesizable RTL. The
 tool is designed so that future RTL generation could be added, but
