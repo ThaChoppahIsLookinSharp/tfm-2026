@@ -1,23 +1,178 @@
 %%% StateOfTheArt %%%
-\clearpage\section{State of the art of the technology used or applied
-in this thesis:}
+\clearpage
+\section{State of the Art}
 
- With the boom of AI that is currently on-going, the offer of
- automated tools to generate hardware has increased greatly. These
- tools could be broken down into two main groups. The ones based on
- Large Language Models (LLM) and the ones that use other techniques.
+The increasing use of Deep Neural Networks in applications such as
+computer vision, speech recognition, and natural language processing
+has increased the demand for hardware capable of executing these
+models efficiently. Although CPUs and GPUs can execute a wide range of
+workloads, their general-purpose nature may not provide the required
+energy efficiency for every application. This is especially relevant
+in edge and embedded systems, where power consumption, area, and
+memory are limited.
 
- In the first one, several works based on LLM HDL code generation can
- be found. Some examples are DeepRTL \cite{deeprtl} o RTLCoder
- \cite{liu2025rtlcoder}. The second group includes other techniques
- that do not use LLMs, such as \cite{autoai2c}.
+As a result, many domain-specific DNN accelerators have been proposed.
+These accelerators target different environments, from large data
+centres to small always-on sensing devices, but they usually exploit a
+similar set of ideas. These include spatial parallelism, data reuse,
+sparsity, and reduced numerical precision. The way in which these
+techniques are combined has a direct effect on performance, power,
+energy, and area \cite{sze2017efficient}.
 
- On the architectural exploration side, there are also some other
- utilites such as ZigZag\cite{zigzag}.
+\subsection{DNN Hardware Accelerators}
 
+DNN accelerators can be classified according to their compute
+organization, dataflow, flexibility, or implementation technology.
+These categories are not exclusive, since a single accelerator may
+combine ideas from several of them.
 
-\subsection{Topic}
+\subsubsection{Spatial and Systolic Arrays}
 
-\bigskip
+Many accelerators distribute multiply-accumulate operations over an
+array of processing elements. Spatial architectures map different
+operations and data movements directly onto this array, allowing data
+to be reused close to the compute units.
 
-\subsection{Topic}
+Eyeriss is an early example of a spatial accelerator for convolutional
+neural networks \cite{eyeriss}. It uses an array of processing elements
+and a row-stationary dataflow designed to reuse weights, activations,
+and partial sums. Its architecture shows the importance of the memory
+hierarchy and data movement, since the cost of moving data can be as
+relevant as the cost of the arithmetic operations themselves.
+
+Systolic arrays are a more regular form of compute array. Data moves
+between neighbouring processing elements in a pipelined manner, while
+each element performs part of a matrix multiplication. Google's first
+Tensor Processing Unit is a well-known example of this approach
+\cite{tpuv1}. It was designed for neural network inference in data
+centres and uses a large matrix multiplication unit supported by
+software-managed on-chip memory. The TPU shows how a specialized
+architecture can provide high throughput when it is designed around
+the dominant operations of a workload.
+
+\subsubsection{Precision-Scalable and Reconfigurable Accelerators}
+
+Not all accelerators use a fixed operating point or support only one
+type of workload. Some architectures introduce reconfigurability to
+adapt their precision, dataflow, or power consumption.
+
+Envision explores another part of the accelerator design space
+\cite{envision}. It supports different numerical precisions and adapts
+its voltage and operating frequency to trade accuracy and performance
+for energy efficiency. It also exploits sparsity to avoid unnecessary
+operations. This illustrates that the optimal accelerator
+configuration can depend not only on the DNN model, but also on the
+precision and operating conditions selected by the designer.
+
+TinyVers targets the opposite end of the power and performance range
+\cite{tinyvers}. It is an ultra-low-power system-on-chip intended for
+machine learning inference at the extreme edge. It combines a RISC-V
+processor, a reconfigurable machine learning accelerator, on-chip
+memory, and state-retentive eMRAM. Its design shows that flexibility,
+power management, and memory organization are especially important in
+small always-on devices.
+
+\subsubsection{Depth-First and Heterogeneous Accelerators}
+
+Accelerators can also differ in the order in which layers are
+executed. DepFiN uses depth-first execution and layer fusion to reduce
+the external memory traffic produced by intermediate feature maps in
+high-resolution convolutional networks \cite{depfin}. Instead of
+completing one full layer before starting the following one, the
+accelerator processes parts of several layers in sequence, allowing
+intermediate data to remain closer to the compute units.
+
+Another distinction can be made between digital accelerators and
+designs based on analog or in-memory computing. Digital designs are
+usually easier to control and provide predictable numerical results,
+while analog approaches can offer greater compute density at the cost
+of other accuracy and implementation constraints.
+
+DIANA presents a heterogeneous approach for edge inference
+\cite{diana}. It combines a conventional RISC-V host with both a
+digital DNN accelerator and an analog in-memory computing core. The
+digital core provides flexibility and deterministic computation,
+while the analog core targets high computational density and energy
+efficiency. This is an example of how different hardware
+implementations can be combined to cover workloads with different
+requirements.
+
+These accelerators show that there is no single architecture that is
+optimal for every DNN and every target platform. Decisions such as the
+number and organization of the processing elements, the memory sizes
+and bandwidths, the dataflow, the numerical precision, and the use of
+sparsity create a large design space. Exploring this space manually is
+difficult, which has motivated the development of automated design
+space exploration tools.
+
+\subsection{Architecture and Mapping Exploration}
+
+Design Space Exploration tools evaluate different accelerator
+configurations without requiring a complete hardware implementation
+for each candidate. These tools use analytical or simulation-based
+models to estimate metrics such as latency, energy, and area. This
+makes it possible to discard unsuitable alternatives early in the
+design process.
+
+ZigZag is a framework for the joint exploration of DNN accelerator
+architectures and mappings \cite{zigzag}. It represents the processing
+array and memory hierarchy and evaluates how the operations and data
+of a workload are mapped onto them. ZigZag is especially useful for
+studying data reuse and the cost of data movement across the different
+levels of memory.
+
+However, this type of exploration works mainly with an abstract
+description of the architecture. Parameters such as memory capacity,
+bandwidth, access energy, and area describe the expected hardware, but
+they do not necessarily identify the concrete hardware IP blocks that
+will implement it. Therefore, an architecture that appears promising
+at this level may be more difficult to implement with the components
+available for a given technology.
+
+\subsection{Automatic Accelerator Generation}
+
+Other approaches go further and attempt to automate part of the
+hardware generation process. AutoDNNChip combines a Chip Predictor
+with a Chip Builder to explore accelerator configurations and produce
+hardware implementations for FPGA and ASIC targets
+\cite{autodnnchip}. AutoAI2C follows a similar generator-oriented
+direction and focuses on automatically producing DNN accelerators for
+both types of platforms \cite{autoai2c}.
+
+These approaches reduce the manual effort required to move from a DNN
+model to a hardware design. However, automatic generation also
+requires stronger assumptions about the supported architecture,
+target platform, and generation flow. This can make the relationship
+between the exploration model and the final hardware implementation
+more tightly coupled.
+
+A different line of research uses Large Language Models to generate
+or assist in the generation of HDL code. DeepRTL proposes a unified
+representation for Verilog understanding and generation
+\cite{deeprtl}, while RTLCoder uses an open-source dataset and a
+specialized model for RTL generation \cite{liu2025rtlcoder}. These
+works are relevant to hardware automation, but they address a
+different problem from architectural DSE. Their main objective is the
+generation of HDL descriptions rather than the systematic exploration
+of accelerator architectures and hardware IP combinations.
+
+\subsection{Relation to This Work}
+
+The reviewed works cover several parts of the accelerator design
+process. Physical accelerators such as Eyeriss, TinyVers, and DIANA
+demonstrate the diversity of possible implementation decisions.
+Exploration frameworks such as ZigZag allow architectures and mappings
+to be evaluated before implementation. Generator-oriented approaches
+such as AutoDNNChip and AutoAI2C attempt to continue the process
+towards a concrete hardware design.
+
+In the approaches reviewed here, architectural exploration and the
+selection of characterized hardware IP implementations are not
+treated as two separate and replaceable exploration levels. Talos
+focuses on this separation. Its first level explores abstract DNN
+accelerator architectures using ZigZag, while its second level maps
+the selected architectures to compatible hardware IP blocks and
+evaluates their PPA characteristics. This structure is intended to
+keep the architectural model independent from a particular IP
+library, while still considering implementation information before a
+final candidate is selected.
