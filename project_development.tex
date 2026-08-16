@@ -510,22 +510,22 @@ important modelling decision: the DRAM is preserved in the ZigZag
 architecture for off-chip traffic modelling, but it is not imported
 as an IP block in Level 2.
 
-\subsection{Current Limitations}
-The current version of Talos should be understood as a working
-prototype of an architectural exploration tool. Some parts are
-intentionally simplified and define how its evaluations should be
-interpreted.
+%\subsection{Current Limitations}
+%The current version of Talos should be understood as a working
+%prototype of an architectural exploration tool. Some parts are
+%intentionally simplified and define how its evaluations should be
+%interpreted.
 
-First, the Level 1 area model is still preliminary. ZigZag provides
-useful architectural evaluation, but area extraction may not always
-be directly available or sufficiently detailed. For that reason,
-Talos includes a fallback area model. This is useful for exploration,
-but it is not a replacement for a technology-accurate area model.
+%First, the Level 1 area model is still preliminary. ZigZag provides
+%useful architectural evaluation, but area extraction may not always
+%be directly available or sufficiently detailed. For that reason,
+%Talos includes a fallback area model. This is useful for exploration,
+%but it is not a replacement for a technology-accurate area model.
 
-Second, the Level 1 design space is defined through a fixed catalogue
-of discrete values. This keeps candidate generation valid and
-manageable, but it also makes the exploration rigid and may leave
-relevant architectural values outside the search.
+%Second, the Level 1 design space is defined through a fixed catalogue
+%of discrete values. This keeps candidate generation valid and
+%manageable, but it also makes the exploration rigid and may leave
+%relevant architectural values outside the search.
 
 Third, the Level 2 evaluator does not yet model pipeline effects,
 interconnect and clock-tree cost, memory arbitration, control logic,
