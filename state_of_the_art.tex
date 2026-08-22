@@ -1,4 +1,3 @@
-%%% StateOfTheArt %%%
 \clearpage
 \section{State of the Art}
 
@@ -9,13 +8,14 @@ models efficiently. Although CPUs and GPUs can execute a wide range of
 workloads, their general-purpose nature may not provide the required
 energy efficiency for every application. This is especially relevant
 in edge and embedded systems, where power consumption, area, and
-memory are limited.
+memory are limited and often tailored to application specific domains and applications(automotive, medical, industrials, etc.).
 
+DNN Hardware Accelerators
 As a result, many domain-specific DNN accelerators have been proposed.
 These accelerators target different environments, from large data
 centres to small always-on sensing devices, but they usually exploit a
-similar set of ideas. These include spatial parallelism, data reuse,
-sparsity, and reduced numerical precision. The way in which these
+similar set of ideas. These include and/or temporalparallelism, data magagement and reuse,
+sparsity, and reduced numerical representation/precision. The way in which these
 techniques are combined has a direct effect on performance, power,
 energy, and area \cite{sze2017efficient}.
 
@@ -40,7 +40,7 @@ and partial sums. Its architecture shows the importance of the memory
 hierarchy and data movement, since the cost of moving data can be as
 relevant as the cost of the arithmetic operations themselves.
 
-Systolic arrays are a more regular form of compute array. Data moves
+Systolic arrays are a more regular form of computing array. Data moves
 between neighbouring processing elements in a pipelined manner, while
 each element performs part of a matrix multiplication. Google's first
 Tensor Processing Unit is a well-known example of this approach
@@ -52,9 +52,9 @@ the dominant operations of a workload.
 
 \subsubsection{Precision-Scalable and Reconfigurable Accelerators}
 
-Not all accelerators use a fixed operating point or support only one
-type of workload. Some architectures introduce reconfigurability to
-adapt their precision, dataflow, or power consumption.
+Different accelerators use diverse and even mixed data representation (integer, fixed, floating   point) and support several 
+types of workloads, according to the DNN solutions that can me mapped on them. Some architectures introduce reconfigurability to
+adapt their precision, dataflow, topology, parallelism level, or power consumption.
 
 Envision explores another part of the accelerator design space
 \cite{envision}. It supports different numerical precisions and adapts
@@ -62,7 +62,7 @@ its voltage and operating frequency to trade accuracy and performance
 for energy efficiency. It also exploits sparsity to avoid unnecessary
 operations. This illustrates that the optimal accelerator
 configuration can depend not only on the DNN model, but also on the
-precision and operating conditions selected by the designer.
+precision and operating conditions selected by both the AI solutions architects at the Edge AI level where they apply quantization techniques and the chip designers.
 
 TinyVers targets the opposite end of the power and performance range
 \cite{tinyvers}. It is an ultra-low-power system-on-chip intended for
@@ -71,6 +71,24 @@ processor, a reconfigurable machine learning accelerator, on-chip
 memory, and state-retentive eMRAM. Its design shows that flexibility,
 power management, and memory organization are especially important in
 small always-on devices.
+
+\subsubsection{Sparsity-Aware Accelerators}
+
+Sparsity provides another opportunity to reduce both computation and
+data movement. Neural networks can contain zero-valued weights and
+activations either naturally or as a result of techniques such as
+pruning (and quantization). Hardware can exploit this property by
+avoiding operations and memory transfers associated with zero values.
+
+SCNN is an example of an accelerator designed specifically for sparse
+convolutional neural networks \cite{scnn}. It stores both weights and
+activations in compressed form and organizes computation around their
+non-zero values, reducing unnecessary multiply-accumulate operations
+and data movement. However, sparse execution is less regular than
+dense execution and introduces additional control and data-management
+requirements. The resulting benefit therefore depends on both the
+amount of sparsity present in the workload and the hardware support
+used to exploit it.
 
 \subsubsection{Depth-First and Heterogeneous Accelerators}
 
@@ -97,10 +115,13 @@ efficiency. This is an example of how different hardware
 implementations can be combined to cover workloads with different
 requirements.
 
-These accelerators show that there is no single architecture that is
-optimal for every DNN and every target platform. Decisions such as the
+\subsubsection{The complex problem}
+
+The accelerators shown illustrate that there is no single architecture 
+optimal for every DNN and every target/application platform for its chip implementation even once a given DNN solution has been fixed by Edge AI deployment steps that provided the required AI accuracy performance. 
+Decisions such as the
 number and organization of the processing elements, the memory sizes
-and bandwidths, the dataflow, the numerical precision, and the use of
+and their bandwidths, the global and local dataflows, the numerical representation, and the use of
 sparsity create a large design space. Exploring this space manually is
 difficult, which has motivated the development of automated design
 space exploration tools.
@@ -114,12 +135,60 @@ models to estimate metrics such as latency, energy, and area. This
 makes it possible to discard unsuitable alternatives early in the
 design process.
 
+The cost model used by a DSE framework determines a trade-off between
+evaluation speed and implementation detail. Analytical models can
+evaluate large numbers of candidates quickly, while more detailed
+simulation or implementation-based approaches can capture additional
+hardware effects at a greater computational cost. For example,
+cycle-accurate simulation can model the execution of hardware
+components in more detail, while approaches based on High-Level
+Synthesis can use an implementation of the candidate to obtain more
+technology-dependent estimates. The appropriate level of abstraction
+therefore depends on the size of the design space and the required
+accuracy of the exploration.
+
 ZigZag is a framework for the joint exploration of DNN accelerator
 architectures and mappings \cite{zigzag}. It represents the processing
 array and memory hierarchy and evaluates how the operations and data
 of a workload are mapped onto them. ZigZag is especially useful for
 studying data reuse and the cost of data movement across the different
 levels of memory.
+
+MAESTRO provides a data-centric analytical model for evaluating DNN
+accelerator dataflows \cite{maestro}. It analyzes how the selected
+dataflow and hardware configuration affect data reuse, communication,
+performance, and hardware cost. This allows different mapping
+strategies to be compared without requiring a complete implementation
+of each accelerator.
+
+Timeloop provides another framework for systematically evaluating DNN
+accelerator mappings \cite{timeloop}. It uses a loop-based description
+of the workload, architecture, and mapping to explore how computations
+and data movement are distributed across the accelerator memory
+hierarchy. It is commonly combined with Accelergy
+\cite{accelergy}, which provides analytical energy estimates for the
+different hardware components and their accesses. Together,
+Timeloop and Accelergy allow mappings to be evaluated in terms of
+performance and energy over flexible accelerator descriptions.
+
+ConfuciuX addresses accelerator exploration from a different
+perspective \cite{confuciux}. Given a DNN model and a dataflow style,
+it searches for suitable assignments of compute and memory resources
+while considering constraints such as area or power. The exploration
+uses reinforcement learning to guide the search over the large
+hardware resource space and can apply a genetic algorithm to further
+refine the resulting configurations. In this way, ConfuciuX
+demonstrates how learning-based search techniques can be used to
+explore hardware configurations without exhaustively evaluating the
+complete design space.
+
+These frameworks differ both in the hardware configurations they can
+represent and in the mapping spaces they explore. In particular,
+ZigZag extends the mapping space by supporting uneven mappings, where
+different operands can use different loop blocking across shared
+memory levels. This increases the number of possible mappings but can
+also expose solutions that are not represented by more restrictive
+mapping models.
 
 However, this type of exploration works mainly with an abstract
 description of the architecture. Parameters such as memory capacity,
@@ -129,22 +198,42 @@ will implement it. Therefore, an architecture that appears promising
 at this level may be more difficult to implement with the components
 available for a given technology.
 
-\subsection{Automatic Accelerator Generation}
+\subsection{Automatic Generation of DNN Accelerator IPs}
 
 Other approaches go further and attempt to automate part of the
-hardware generation process. AutoDNNChip combines a Chip Predictor
-with a Chip Builder to explore accelerator configurations and produce
-hardware implementations for FPGA and ASIC targets
-\cite{autodnnchip}. AutoAI2C follows a similar generator-oriented
-direction and focuses on automatically producing DNN accelerators for
-both types of platforms \cite{autoai2c}.
+hardware generation process.
+
+MAGNet is a modular accelerator generator that combines accelerator
+exploration with a hardware generation flow \cite{magnet}. Instead of
+exploring an unrestricted hardware architecture, it uses a
+parameterizable accelerator template and modifies design parameters
+such as the SIMD organization and memory sizes. Candidate designs can
+then be evaluated through an HLS-based implementation flow. This
+provides a closer connection between architectural decisions and
+implementable hardware, although the exploration remains constrained
+by the underlying accelerator template.
+
+AutoDNNChip combines a Chip Predictor with a Chip Builder to explore
+accelerator configurations and produce hardware implementations for
+FPGA and ASIC targets \cite{autodnnchip}. Its design representation
+includes architecture, mapping, and hardware IP information in a
+common graph. The Chip Predictor supports both a coarse-grained
+analytical mode for fast exploration and a fine-grained run-time
+simulation mode for more detailed evaluation. The Chip Builder uses
+these models to explore aspects such as IP selection, block
+configuration, resource allocation, and inter-IP pipelining before
+generating synthesizable hardware.
+
+AutoAI2C follows a similar generator-oriented direction and focuses on
+automatically producing DNN accelerators for both FPGA and ASIC
+platforms \cite{autoai2c}.
 
 These approaches reduce the manual effort required to move from a DNN
 model to a hardware design. However, automatic generation also
 requires stronger assumptions about the supported architecture,
-target platform, and generation flow. This can make the relationship
-between the exploration model and the final hardware implementation
-more tightly coupled.
+target platform, component library, and generation flow. This can make
+the relationship between the exploration model and the final hardware
+implementation more tightly coupled.
 
 A different line of research uses Large Language Models to generate
 or assist in the generation of HDL code. DeepRTL proposes a unified
@@ -156,23 +245,54 @@ different problem from architectural DSE. Their main objective is the
 generation of HDL descriptions rather than the systematic exploration
 of accelerator architectures and hardware IP combinations.
 
-\subsection{Relation to This Work}
+\subsection{Summary of the chapter}
 
 The reviewed works cover several parts of the accelerator design
-process. Physical accelerators such as Eyeriss, TinyVers, and DIANA
-demonstrate the diversity of possible implementation decisions.
-Exploration frameworks such as ZigZag allow architectures and mappings
-to be evaluated before implementation. Generator-oriented approaches
-such as AutoDNNChip and AutoAI2C attempt to continue the process
-towards a concrete hardware design.
+process. Physical accelerators 
+such as Eyeriss, SCNN, TinyVers, and
+DIANA demonstrate the diversity of possible implementation decisions (implementation details in Table \ref{tab:dnn_accelerator_comparison}).
+Exploration frameworks such as MAESTRO, Timeloop with Accelergy,
+ConfuciuX, and ZigZag allow mappings, accelerator architectures, or
+hardware resource allocations to be evaluated before implementation.
+Generator-oriented approaches such as MAGNet, AutoDNNChip, and
+AutoAI2C attempt to continue the process towards a concrete hardware
+design.
 
-In the approaches reviewed here, architectural exploration and the
-selection of characterized hardware IP implementations are not
-treated as two separate and replaceable exploration levels. Talos
-focuses on this separation. Its first level explores abstract DNN
-accelerator architectures using ZigZag, while its second level maps
-the selected architectures to compatible hardware IP blocks and
-evaluates their PPA characteristics. This structure is intended to
-keep the architectural model independent from a particular IP
-library, while still considering implementation information before a
-final candidate is selected.
+Some of these approaches already incorporate implementation
+information during exploration. In particular, AutoDNNChip includes
+technology-dependent hardware IP information and performs IP
+selection as part of its accelerator generation flow. However,
+architecture, mapping, and IP decisions are represented and optimized
+within the same integrated generation framework.
+
+Talos follows a different organization by explicitly separating these
+decisions into two exploration levels. Its first level explores
+abstract DNN accelerator architectures using ZigZag, without binding
+them to a particular implementation of their hardware components.
+Its second level then maps the selected architectures to compatible,
+characterized hardware IP blocks and evaluates their PPA
+characteristics. This separation is intended to allow the
+architectural exploration and the hardware IP library to evolve
+independently, while still considering implementation information
+before a final candidate is selected. It is important to note that Talos is also including the code corresponding to the mapping for data motion and related control.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{llll}
+\hline
+Tool & DNN Architectures & HW info & SW mapping\\
+\hline
+MAESTRO     & -- & -- & --\\
+Accelergy   & -- & -- & --\\
+ConfuciuX   & -- & -- & --\\
+ZigZag      & -- & -- & --\\
+MAGNet      & -- & -- & --\\
+AutoDNNChip & -- & -- & --\\
+AutoAI2C    & -- & -- & --\\
+\hline
+\end{tabular}
+\caption{DNN generator tools considered in this research.}
+\label{tab:workloads}
+\end{table}
+
+

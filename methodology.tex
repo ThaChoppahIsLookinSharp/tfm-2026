@@ -29,8 +29,8 @@ described in the following chapter.
 
 \begin{enumerate}
 \item \textbf{Requirements analysis.} In this phase, the problem is
-defined, the objectives, and the limits of the work. Its main output
-is a set of requirements that makes the rest of the development less
+defined, the objectives detailed, and the limits of the work. Its main output
+is the specification of the DNN input file (in ONNX format) and a set of requirements (performance parameters,....) that makes the rest of the development less
 ambiguous.
 
 \item \textbf{High-level design.} This phase turns the requirements
@@ -61,6 +61,7 @@ by adjusting the design instead of treating the initial plan as fixed.
 different modules work together and that the result is aligned with
 the original objectives. Its main output is a validated
 implementation.
+\item \textbf{HW Implementation.} This final phase corresponds to the finsl HW implementation of the obained solution using standard EDA tools for chi design (Cadence, Synompsis, Siemens).
 \end{enumerate}
 
 \subsection{Requirements analysis}
@@ -317,8 +318,10 @@ example IP pool.
 % tool is designed with design exploration in mind, future work may
 % extend it towards more detailed hardware generation and evaluation
 % flows.
-\todo[inline]{Si al final genero RTL, aquí iría otro parrafito}
-
+\todo[inline]{4.1, que hacemos con estas milestones?
+tendrían que andar reflejadas en el project development}
+\subsection{HW Implementation}
+\todo[inline]{Propuesta de fujo de diseño para generar la síntesis del código SystemVerilog generado mediante las herramientas EDA y en las tecnologies disponibles en la UAB}
 \subsection{Development milestones}
 The development of the tool can be summarized through several
 milestones.
@@ -343,7 +346,7 @@ complete flow was validated through tests and smoke examples.
 
 These milestones show that the project evolved from a methodological
 proposal into a working software prototype.
-\todo{Aqui si genero RTL, pues lo amplio}
+
 %The current result does not yet generate RTL, but it establishes the
 %structure needed to continue towards more detailed hardware
 %evaluation and generation flows.

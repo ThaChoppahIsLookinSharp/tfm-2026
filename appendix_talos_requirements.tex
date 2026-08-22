@@ -1,0 +1,347 @@
+\section{Talos Requirements}
+\label{app:talos_requirements}
+
+Talos requires two main inputs to execute the complete exploration
+flow: a DNN workload and a pool of characterized hardware IPs. The
+user can also provide design constraints and exploration parameters.
+
+This appendix summarizes the information required by the current
+implementation.
+
+\subsection{Workload}
+
+The workload is provided as an ONNX model. This model is used by
+ZigZag during Level 1 to evaluate the different accelerator
+architectures and find a suitable mapping.
+
+Talos obtains the numerical representation of the workload from the
+tensor types in the ONNX model. The activation, weight, and output
+formats are later reused during Level 2.
+
+Talos does not perform quantization. Therefore, the ONNX model must
+already use the numerical format that is intended to be evaluated.
+
+For every architecture passed to Level 2, Talos stores the activity
+information obtained from ZigZag. For each layer, this profile
+contains:
+
+\begin{itemize}
+    \item execution cycles;
+    \item number of MAC operations;
+    \item number of PEs used by the mapping;
+    \item accesses to each memory level;
+    \item operand precision and numerical format.
+\end{itemize}
+
+This activity profile is reused during Level 2. The workload is not
+mapped again for every physical IP combination.
+
+
+\subsection{IP Pool}
+
+The hardware components available to Talos are provided using an IP
+pool in YAML format. A pool contains the technology node and a list of
+characterized IP blocks.
+
+A simplified structure is shown below:
+
+\begin{verbatim}
+technology_nm: 65
+
+ips:
+  - ...
+\end{verbatim}
+
+The technology node is shared by the complete pool. It is also used by
+the Level 1 calibration when CACTI is executed.
+
+The main IP types used by the current implementation are:
+
+\begin{itemize}
+    \item processing elements;
+    \item register files;
+    \item global buffers.
+\end{itemize}
+
+A DRAM characterization can also be included. However, DRAM is treated
+as part of the platform and is not explored as a Level 2 component.
+
+
+\subsection{Common IP Information}
+
+Every IP is identified by an ID and its component type. In addition,
+Talos uses the following physical information:
+
+\begin{itemize}
+    \item area;
+    \item delay;
+    \item maximum frequency;
+    \item throughput;
+    \item power characterization.
+\end{itemize}
+
+Memory components can additionally provide:
+
+\begin{itemize}
+    \item capacity;
+    \item bandwidth.
+\end{itemize}
+
+These fields are represented in the IP pool using values such as:
+
+\begin{verbatim}
+id: ...
+type: ...
+area: ...
+throughput: ...
+delay: ...
+fmax_mhz: ...
+capacity_bits: ...
+bandwidth_bits: ...
+\end{verbatim}
+
+Not every field is required for every component type. For example,
+capacity has no meaning for a PE, while it is required to determine
+whether a memory can implement an abstract memory from Level 1.
+
+
+\subsection{Power Characterization}
+
+Level 2 requires an idle and active power characterization for the
+selected IPs. The characterization contains:
+
+\begin{itemize}
+    \item characterization source;
+    \item activity method;
+    \item reference frequency;
+    \item idle power;
+    \item active power;
+    \item voltage;
+    \item temperature;
+    \item process corner.
+\end{itemize}
+
+An example is:
+
+\begin{verbatim}
+power_model:
+  source: ...
+  activity_method: ...
+  reference_frequency_mhz: 200.0
+  p_idle_w: ...
+  p_active_w: ...
+  voltage_v: 1.2
+  temperature_c: 25.0
+  corner: ...
+\end{verbatim}
+
+The idle and active powers are given per IP instance.
+
+Talos uses these values at their characterization point. It does not
+scale the power values to another voltage or frequency.
+
+All the IPs used in the same implementation must have a compatible
+operating point. Their maximum frequency must also be high enough to
+support the reference frequency used during the workload evaluation.
+
+The maximum frequency is only used as a physical limit. Talos does not
+automatically execute a workload faster when an IP has a higher
+maximum frequency.
+
+
+\subsection{Processing Elements}
+
+A PE requires additional information about its compute capability.
+The main value used during Level 2 is:
+
+\begin{verbatim}
+metadata:
+  macs_per_cycle: ...
+\end{verbatim}
+
+This value is used to check whether the selected PE can sustain the
+mapping produced by ZigZag.
+
+A PE can also describe its numerical representation:
+
+\begin{verbatim}
+metadata:
+  precision_bits: ...
+  numeric_format: ...
+\end{verbatim}
+
+Talos compares this information with the representation of the ONNX
+workload.
+
+In the current implementation, a mismatch generates a warning but the
+candidate is still kept in the exploration.
+
+Other information, such as the pipeline latency or dynamic energy per
+MAC, can also be stored as metadata when it is available.
+
+
+\subsection{Memory Components}
+
+Register files and global buffers require a capacity and bandwidth:
+
+\begin{verbatim}
+capacity_bits: ...
+bandwidth_bits: ...
+\end{verbatim}
+
+These values are first used to determine whether the physical memory
+can implement the memory requirements generated in Level 1.
+
+For workload-aware evaluation, memory IPs also require:
+
+\begin{verbatim}
+metadata:
+  accesses_per_cycle: ...
+\end{verbatim}
+
+This represents the maximum number of accesses that the memory can
+provide in one cycle.
+
+Talos compares this value with the memory traffic obtained from the
+ZigZag mapping. If the selected memory cannot sustain the required
+traffic, that physical implementation is rejected.
+
+
+\subsection{Processing Elements with Included Register Files}
+
+Some PE implementations already contain local memories as part of
+their RTL.
+
+Talos allows these register files to be declared as part of the PE:
+
+\begin{verbatim}
+included_rfs:
+  rf_i1: <register-file IP>
+  rf_i2: <register-file IP>
+  rf_o:  <register-file IP>
+
+included_rf_power_mode: parent_idle_baseline
+\end{verbatim}
+
+The referenced register files must also exist in the IP pool and must
+satisfy the capacity and bandwidth requirements obtained from Level 1.
+
+The three register-file roles can be covered independently. Therefore,
+a PE can include all of them or only part of them.
+
+These memories are still kept in the abstract accelerator because
+their capacity, bandwidth, and accesses are required by the workload
+model. However, their physical implementation is not counted twice.
+
+The \texttt{parent\_idle\_baseline} mode indicates that the idle power
+of the included register files is already part of the PE idle power.
+Talos only adds their activity-dependent power when the workload is
+evaluated.
+
+
+\subsection{External DRAM}
+
+DRAM is treated as part of the target platform and is not selected by
+the Level 2 genome.
+
+A characterized DRAM can be provided in the IP pool. It requires:
+
+\begin{itemize}
+    \item bandwidth;
+    \item accesses per cycle;
+    \item maximum frequency;
+    \item idle and active power;
+    \item operating-point information.
+\end{itemize}
+
+If no DRAM is provided, Talos creates a fixed platform model. The
+current model uses a 512-bit interface, one access per cycle, and an
+idle power of $0.02$~W.
+
+Its active power is derived from the Level 1 DRAM energy model.
+
+This DRAM is only a proxy. A real target platform should replace it
+with a characterization of the external memory system.
+
+
+\subsection{Level 1 Calibration}
+
+Before running the Level 1 exploration, Talos performs the
+characterization required by its energy and area models.
+
+For the memory energy model, CACTI is executed using the technology
+node specified by the IP pool. This provides the memory access values
+used by the Level 1 evaluation.
+
+The IP pool is also used to obtain the Level 1 area calibration. Talos
+looks for compatible physical implementations of the PE, local
+storage, and global buffer requirements and uses them to estimate the
+area of each abstract architecture.
+
+For this reason, the IP pool must contain enough compatible PE,
+register-file, and global-buffer implementations for the architecture
+space that is going to be explored.
+
+
+\subsection{User Constraints}
+
+The user can optionally define physical and workload constraints.
+
+The current implementation supports:
+
+\begin{itemize}
+    \item maximum workload latency in cycles;
+    \item maximum accelerator area;
+    \item maximum average workload power;
+    \item minimum implementation frequency.
+\end{itemize}
+
+The workload latency constraint can be checked during Level 1.
+
+Area, power, and frequency depend on the selected physical IPs and are
+therefore checked during Level 2.
+
+Candidates that do not satisfy the active constraints are removed from
+the feasible design space.
+
+
+\subsection{Exploration Parameters}
+
+Finally, the user can configure how the design space is explored.
+
+The main parameters include:
+
+\begin{itemize}
+    \item population size;
+    \item number of generations;
+    \item number of parallel workers;
+    \item random seed;
+    \item number of Level 1 architectures passed to Level 2;
+    \item Level 2 exploration strategy;
+    \item optimization objectives.
+\end{itemize}
+
+Level 2 can use either NSGA-II or exhaustive exploration.
+
+When exhaustive exploration is used, a maximum number of combinations
+can also be specified to avoid exploring an excessively large physical
+design space.
+
+
+\subsection{Software Requirements}
+
+Talos is implemented in Python and the current version has been tested
+using Python~3.12.
+
+The main external tools and libraries used by the framework are:
+
+\begin{itemize}
+    \item ZigZag for workload mapping and architecture evaluation;
+    \item Pymoo for the NSGA-II explorations;
+    \item ONNX for the workload representation;
+    \item CACTI for the Level 1 memory characterization.
+\end{itemize}
+
+The required Python packages are included in the project dependency
+file. CACTI is executed automatically as part of the Level 1
+calibration.

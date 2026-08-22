@@ -5,7 +5,7 @@
 
 %{An Introduction that clearly states the rationale of the thesis
 %that includes:}
-AI is in everyones's lips. ChatGPT, Claude, Deepseek. Deep Neural
+AI is on everyone's lips. ChatGPT, Claude, Deepseek. Deep Neural
 Networks have become a very common solution to complex tasks such as
 computer vision, speech recognition or natural language processing.
 The recent breakthroughs of AI results in a raising demand of
@@ -20,6 +20,17 @@ constraint. As a result, a big portion of the market has focused in
 the development of domain-specific hardware accelerators, tailored to
 certain DNNs workloads or models.
 
+Different accelerators have approached this problem in very different
+ways. Eyeriss uses a spatial architecture focused on data reuse
+\cite{eyeriss}, while Google's TPU uses a systolic array designed for
+high-throughput matrix operations \cite{tpuv1}. Other designs explore
+different parts of the design space. Envision introduces
+precision-scalable computation \cite{envision}, TinyVers targets
+ultra-low-power edge inference \cite{tinyvers}, and DIANA combines
+digital acceleration with analog in-memory computing \cite{diana}.
+These examples show that there is no single accelerator architecture
+that fits every workload or target platform.
+
 \subsection{Challenges in Accelerator Design}
 Designing an accelerator is no easy feat. These devices can be
 defined by numerous design parameters: size, topology of the
@@ -27,19 +38,28 @@ processing elements, memory hierarchy, algorithm to hardware mapping,
 pipeline structure, etc.
 The vast number of variables results in a vast design space, making
 manual exploration impractical.
+
 \subsection{Design Space Exploration Frameworks}
 To address this challenge, several Design Space Exploration (DSE)
 frameworks have been
 proposed. Tools such as the Chip Predictor \todo[inline]{Añadir}
-\cite{chippredictor}and
-ZigZag\cite{zigzag} tackle this issue by enabling a fast exploration
+\cite{chippredictor} and
+ZigZag \cite{zigzag} tackle this issue by enabling a fast exploration
 of the design space.
 These tools allow designers to evaluate a large number of
 architectures without performing
 full hardware implementation or evaluations manually.
 
+Other frameworks use different exploration strategies. ConfuciuX
+\cite{confuciux}, for example, uses reinforcement learning to search
+for suitable compute and memory resource assignments for a given DNN
+and dataflow, while considering hardware constraints. This shows that
+the problem is not only how to evaluate an accelerator configuration,
+but also how to efficiently navigate the large number of possible
+configurations.
+
 \subsection{Automatic Accelerator Generation}
- publishedOther solutions aim at directly automating the complete
+ Other solutions aim at directly automating the complete
  generation of DNN accelerators. Works such as AutoDNNChip
  \cite{autodnnchip} and AutoAI2C\cite{autoai2c}. AutoDNNChip
  introduces a framework composed of a Chip Predictor and a Chip
@@ -100,7 +120,7 @@ and hardware-oriented design decisions.
 
 \todo[inline]{Blablabla frase para introducir las milestones}
 \todo[inline]{Milestones, deberían ir in el propossed approach?}
-
+\todo[inline]{16 agosto, las tengo en project development, que onda}
 
 \begin{itemize}
     \item Develop a mechanism to automatically generate
@@ -120,15 +140,22 @@ and hardware-oriented design decisions.
 
 
 \subsection{Proposed approach}
-%{The proposal of this thesis is}
-Talos, our two-level generation framework starts from the DNN
-implementation specification,
-provided as an ONNX file, together with the performance requirements
-that the accelerator core must satisfy.
 
-The output is blablabla
-\todo[inline]{Aquí pongo RTL, que era la idea inicial, o una
-arquitectura y luego digo hasta donde llegué}
+Talos is proposed as a two-level hierarchical design space exploration
+framework for DNN accelerators. The exploration starts from a DNN
+workload, provided as an ONNX model, together with the optimization
+objectives, design constraints, and a characterized hardware IP pool.
+
+The first level explores abstract accelerator architectures using
+ZigZag, considering parameters such as the PE array, memory hierarchy,
+and bandwidth. The most promising candidates are then passed to a
+second level, where their abstract components are matched with
+compatible hardware IPs and evaluated using workload-aware PPA
+metrics.
+
+The output is a set of feasible accelerator candidates with concrete
+IP selections and comparable energy, performance, power, and area
+results.
 
 %{It separates the exploration of accelerator architectures from the
 %instantiation of specific hardware IPs.}
@@ -142,14 +169,26 @@ Talos is inherently designed modular and open source, so anyone that
 is free to add their own evaluation
 expressions to support their specific optimization goals.
 
-\todo[inline]{meter unos bullet points}
 \subsection{Document Organization}
-The following sections of this document is organized as follows. The
-next chapter reviews the state of the art related to DNN accelerator
-exploration and generation. Then, the methodology chapter describes
-the development process followed in the thesis, and the project
-development chapter explains how this methodology was applied during
-the construction of Talos. After that, the results chapter presents
-the current implementation of the tool, its flow, and its
-limitations. Finally, the conclusion summarizes the main
-contributions and possible future work.
+The rest of this document is organized as follows. The State of the
+Art reviews existing DNN accelerator architectures, design space
+exploration frameworks, and automatic accelerator generation
+approaches. The Methodology section describes the development process
+followed during the thesis, including the requirements, main design
+decisions, implementation stages, and iterative validation of the
+proposed approach.
+
+The Project Development section presents the design and implementation
+of Talos in detail. It describes the abstract architecture
+representation, the Level 1 architecture exploration, the hardware IP
+pool, the Level 2 IP-based evaluation, and the interfaces used to
+define optimization objectives. It also discusses the main challenges
+and design decisions encountered during development.
+
+The Results section evaluates the resulting framework. It presents the
+hardware IP characterization, the architectures explored at Level 1,
+their evaluation using characterized IPs at Level 2, and the effect of
+the hierarchical approach on candidate selection and design-space
+reduction. Finally, the Conclusions section summarizes the main
+contributions, limitations, and possible directions for future
+development.
