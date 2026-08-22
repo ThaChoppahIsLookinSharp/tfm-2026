@@ -119,9 +119,10 @@ architecture. The first level focuses on architectural exploration,
 reducing the design space by exploring accelerator organizations,
 memory hierarchies, dataflows, and PE array configurations. The
 second level focuses on a more hardware-oriented evaluation of the
-most promising candidates through abstract hardware IP models. Both
-were designed to use a NSGA-II algorithm to explore the space of
-solutions.
+most promising candidates through abstract hardware IP models. Level
+1 uses NSGA-II for architectural exploration. Level 2 can use NSGA-II
+or exhaustive exploration; exhaustive exploration was added for
+physical design spaces small enough to be evaluated completely.
 
 This decision was relevant because it allowed the solution to
 preserve flexibility while avoiding an early commitment to low-level

@@ -327,6 +327,14 @@ When exhaustive exploration is used, a maximum number of combinations
 can also be specified to avoid exploring an excessively large physical
 design space.
 
+With one objective, exhaustive exploration orders the feasible
+solutions directly by that objective. With several objectives, it uses
+logarithmic deviations from the ideal and an augmented Tchebycheff
+score. The score calculated for one architecture uses a local ideal
+and is not comparable with another architecture. The full flow
+recalculates a global score using one common ideal over the feasible
+solutions being compared.
+
 
 \subsection{Software Requirements}
 

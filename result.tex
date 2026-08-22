@@ -391,9 +391,16 @@ S(x)=
 This formulation emphasizes the worst relative degradation with
 respect to the ideal value while using the sum of deviations as a
 secondary discrimination term. The ideal values are computed over the
-feasible solutions considered in the corresponding sweep. Scores
-normalized independently inside individual Level~1 architectures are
-not used for cross-architecture selection.
+feasible solutions considered in the corresponding sweep. When
+architectures, seeds, or runs are compared, Talos recalculates one
+common ideal over the complete feasible set being compared. Local
+scores calculated inside an individual architecture are not used for
+cross-architecture selection.
+
+The Level 2 energy objective is \texttt{workload\_energy\_j}, which
+includes external DRAM energy. On-chip energy is computed as workload
+energy minus DRAM energy and is shown only for reporting and
+comparison.
 
 Table~\ref{tab:alexnet_target_winners} summarizes the winning Level~1
 architecture for each target. The energy, area, and latency columns
@@ -1323,8 +1330,9 @@ workload performance, respectively.
 
 The reported implementations were selected from ten independent runs
 using the standard exploration configuration and an additional run
-using a larger exploration pool. The normalized ideal point used for
-the multi-objective comparison was recalculated over all eleven runs.
+using a larger exploration pool. The common ideal used for the
+multi-objective comparison was recalculated over the complete feasible
+set from all eleven runs.
 As a result, the E+A+P case selects the implementation obtained from
 the larger exploration pool.
 \end{minipage}

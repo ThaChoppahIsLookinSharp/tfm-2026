@@ -423,34 +423,29 @@ space.
 
 When only one optimization objective is selected, the exhaustive
 runner simply orders the feasible implementations by that objective.
-When several objectives are used, comparing their raw values directly
-would give more importance to objectives with a larger numerical
-scale. For this reason, Talos normalizes each objective independently
-using the minimum and maximum values found in the feasible set:
+When several objectives are used, Talos computes the logarithmic
+deviation of each minimization objective from its ideal value:
 
 \[
-\hat{f}_i(x) =
-\frac{f_i(x)-f_i^{\min}}
-     {f_i^{\max}-f_i^{\min}}.
+r_i(x) = \ln\left(\frac{f_i(x)}{f_i^{\min}}\right).
 \]
 
-After normalization, the ideal solution corresponds to a value of zero
-for every objective. Talos calculates a balanced score as the
-Euclidean distance between each candidate and this normalized ideal:
+Talos then calculates the balanced score using an augmented
+Tchebycheff formulation:
 
 \[
-S(x) =
-\sqrt{
-\sum_{i=1}^{n}
-\hat{f}_i(x)^2
-}.
+S(x) = 100 \left[\max_i r_i(x) + 0.05 \sum_i r_i(x)\right].
 \]
-\todo[inline]{esto no aplica ya, es la desviacion logartimica
-respecto al ideal, see todo de results}
-A lower score therefore represents a candidate that is closer to the
-best observed values of all the selected objectives. This gives the
-different objectives the same numerical importance without requiring
-explicit weighting factors.
+
+This score gives priority to the worst relative deviation from the
+ideal value, while the sum is a secondary term that distinguishes
+solutions with the same worst deviation. The ideal computed inside the
+exhaustive exploration of one architecture is local to that
+architecture, so this local score must not be compared directly with
+the score of another architecture. In the full flow, Talos
+recalculates the score using one common ideal over all feasible
+solutions of the architectures being compared. This global score is
+used to compare architectures.
 
 The balanced score is only used to rank the feasible implementations
 after the exhaustive exploration has finished. It does not remove
@@ -613,12 +608,13 @@ modular fitness framework. In the current version, this idea is
 implemented as an objective interface that separates evaluation from
 objective selection.
 
-This separation is useful because the evaluator may return several
-metrics, but the optimizer may not always use the same ones. For
-example, one experiment may optimize latency and energy, while
-another may optimize area and energy-delay product. Instead of
-modifying the evaluator for each case, Talos exposes different
-objective functions on top of the same evaluation result.
+The evaluator produces the raw metrics of each candidate. The
+optimization configuration selects which of these metrics are
+objectives. For example, one experiment may optimize latency and
+energy, while another may optimize area and energy-delay product.
+When several objectives are selected, the balanced or global score is
+used afterwards to select one representative solution; it is not an
+additional evaluator metric or optimization objective.
 
 \todo[inline]{3.6}
 In Level 1, the available objectives include:
