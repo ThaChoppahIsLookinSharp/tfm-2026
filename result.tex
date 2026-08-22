@@ -1167,7 +1167,168 @@ results correspond to the complete workload used in the exploration.
 \end{minipage}
 \end{table*}
 
+\begin{table*}[t]
+\centering
+\caption{Best Talos implementations obtained for the FP16 VGG16
+workload under the different Level 2 objective combinations.}
+\label{tab:vgg16_fp16_results}
 
+\setlength{\tabcolsep}{3.2pt}
+\renewcommand{\arraystretch}{1.15}
+
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}ccccccclccccccc@{}}
+\hline
+\textbf{Obj.} &
+\makecell{\textbf{Best}\\\textbf{run}} &
+\makecell{\textbf{Energy}\\\textbf{[J]}} &
+\makecell{\textbf{Latency}\\\textbf{[s]}} &
+\makecell{\textbf{Inf.}\\\textbf{[s$^{-1}$]}} &
+\makecell{\textbf{Area}\\\textbf{[mm$^2$]}} &
+\makecell{\textbf{Power}\\\textbf{[W]}} &
+\textbf{PE} &
+\makecell{\textbf{PE}\\\textbf{array}} &
+\makecell{\textbf{RF size}\\\textbf{[bit]}} &
+\makecell{\textbf{RF BW}\\\textbf{[bit/cycle]}} &
+\makecell{\textbf{GB size}\\\textbf{[KiB]}} &
+\makecell{\textbf{GB BW}\\\textbf{[bit/cycle]}} &
+\makecell{\textbf{L1}\\\textbf{arch.}} &
+\makecell{\textbf{L2}\\\textbf{sol.}} \\
+\hline
+
+E &
+seed\_8 &
+1.20161 &
+0.202291 &
+4.94338 &
+14.4504 &
+5.94003 &
+\texttt{pe\_fpnew\_fp16\_fma} &
+$32\times32$ &
+256 &
+16 &
+128 &
+512 &
+75 &
+804 \\
+
+E+A &
+seed\_2 &
+2.68957 &
+11.0469 &
+0.0905232 &
+0.483009 &
+0.243469 &
+\texttt{pe\_fpnew\_fp16\_fma} &
+$4\times4$ &
+64 &
+16 &
+32 &
+256 &
+46 &
+3110 \\
+
+A &
+seed\_10 &
+5.78485 &
+26.2478 &
+0.0380984 &
+0.226259 &
+0.220394 &
+\texttt{pe\_fpnew\_fp16\_fma} &
+$4\times4$ &
+128 &
+8 &
+8 &
+64 &
+10 &
+4665 \\
+
+P &
+seed\_4 &
+4.34541 &
+0.161779 &
+6.18126 &
+114.82 &
+26.8601 &
+\texttt{pe\_sauria\_fp16} &
+$32\times32$ &
+1024 &
+256 &
+128 &
+1024 &
+17 &
+0 \\
+
+A+P &
+seed\_2 &
+2.12187 &
+1.79265 &
+0.557832 &
+1.97488 &
+1.18365 &
+\texttt{pe\_fpnew\_fp16\_fma} &
+$16\times8$ &
+256 &
+32 &
+32 &
+256 &
+12 &
+1608 \\
+
+E+P &
+seed\_3 &
+1.32083 &
+0.1996 &
+5.01002 &
+14.4504 &
+6.6174 &
+\texttt{pe\_fpnew\_fp16\_fma} &
+$32\times32$ &
+128 &
+32 &
+64 &
+1024 &
+56 &
+804 \\
+
+E+A+P &
+large\_pool &
+1.33646 &
+0.805047 &
+1.24216 &
+3.64061 &
+1.6601 &
+\texttt{pe\_fpnew\_fp16\_fma} &
+$32\times8$ &
+128 &
+16 &
+128 &
+1024 &
+93 &
+1555 \\
+
+\hline
+\end{tabular}%
+}
+
+\vspace{1mm}
+\begin{minipage}{0.97\textwidth}
+\footnotesize
+The workload corresponds to VGG16 adapted to ONNX using FP16
+operands. Level 1 is explored using energy, latency, and area
+simultaneously. The first column indicates the Level 2 objective
+combination, where E, A, and P denote energy per inference, area, and
+workload performance, respectively.
+
+The reported implementations were selected from ten independent runs
+using the standard exploration configuration and an additional run
+using a larger exploration pool. The normalized ideal point used for
+the multi-objective comparison was recalculated over all eleven runs.
+As a result, the E+A+P case selects the implementation obtained from
+the larger exploration pool.
+\end{minipage}
+\end{table*}
 %\subsection{Impact of the Hierarchical Exploration}
 
 
