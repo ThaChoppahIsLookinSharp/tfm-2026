@@ -115,6 +115,90 @@ efficiency. This is an example of how different hardware
 implementations can be combined to cover workloads with different
 requirements.
 
+
+\begin{table}[htbp]
+\centering
+\caption{Representative DNN hardware accelerators discussed in this work.}
+\label{tab:dnn_accelerator_comparison}
+
+\setlength{\tabcolsep}{3.2pt}
+\renewcommand{\arraystretch}{1.15}
+
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{llllll}
+\hline
+Accelerator &
+Technology &
+Precision &
+Compute organization &
+Main feature &
+Implementation \\
+\hline
+
+Eyeriss \cite{eyeriss} &
+65 nm CMOS &
+INT16 &
+Spatial PE array, row-stationary &
+Data reuse, compression and data gating &
+Silicon \\
+
+TPU v1 \cite{tpuv1} &
+28 nm CMOS &
+INT8, 32-bit accum. &
+$256\times256$ systolic array &
+High-throughput matrix multiplication &
+Silicon \\
+
+Envision \cite{envision} &
+28 nm FDSOI &
+INT4/8/16 &
+2-D SIMD MAC array &
+Precision/voltage scaling and sparsity &
+Silicon \\
+
+TinyVers \cite{tinyvers} &
+22 nm FDX &
+INT2/4/8 &
+Reconfigurable spatial accelerator &
+Runtime dataflow reconfiguration,
+structured sparsity &
+Silicon \\
+
+SCNN \cite{scnn} &
+16 nm FinFET &
+INT16, 24-bit accum. &
+Sparse PE array &
+Compressed weights and activations,
+zero-skipping &
+Post-synthesis \\
+
+DepFiN \cite{depfin} &
+12 nm &
+INT8 &
+Depth-first CNN processor &
+Layer fusion and reduced off-chip traffic &
+Silicon \\
+
+DIANA \cite{diana} &
+22 nm &
+INT8 digital;
+mixed-precision analog &
+Digital accelerator + analog IMC &
+Heterogeneous digital/analog execution &
+Silicon \\
+
+SAURIA \cite{sauria2023} &
+22 nm &
+FP16 &
+Output-stationary systolic array &
+On-the-fly \textit{im2col} &
+Post-layout ASIC \\
+
+\hline
+\end{tabular}%
+}
+\end{table}
+
 \subsubsection{The complex problem}
 
 The accelerators shown illustrate that there is no single architecture 
@@ -248,9 +332,14 @@ of accelerator architectures and hardware IP combinations.
 \subsection{Summary of the chapter}
 
 The reviewed works cover several parts of the accelerator design
-process. Physical accelerators 
-such as Eyeriss, SCNN, TinyVers, and
-DIANA demonstrate the diversity of possible implementation decisions (implementation details in Table \ref{tab:dnn_accelerator_comparison}).
+process. Accelerators such as Eyeriss, SAURIA, TinyVers, and DIANA
+demonstrate the diversity of architectural and implementation
+decisions found in DNN accelerator design. A comparison of their
+technology, numerical precision, compute organization, and main
+architectural features is provided in
+Table~\ref{tab:dnn_accelerator_comparison}. Exploration and
+generation frameworks are compared separately in
+Table~\ref{tab:dnn_tool_comparison}.
 Exploration frameworks such as MAESTRO, Timeloop with Accelergy,
 ConfuciuX, and ZigZag allow mappings, accelerator architectures, or
 hardware resource allocations to be evaluated before implementation.
@@ -276,23 +365,67 @@ architectural exploration and the hardware IP library to evolve
 independently, while still considering implementation information
 before a final candidate is selected. It is important to note that Talos is also including the code corresponding to the mapping for data motion and related control.
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
-\begin{tabular}{llll}
-\hline
-Tool & DNN Architectures & HW info & SW mapping\\
-\hline
-MAESTRO     & -- & -- & --\\
-Accelergy   & -- & -- & --\\
-ConfuciuX   & -- & -- & --\\
-ZigZag      & -- & -- & --\\
-MAGNet      & -- & -- & --\\
-AutoDNNChip & -- & -- & --\\
-AutoAI2C    & -- & -- & --\\
-\hline
-\end{tabular}
-\caption{DNN generator tools considered in this research.}
-\label{tab:workloads}
-\end{table}
+\caption{Comparison of DNN accelerator exploration and generation frameworks.}
+\label{tab:dnn_tool_comparison}
 
+\small
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.2}
+
+\begin{tabularx}{\textwidth}{
+    |>{\raggedright\arraybackslash}p{2.4cm}
+    |>{\raggedright\arraybackslash}X
+    |>{\raggedright\arraybackslash}X
+    |>{\raggedright\arraybackslash}X|
+}
+\hline
+\textbf{Tool} & \textbf{Input} & \textbf{Output} & \textbf{Description} \\
+\hline
+
+MAESTRO \cite{maestro} &
+DNN layer, dataflow and HW parameters &
+Performance, energy and HW-cost estimates &
+Analytical dataflow evaluator \\
+\hline
+
+Timeloop + Accelergy \cite{timeloop,accelergy} &
+DNN workload, architecture and mapping constraints &
+Mappings and performance/energy estimates &
+Architecture and mapping DSE \\
+\hline
+
+ConfuciuX \cite{confuciux} &
+DNN, dataflow, objective and platform constraints &
+Optimized PE and memory-resource assignment &
+RL-based resource exploration \\
+\hline
+
+ZigZag \cite{zigzag} &
+DNN workload, HW architecture or constraints &
+Optimized architectures/mappings and PPA estimates &
+Joint architecture--mapping DSE \\
+\hline
+
+MAGNet \cite{magnet} &
+DNN and parameterizable accelerator template &
+Optimized accelerator configuration and HLS implementation &
+Template-based accelerator generator \\
+\hline
+
+A.DNNChip \cite{autodnnchip} &
+DNN, design targets, resource budget and HW IPs &
+Optimized FPGA/ASIC accelerator and mapping &
+Predictor and RTL/HLS generator \\
+\hline
+
+AutoAI2C \cite{autoai2c} &
+DNN model, target platform and design objectives &
+Synthesizable HW, deployment code and optimized mapping &
+FPGA/ASIC accelerator generator \\
+\hline
+
+\end{tabularx}
+\end{table}
 
