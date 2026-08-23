@@ -15,8 +15,9 @@ ZigZag during Level 1 to evaluate the different accelerator
 architectures and find a suitable mapping.
 
 Talos obtains the numerical representation of the workload from the
-tensor types in the ONNX model. The activation, weight, and output
-formats are later reused during Level 2.
+tensor types in the ONNX model. The activation, weight, and output bit
+widths are used to configure the workload evaluated by ZigZag and are
+preserved in the activity profile passed to Level~2.
 
 Talos does not perform quantization. Therefore, the ONNX model must
 already use the numerical format that is intended to be evaluated.
@@ -104,6 +105,18 @@ Not every field is required for every component type. For example,
 capacity has no meaning for a PE, while it is required to determine
 whether a memory can implement an abstract memory from Level 1.
 
+Area, throughput, and delay are part of the generic IP
+representation. Maximum frequency and power characterization become
+necessary when the corresponding physical constraints or
+workload-aware evaluations are used. In this case, the selected IPs
+must provide compatible operating-point information.
+
+Some of these fields may not be used by the default exploration
+objectives, but they are preserved as additional architectural and
+physical information. They can also be used when customizing the
+evaluation module or implementing alternative exploration
+heuristics.
+
 
 \subsection{Power Characterization}
 
@@ -170,14 +183,19 @@ metadata:
   numeric_format: ...
 \end{verbatim}
 
-Talos compares this information with the representation of the ONNX
-workload.
-
-In the current implementation, a mismatch generates a warning but the
-candidate is still kept in the exploration.
+Talos compares the PE numerical format and precision with the input
+activation and weight requirements obtained from the ONNX workload. A
+mismatch is deliberately accepted because the user may want to
+evaluate IPs with a different representation. However, Talos reports
+a warning so that the mismatch is not introduced without the user's
+knowledge. The candidate is therefore kept in the exploration.
 
 Other information, such as the pipeline latency or dynamic energy per
-MAC, can also be stored as metadata when it is available.
+MAC, can also be stored as metadata when available. These values are
+not used by the default evaluator, but they remain available for
+customizing the evaluation module or implementing additional
+estimation and selection heuristics without changing the IP-pool
+format.
 
 
 \subsection{Memory Components}
@@ -205,6 +223,12 @@ provide in one cycle.
 Talos compares this value with the memory traffic obtained from the
 ZigZag mapping. If the selected memory cannot sustain the required
 traffic, that physical implementation is rejected.
+
+Since ZigZag provides aggregate memory accesses and the characterized
+port rates are approximate, the current implementation accepts a
+utilization tolerance of 20\%. Candidates above this tolerance are
+rejected, while accepted utilization values are limited to one for
+the power interpolation.
 
 
 \subsection{Processing Elements with Included Register Files}
@@ -254,14 +278,23 @@ A characterized DRAM can be provided in the IP pool. It requires:
     \item operating-point information.
 \end{itemize}
 
-If no DRAM is provided, Talos creates a fixed platform model. The
-current model uses a 512-bit interface, one access per cycle, and an
-idle power of $0.02$~W.
+The IP pool can contain at most one DRAM entry. If no DRAM is
+provided, Talos creates a fixed platform proxy. In this case, the
+characterized IPs in the pool must define one common operating point,
+which is also used by the proxy.
 
-Its active power is derived from the Level 1 DRAM energy model.
+The current proxy uses a 512-bit interface, one access per cycle, and
+an idle power of $0.02$~W. Its active power is derived from the
+Level~1 DRAM energy model.
 
-This DRAM is only a proxy. A real target platform should replace it
-with a characterization of the external memory system.
+When a provided DRAM uses \texttt{source: synthetic}, Talos also
+derives its active power from the Level~1 model. For a non-synthetic
+DRAM characterization, the provided active power is used without
+modification.
+
+The automatically generated DRAM model is only a proxy. A real target
+platform should replace it with a characterization of the external
+memory system.
 
 
 \subsection{Level 1 Calibration}
@@ -272,6 +305,18 @@ characterization required by its energy and area models.
 For the memory energy model, CACTI is executed using the technology
 node specified by the IP pool. This provides the memory access values
 used by the Level 1 evaluation.
+
+By default, the relative MAC, register-file, global-buffer, and DRAM
+energy costs use the ratios reported for 65~nm:
+
+\[
+E_{\mathrm{MAC}} : E_{\mathrm{RF}} : E_{\mathrm{GB}} :
+E_{\mathrm{DRAM}} = 1 : 1 : 6 : 200.
+\]
+
+These ratios are defined in the Level~1 calibration code and can be
+customized when another technology or energy model requires different
+relative costs.
 
 The IP pool is also used to obtain the Level 1 area calibration. Talos
 looks for compatible physical implementations of the PE, local
@@ -321,7 +366,26 @@ The main parameters include:
     \item optimization objectives.
 \end{itemize}
 
-Level 2 can use either NSGA-II or exhaustive exploration.
+The standard complete flow uses energy, latency, and area as the
+default Level~1 screening objectives. Level~2 uses area, energy, and
+workload latency by default. These objective sets belong to the code
+that connects and invokes the two levels rather than to the evaluator
+implementations themselves. Therefore, a custom flow can call each
+level with another combination of the supported objectives.
+
+Level~1 supports latency, energy, area, energy-delay product,
+energy-area product, and area-latency product. Level~2 supports area,
+energy per inference, average workload power, workload latency,
+physical delay, and inverse local-IP throughput.
+
+The default Level~2 strategy is NSGA-II. Exhaustive exploration can be
+selected when the remaining physical design space is small enough to
+be evaluated completely.
+
+The standard complete flow uses a ZigZag LPF limit of one and
+generates one spatial mapping per evaluation. These are default values
+of the current calling flow and can be customized when constructing
+the ZigZag evaluator or invoking the Level~1 runner from another flow.
 
 When exhaustive exploration is used, a maximum number of combinations
 can also be specified to avoid exploring an excessively large physical

@@ -185,10 +185,11 @@ Gene & Meaning \\
 \label{tab:level1_genome}
 \end{table}
 
-The DRAM bandwidth is not present in the genome because is not part of
-the accelerator itself. However, it can impact the performance 
-estimation, therefore, it must be specified in the IP pool as a 
-parameter.
+The DRAM bandwidth is not present in the genome because it is treated
+as a fixed platform parameter rather than an accelerator design
+variable. If the IP pool contains a DRAM characterization, Talos uses
+its bandwidth. Otherwise, the tool creates a fixed 512-bit platform
+proxy.
 
 After decoding the genome, Talos builds an architecture
 configuration. This configuration is then used to generate the
@@ -203,21 +204,27 @@ model with CACTI. The technology node is not fixed in the tool. It is
 read from the \texttt{technology\_nm} field of the selected IP pool,
 so the calibration uses the same technology as the hardware blocks
 used later in the flow. CACTI is executed once before the optimization
-workers and characterizes every combination of global buffer capacity
-and bandwidth available in the Level 1 genome. The obtained read and
-write costs are then included in the accelerator description evaluated
-by ZigZag.
+workers and characterizes every register-file and global-buffer
+capacity and bandwidth combination available in the Level 1 genome.
+The obtained read and write costs are then included in the accelerator
+description evaluated by ZigZag.
 
 CACTI provides the memory access costs, but the Level 1 model also
 requires values for the MAC operation, register file, and external
 DRAM. To keep these values coherent, Talos uses the approximate
 relative costs reported for 16-bit operations in Eyeriss
-\cite{eyeriss} for 65 nm technologies. This ratio is valid for 65 nm, however it other technology node is used, this ratio must be re-defined.:
+\cite{eyeriss} for 65 nm technologies:
 
 \[
 E_{\mathrm{MAC}} : E_{\mathrm{RF}} : E_{\mathrm{GB}} :
 E_{\mathrm{DRAM}} = 1 : 1 : 6 : 200.
 \]
+
+These ratios are used as the default calibration for 65~nm. Although
+CACTI uses the technology node declared by the IP pool, the relative
+ratios are not adapted automatically. The calibration code is designed
+so that these values can be customized when another technology or
+energy model is used.
 
 A 128 KiB global buffer with a 16-bit word is characterized with CACTI
 and used as the reference for this ratio. Its average read and write
@@ -311,10 +318,6 @@ Each IP block represents a possible hardware component that can be
 selected to implement part of the accelerator. The current IP
 representation contains the following information:
 
-Each IP block represents a possible hardware component that can be
-selected to implement part of the accelerator. The current IP
-representation contains the following information:
-
 \begin{itemize}
 \item IP identifier and type;
 \item area;
@@ -388,11 +391,12 @@ In the current implementation, these components usually include:
 
 The external DRAM is not explored as a Level 2 accelerator component
 and therefore does not introduce an additional gene or contribute to
-the on-chip area. However, a characterized DRAM model is preserved as
-part of the platform description because its bandwidth, idle power,
-and active power are required for the workload-aware evaluation. This
-keeps the DRAM fixed across the IP exploration while still accounting
-for the off-chip traffic produced by the mapping.
+the on-chip area. However, a platform DRAM model, characterized when
+provided and synthetic otherwise, is preserved as part of the platform
+description because its bandwidth, idle power, and active power are
+required for the workload-aware evaluation. This keeps the DRAM fixed
+across the IP exploration while still accounting for the off-chip
+traffic produced by the mapping.
 
 There are two Level 2 runners: the exhaustive runner and the genetic runner. Since Level 1 reduces greatly the exploration space, a genetic approach to explore the rest of the solutions may not be the most suitable option it this remaining space is to small. For this case in particular, an exhaustive runner was added.
 
@@ -625,13 +629,18 @@ In Level 1, the available objectives include:
 \item energy-delay product;
 \item energy-area product;
 \item area-latency product.
-\item area-latency-energy product.
 \end{itemize}
 
-In Level 2, the objectives are based on the values obtained after
-selecting IP blocks. They include area, energy per inference, average
-workload power, delay, and inverse throughput. Inverse throughput is
-used because the optimizer follows a minimization convention.
+The standard complete flow uses energy, latency, and area together as
+the default screening objectives. This selection belongs to the code
+that invokes Level~1 and can be changed when defining another
+exploration flow.
+
+In Level~2, the main objectives include accelerator area, energy per
+inference, average workload power, and workload latency. Physical delay
+and inverse local-IP throughput are also preserved as additional
+information. These values can be used by custom objectives or
+alternative selection heuristics when required.
 
 A cache mechanism is also included so that the same candidate does
 not need to be evaluated multiple times when several objectives are
@@ -648,11 +657,13 @@ energy and the area, are used as fitness function.
 It evaluates the candidate architecture and
 returns the architectural metrics used by the optimizer.
 
-After this, the winning candidates can be imported into Level 2. 
-The importer
-converts an architecture into an abstract accelerator
-representation. This representation is then compared against the IP
-pool to find compatible implementations for each component.
+After this, the Level~1 Pareto candidates are passed to Level~2. If
+necessary, the set is completed with distinct feasible candidates
+from the final NSGA-II population until the configured maximum number
+of architectures is reached. The importer converts each architecture
+into an abstract accelerator representation. This representation is
+then compared against the IP pool to find compatible implementations
+for each component.
 
 Once the compatible IPs for the abstract architecture are known,
 Talos can continue Level 2 using either NSGA-II or exhaustive
