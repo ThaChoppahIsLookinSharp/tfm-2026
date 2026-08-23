@@ -1,4 +1,3 @@
-%%% CONCLUSION AND FUTURE %%%
 \clearpage
 \section{Conclusions and Future Work}
 
@@ -17,15 +16,15 @@ implemented efficiently.
 The main contribution of this work is Talos, a hierarchical design
 space exploration framework that separates these decisions into two
 connected levels. Level~1 explores abstract accelerator architectures
-using a discrete genome, NSGA-II and ZigZag. Selected
-candidates are converted into an abstract accelerator representation
-that records their compute and memory requirements. Level~2 then
-matches these requirements with characterized processing elements and
-memory IPs and evaluates the resulting implementations using
-workload-aware energy, power, performance, area and timing metrics.
-This intermediate representation is the key connection between both
-levels: it preserves the architectural decision and its mapping while
-allowing several physical implementations to be considered.
+using a discrete genome, NSGA-II and ZigZag. Selected candidates are
+converted into an abstract accelerator representation that records
+their compute and memory requirements. Level~2 then matches these
+requirements with characterized processing elements and memory IPs and
+evaluates the resulting implementations using workload-aware energy,
+power, performance, area and timing metrics. This intermediate
+representation is the key connection between both levels: it preserves
+the architectural decision and its mapping while allowing several
+physical implementations to be considered.
 
 The implemented framework also separates raw evaluation metrics from
 optimization objectives. Consequently, the same evaluation flow can
@@ -35,41 +34,37 @@ evaluator. NSGA-II is available for large exploration spaces, whereas
 exhaustive enumeration covers all compatible IP combinations when the
 remaining Level~2 space is small. Feasibility checks ensure that the
 selected IPs provide the required capacity, bandwidth, throughput and
-operating frequency. Together, these mechanisms meet the main
-objectives established for the project: automatic candidate
-evaluation, separation of architectural and implementation decisions,
-representation of characterized hardware, and modular optimization.
+operating frequency.
+
+The milestones established at the beginning of the thesis were
+therefore fulfilled within the scope of the project. A hierarchical
+two-level exploration methodology was defined and implemented;
+candidate accelerator architectures can be automatically generated and
+evaluated through ZigZag; technology-dependent hardware is represented
+through characterized IP pools; the evaluation and optimization
+interfaces remain modular and extensible; and the complete flow was
+validated using representative workloads, published accelerator
+references and synthesized implementations.
 
 The complete INT16 AlexNet experiment demonstrates the practical
 effect of the optimization objectives. Energy-only, area-only and
 performance-only exploration produced markedly different designs, and
 optimizing performance without an area or energy objective resulted in
 an impractically large accelerator. In contrast, the combined E+A+P
-objective selected a 1.701~mm$^2$ design with 51.142~mJ of on-chip
-energy and a latency of 22272482 cycles. This result confirms that
-Talos exposes the trade-offs between objectives instead of hiding them
-behind a fixed accelerator template or returning a single optimum
-without context.
+objective selected a balanced implementation. More generally, the
+experiments confirm that Talos exposes the trade-offs between
+objectives instead of hiding them behind a fixed accelerator template
+or returning a single optimum without context.
 
-The comparisons with published accelerators provide a more demanding
-reference for the quality of the selected designs. For the Eyeriss v1
-AlexNet workload, the balanced Talos design occupies 3.217~mm$^2$,
-considerably less than the reported 12.25~mm$^2$, but requires
-approximately 4.1 times the on-chip energy and 1.5 times the latency.
-The energy-oriented point also occupies less than half the Eyeriss area
-and increases throughput from 34.7 to 40.00 inferences/s, although its
-on-chip energy remains approximately 3.8 times higher. For dense
-MobileNet V1,
-the energy-oriented Talos configuration reaches 0.162 million cycles
-per inference, close to the approximately 0.156 million cycles derived
-for Eyeriss v2, although its on-chip energy and power remain higher.
-For FP16 VGG-16, Talos can approach SAURIA's throughput only with a
-substantially larger and more power-hungry implementation. These
-comparisons do not establish chip-to-chip superiority, since the
-physical technologies, voltage conditions and reporting boundaries are
-not always identical. They do show that the framework can identify
-meaningful architectural alternatives and make their limitations
-explicit.
+The comparisons with Eyeriss v1, Eyeriss v2 and SAURIA provide a more
+demanding reference for the quality of the selected designs. Talos can
+identify configurations with competitive area or performance for some
+workloads, although custom accelerators remain more efficient in the
+metrics and operating conditions for which they were specifically
+designed. These comparisons should therefore not be interpreted as
+chip-to-chip superiority claims. Instead, they show that the framework
+can identify meaningful architectural alternatives and make their
+trade-offs and limitations explicit.
 
 The results also demonstrate the importance of defining the system
 boundary correctly. In several configurations, modeled external DRAM
@@ -79,24 +74,25 @@ attributing external-memory costs to the accelerator and prevents
 small architectures with excessive off-chip traffic from appearing
 artificially efficient.
 
-Finally, synthesis of the selected E+A+P configurations provides an
-independent check of the Level~2 estimates. The area of the two INT16
-designs is predicted within 2.5\% of synthesis and their power within
-approximately 10--23\%. The INT8 MobileNet design shows similarly
-close area estimation, with a 1.18\% deviation, and a 15.61\% power
-deviation. The FP16 result is less accurate: Talos overestimates area
-by 37.04\% and power by 45.46\%. The model is therefore sufficiently
-informative to reduce and rank the design space, particularly for the
-integer configurations studied, but it does not replace synthesis or
-physical implementation of the final candidates.
+Synthesis of the selected E+A+P configurations provides an independent
+check of the Level~2 estimates. For the integer configurations, area
+estimation is close to the synthesized implementations and power
+estimation remains sufficiently accurate to guide the exploration. The
+FP16 case shows a larger deviation, demonstrating that the precision
+of the Level~2 model depends on the characteristics of the IPs being
+combined. The model is therefore informative enough to reduce and rank
+the design space, but it does not replace synthesis or physical
+implementation of the final candidates.
 
-Within this scope, the results support the hypothesis of the thesis. A
-hierarchical flow can make accelerator exploration more manageable by
-using inexpensive architectural evaluation to reduce the search space
-before applying technology-dependent IP selection. Talos should be
-understood as a decision-support and design-space reduction tool: it
-produces traceable feasible alternatives and exposes their trade-offs,
-after which a small set of candidates can be passed to a conventional
+Within this scope, the results support the hypothesis of the thesis.
+The hierarchical organization makes the exploration more manageable by
+restricting technology-dependent IP evaluation to architectures
+retained after Level~1, while conventional synthesis is required only
+for the final candidate set rather than for the complete architectural
+design space. Talos should therefore be understood as a
+decision-support and design-space reduction tool: it produces
+traceable feasible alternatives and exposes their trade-offs, after
+which a small set of candidates can be passed to a conventional
 hardware implementation flow.
 
 \subsection{Future Work}
