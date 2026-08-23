@@ -102,17 +102,12 @@ architectural exploration
 from technology-dependent hardware IP instantiation,
 while still being modular to allow custom estimations on both levels.
 
-
-
-\todo[inline]{Con como ha quedado esta parte no me gusta como han
-quedado los objetivos,
-donde pongo milestones? acaso las pongo? otra cosa es que aquí,
-activamente, evito mencionar
-Talos ya que es la propuesta, esto queda raro o está bien?}
 \subsection{Objective \& milestones}
 \todo[inline]{Checkear with Jordi \& Ricardo, mis notas dicen que un objetivo
 y varias milestones, pero ahora con este comment a lo mejor
 puedo haberlo apuntado mal}
+\todo[inline]{23_aug. Actualizado. Tmb en project_dev está conectado
+en el sentido de como hemos llegado o intentado llegar.}
 The objective of this thesis is to assess the proposed hypothesis
 through the design and implementation of a tool based on
 a hierarchical design space exploration framework for DNN
@@ -134,44 +129,26 @@ and hardware-oriented design decisions.
 
 To achieve this objective, a set of milestones was established to guide the development and validation of the proposed framework.
 
-\subsection{Development milestones}
-
-The first milestone was the definition of the hierarchical
-methodology, separating architectural exploration from hardware IP
-instantiation.
-
-The second milestone was the implementation of the Level 1
-architectural genome and its decoding into accelerator configurations.
-
-The third milestone was the integration with ZigZag, including the
-generation of accelerator descriptions and the extraction of
-evaluation metrics.
-
-The next milestone was the definition of the abstract accelerator
-representation used to connect both levels. After that, the IP pool
-and compatibility logic were implemented, allowing abstract
-components to be matched with concrete hardware blocks. Finally, the
-Level 2 genome and preliminary PPA evaluator were added, and the
-complete flow was validated through tests and smoke examples.
-
-These milestones show that the project evolved from a methodological
-proposal into a working software prototype.
-
 \begin{itemize}
     \item Define a hierarchical exploration methodology that
-    decouples high-level architecture exploration from low-level
+    decouples high-level architectural exploration from low-level
     hardware instantiation.
-    \item Develop a mechanism to automatically generate
-    and evaluate candidate accelerator architectures using an
-    existing DSE engine.
-    \item Develop a hardware characterization representation capable
-    of containing enough information related to PPA while maintaining a
-    high-level approach.
-    \item Design the framework with modular components and pluggable
-    evaluation functions to allow users to adapt optimization
-    criteria and hardware models.
-\end{itemize}
 
+    \item Develop a mechanism to automatically generate and evaluate
+    candidate accelerator architectures using an existing DSE engine.
+
+    \item Define a hardware characterization representation that
+    captures the information required for PPA evaluation while
+    preserving a high level of abstraction.
+
+    \item Design the framework around modular components and
+    pluggable evaluation functions, allowing optimization criteria
+    and hardware models to be adapted or extended.
+
+    \item Validate the proposed methodology and implementation using
+    representative DNN workloads and characterized hardware
+    implementations.
+\end{itemize}
 
 
 \subsection{Proposed approach}
