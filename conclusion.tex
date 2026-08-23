@@ -76,13 +76,15 @@ artificially efficient.
 
 Synthesis of the selected E+A+P configurations provides an independent
 check of the Level~2 estimates. For the integer configurations, area
-estimation is close to the synthesized implementations and power
-estimation remains sufficiently accurate to guide the exploration. The
-FP16 case shows a larger deviation, demonstrating that the precision
-of the Level~2 model depends on the characteristics of the IPs being
-combined. The model is therefore informative enough to reduce and rank
-the design space, but it does not replace synthesis or physical
-implementation of the final candidates.
+estimation is close to the synthesized implementations, but power
+accuracy is less consistent: the complete AlexNet estimate remains
+moderate, while the Eyeriss-compatible design is substantially
+underestimated. The FP16 case also shows large area and power
+deviations, demonstrating that the precision of the Level~2 model
+depends on the characteristics of the IPs being combined. The model is
+therefore informative enough to reduce and rank the design space, but
+it does not replace synthesis or physical implementation of the final
+candidates.
 
 Within this scope, the results support the hypothesis of the thesis.
 The hierarchical organization makes the exploration more manageable by
