@@ -345,8 +345,6 @@ example IP pool.
 % tool is designed with design exploration in mind, future work may
 % extend it towards more detailed hardware generation and evaluation
 % flows.
-\todo[inline]{4.1, que hacemos con estas milestones?
-tendrían que andar reflejadas en el project development}
 \subsection{HW Implementation}
 \todo[inline]{Propuesta de fujo de diseño para generar la síntesis del código SystemVerilog generado mediante las herramientas EDA y en las tecnologies disponibles en la UAB}
 
@@ -364,30 +362,51 @@ treated as opaque SRAM macros, while external DRAM and its PHY were
 excluded from the accelerator silicon boundary. Area, timing, and vectorless
 power estimates were then extracted from the mapped Genus netlists and reports.
 
-\subsection{Development milestones}
-The development of the tool can be summarized through several
-milestones.
+\subsection{Fulfilment of the development milestones}
+The development milestones introduced in the Introduction provide a
+direct way of assessing the resulting framework.
 
-The first milestone was the definition of the hierarchical
-methodology, separating architectural exploration from hardware IP
-instantiation.
+The first milestone was fulfilled through the definition of the
+two-level methodology. Architectural exploration is performed in
+Level~1 without selecting physical IPs, while Level~2 introduces the
+technology-dependent implementations. The abstract accelerator
+representation connects both levels without removing this separation.
 
-The second milestone was the implementation of the Level 1
-architectural genome and its decoding into accelerator configurations.
+The second milestone was fulfilled through the Level~1 genome,
+NSGA-II exploration, and ZigZag integration. Together, these elements
+automatically generate candidate architectures, evaluate their
+mapping, energy, latency, and area-related cost, and preserve the
+selected alternatives for the second level.
 
-The third milestone was the integration with ZigZag, including the
-generation of accelerator descriptions and the extraction of
-evaluation metrics.
+The third milestone was addressed through the characterized IP pool.
+Each IP stores the physical and operating information required by the
+PPA model, while compatibility is expressed through abstract
+component requirements. This allows the physical implementation to be
+evaluated without introducing RTL details into the architectural
+representation.
 
-The next milestone was the definition of the abstract accelerator
-representation used to connect both levels. After that, the IP pool
-and compatibility logic were implemented, allowing abstract
-components to be matched with concrete hardware blocks. Finally, the
-Level 2 genome and preliminary PPA evaluator were added, and the
-complete flow was validated through tests and smoke examples.
+The fourth milestone was fulfilled by separating the evaluators from
+the optimization objectives and by keeping the main parts of the flow
+as independent components. Workloads, IP pools, constraints, and
+objective combinations can be changed without modifying the complete
+exploration flow, and new objective functions can be added on top of
+the raw evaluation metrics.
 
-These milestones show that the project evolved from a methodological
-proposal into a working software prototype.
+Finally, the methodology and its implementation were validated with
+four workload configurations and characterized INT8, INT16, and FP16
+hardware pools. The selected implementations were also compared with
+published accelerators and synthesized designs. The complete
+experimental results are presented in the Results chapter. These
+results show that the framework can reduce and rank the design space
+using physical IP information. They also delimit the scope of this
+milestone: the model supports architectural selection, but the final
+candidates still require conventional synthesis for accurate physical
+results.
+
+Therefore, the milestones established in the Introduction were
+covered within the scope of the thesis, from the definition of the
+hierarchical methodology to its experimental validation as a working
+software prototype.
 
 %The current result does not yet generate RTL, but it establishes the
 %structure needed to continue towards more detailed hardware
