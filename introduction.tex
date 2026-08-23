@@ -42,13 +42,21 @@ manual exploration impractical.
 \subsection{Design Space Exploration Frameworks}
 To address this challenge, several Design Space Exploration (DSE)
 frameworks have been
-proposed. Tools such as the Chip Predictor \todo[inline]{Añadir}
-\cite{chippredictor} and
+proposed. Tools such as DNN-Chip Predictor \cite{chippredictor} and
 ZigZag \cite{zigzag} tackle this issue by enabling a fast exploration
 of the design space.
 These tools allow designers to evaluate a large number of
 architectures without performing
 full hardware implementation or evaluations manually.
+
+More recent works broaden the scope of this exploration. For edge
+systems, Rocha et al. propose a system-technology co-optimization
+framework that connects workload, architecture, mapping, physical
+design, 3-D integration, and nonvolatile-memory decisions
+\cite{rocha2024stco}. Accelet extends hardware--software co-design to
+chiplet-based DNN accelerators by exploring functional units,
+interconnect topologies, system architectures, and dataflow scheduling
+and mapping \cite{zheng2026accelet}.
 
 Other frameworks use different exploration strategies. ConfuciuX
 \cite{confuciux}, for example, uses reinforcement learning to search

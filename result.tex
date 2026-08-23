@@ -631,8 +631,8 @@ implementation as the E and A+P cases. The design occupies
 3.251~mm$^2$, which is considerably smaller than the 12.25~mm$^2$
 reported for Eyeriss. However, the energy and performance results are
 worse. Talos requires 44.060~mJ of on-chip energy per image and
-12107646 cycles, compared with 8.01~mJ and approximately 5763689
-cycles for Eyeriss.
+12.108 million cycles, compared with 8.01~mJ and approximately 5.76
+million cycles for Eyeriss.
 
 This result is useful for two reasons. First, it shows that reducing
 area alone does not mean that the generated design is competitive in
@@ -645,9 +645,9 @@ is measured at 1~V, while the Talos IP characterization uses 1.2~V.
 
 As in the complete AlexNet experiment, optimizing only performance
 produces an extreme design. The P configuration reduces latency to
-1484444 cycles, but does so with an area of 386.255~mm$^2$ and more
-than 74~W of on-chip power. The E+P result reaches a latency close to
-this point with a much smaller, although still large, 46.633~mm$^2$
+1.484 million cycles, but does so with an area of 386.255~mm$^2$ and
+more than 74~W of on-chip power. The E+P result reaches a latency close
+to this point with a much smaller, although still large, 46.633~mm$^2$
 implementation. This again shows the need to consider area together
 with performance during the physical selection stage.
 
@@ -818,22 +818,23 @@ multiplier 0.5, and a $128\times128$ input.
 \end{table*}
 
 The energy-oriented Talos point is the closest configuration to Eyeriss
-v2 in terms of performance. It completes the workload in 162026 cycles,
-which is very close to the 155994-cycle value derived for Eyeriss v2.
+v2 in terms of performance. It completes the workload in 0.162 million
+cycles, which is very close to the approximately 0.156 million cycles
+derived for Eyeriss v2.
 Its on-chip energy, however, is 0.972~mJ per inference compared with
 0.508~mJ for Eyeriss v2, and its on-chip power is 1.199~W compared with
 0.651~W. Therefore, the current Talos implementation approaches the
 published accelerator in latency for this workload, but still pays a
 clear energy and power penalty.
 
-The E+P point reduces latency further to 134229 cycles, at the cost of a
-15.237~mm$^2$ accelerator and 2.079~mJ of on-chip energy. The
+The E+P point reduces latency further to 0.134 million cycles, at the
+cost of a 15.237~mm$^2$ accelerator and 2.079~mJ of on-chip energy. The
 performance-only point is faster again, but its area rises to
 110.515~mm$^2$. In contrast, the balanced E+A+P point reduces the area
 to 1.536~mm$^2$ and on-chip power to 0.385~W, while still completing an
-inference in 721433 cycles. This design is significantly slower than
-Eyeriss v2, but represents a much more conservative physical point in
-the explored Talos space.
+inference in 0.721 million cycles. This design is significantly slower
+than Eyeriss v2, but represents a much more conservative physical point
+in the explored Talos space.
 
 Eyeriss v2 does not provide a complete post-layout area in
 mm$^2$ for this implementation. Instead, the paper reports 2695k

@@ -22,16 +22,42 @@ decisions to be revisited when implementation exposed practical
 issues.
 
 \subsubsection{Planned phases}
-The planned methodology can be summarized through several development
-phases. This section only defines the role of each phase in the
-process. The concrete decisions taken during the project are
-described in the following chapter.
+The proposed design methodology aims to transform the hypothesis of
+this thesis into a working and validated exploration tool. According
+to the evaluated state of the art, the development stages required to
+accomplish the objectives and assess this hypothesis are summarized as
+follows. Their role in the development process is introduced here,
+while the resulting design decisions and implementation details are
+described in the following chapters.
 
 \begin{enumerate}
 \item \textbf{Requirements analysis.} In this phase, the problem is
-defined, the objectives detailed, and the limits of the work. Its main output
-is the specification of the DNN input file (in ONNX format) and a set of requirements (performance parameters,....) that makes the rest of the development less
-ambiguous.
+defined, the objectives are detailed, and the scope of the work is
+established. Its main output is a functional specification that makes
+the rest of the development less ambiguous. At this level, the tool is
+required to:
+
+\begin{itemize}
+\item accept a DNN workload in ONNX format and obtain its numerical
+representation;
+\item load and validate a YAML pool of characterized processing
+elements and memory IPs;
+\item generate and evaluate abstract accelerator architectures and
+preserve the workload activity obtained for the selected candidates;
+\item convert those candidates into Level~2 abstract components and
+match them with compatible physical IP implementations;
+\item reject implementations that cannot satisfy the required
+capacity, bandwidth, throughput, frequency, or user constraints;
+\item estimate workload latency, energy, average power, area, and
+timing, while reporting the external DRAM contribution separately;
+\item support configurable optimization objectives and both genetic
+and exhaustive exploration; and
+\item return feasible alternatives together with their metrics and
+constraint status, instead of hiding the trade-offs behind one design.
+\end{itemize}
+
+The complete input and configuration requirements are specified in
+Appendix~\ref{app:talos_requirements}.
 
 \item \textbf{High-level design.} This phase turns the requirements
 into a global structure. Its main output is the definition of the
