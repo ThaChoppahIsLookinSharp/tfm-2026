@@ -1,5 +1,133 @@
 %%% CONCLUSION AND FUTURE %%%
 \clearpage
-\section{Conclusions and future development: }
+\section{Conclusions and Future Work}
 
-{This should include your summary, conclusions and recommendations. }
+\subsection{Conclusions}
+
+This thesis addressed the difficulty of exploring the large and
+strongly coupled design space of DNN accelerators. Architectural
+parameters such as the processing-element array, memory hierarchy and
+mapping determine the behavior of a design, but its final power,
+performance and area also depend on the physical blocks available in a
+particular technology. Exploring all these decisions simultaneously at
+implementation level is generally impractical, while considering only
+an abstract architecture can lead to candidates that cannot be
+implemented efficiently.
+
+The main contribution of this work is Talos, a hierarchical design
+space exploration framework that separates these decisions into two
+connected levels. Level~1 explores abstract accelerator architectures
+using a discrete genome, NSGA-II and ZigZag. Selected
+candidates are converted into an abstract accelerator representation
+that records their compute and memory requirements. Level~2 then
+matches these requirements with characterized processing elements and
+memory IPs and evaluates the resulting implementations using
+workload-aware energy, power, performance, area and timing metrics.
+This intermediate representation is the key connection between both
+levels: it preserves the architectural decision and its mapping while
+allowing several physical implementations to be considered.
+
+The implemented framework also separates raw evaluation metrics from
+optimization objectives. Consequently, the same evaluation flow can
+be used to optimize energy, area or performance individually or in
+combination, without embedding one fixed design criterion in the
+evaluator. NSGA-II is available for large exploration spaces, whereas
+exhaustive enumeration covers all compatible IP combinations when the
+remaining Level~2 space is small. Feasibility checks ensure that the
+selected IPs provide the required capacity, bandwidth, throughput and
+operating frequency. Together, these mechanisms meet the main
+objectives established for the project: automatic candidate
+evaluation, separation of architectural and implementation decisions,
+representation of characterized hardware, and modular optimization.
+
+The complete INT16 AlexNet experiment demonstrates the practical
+effect of the optimization objectives. Energy-only, area-only and
+performance-only exploration produced markedly different designs, and
+optimizing performance without an area or energy objective resulted in
+an impractically large accelerator. In contrast, the combined E+A+P
+objective selected a 1.701~mm$^2$ design with 51.142~mJ of on-chip
+energy and a latency of 22272482 cycles. This result confirms that
+Talos exposes the trade-offs between objectives instead of hiding them
+behind a fixed accelerator template or returning a single optimum
+without context.
+
+The comparisons with published accelerators provide a more demanding
+reference for the quality of the selected designs. For the Eyeriss v1
+AlexNet workload, the balanced Talos design occupies 3.251~mm$^2$,
+considerably less than the reported 12.25~mm$^2$, but requires more
+energy and approximately twice the latency. For dense MobileNet V1,
+the energy-oriented Talos configuration reaches 0.162 million cycles
+per inference, close to the approximately 0.156 million cycles derived
+for Eyeriss v2, although its on-chip energy and power remain higher.
+For FP16 VGG-16, Talos can approach SAURIA's throughput only with a
+substantially larger and more power-hungry implementation. These
+comparisons do not establish chip-to-chip superiority, since the
+physical technologies, voltage conditions and reporting boundaries are
+not always identical. They do show that the framework can identify
+meaningful architectural alternatives and make their limitations
+explicit.
+
+The results also demonstrate the importance of defining the system
+boundary correctly. In several configurations, modeled external DRAM
+energy is much larger than the energy consumed by the on-chip
+accelerator. Reporting on-chip and total values separately avoids
+attributing external-memory costs to the accelerator and prevents
+small architectures with excessive off-chip traffic from appearing
+artificially efficient.
+
+Finally, synthesis of the selected E+A+P configurations provides an
+independent check of the Level~2 estimates. The area of the two INT16
+designs is predicted within 2.5\% of synthesis and their power within
+approximately 10--23\%. The INT8 MobileNet design shows similarly
+close area estimation, with a 1.18\% deviation, and a 15.61\% power
+deviation. The FP16 result is less accurate: Talos overestimates area
+by 37.04\% and power by 45.46\%. The model is therefore sufficiently
+informative to reduce and rank the design space, particularly for the
+integer configurations studied, but it does not replace synthesis or
+physical implementation of the final candidates.
+
+Within this scope, the results support the hypothesis of the thesis. A
+hierarchical flow can make accelerator exploration more manageable by
+using inexpensive architectural evaluation to reduce the search space
+before applying technology-dependent IP selection. Talos should be
+understood as a decision-support and design-space reduction tool: it
+produces traceable feasible alternatives and exposes their trade-offs,
+after which a small set of candidates can be passed to a conventional
+hardware implementation flow.
+
+\subsection{Future Work}
+
+The most immediate continuation of this work is to improve the
+fidelity and calibration of the Level~2 model. Interconnect, control,
+clock-tree and pipeline overheads could be added using synthesis data
+from a larger set of generated configurations. 
+
+A second direction is to expand and automate hardware
+characterization. Larger IP pools covering more precisions,
+technologies, voltage and frequency operating points would allow Talos
+to explore a broader implementation space. An automated flow from RTL
+synthesis to validated IP-pool entries would reduce manual effort and
+make characterization conditions and provenance reproducible.
+
+The interaction between the two exploration levels can also be made
+more flexible. Level~2 could request a new mapping when a physical
+implementation cannot sustain the Level~1 activity profile, or feed
+technology-dependent information back into a new Level~1 iteration.
+This would preserve the computational advantage of hierarchical
+exploration while recovering candidates that are rejected only because
+the original mapping is too demanding for the selected IPs.
+
+External memory should be represented in greater detail. Future models
+could include memory-controller and interface area, power and bandwidth
+constraints, and support several DRAM technologies or platform
+configurations. This would make it possible to explore on-chip storage
+and external bandwidth jointly without treating additional bandwidth
+as a cost-free resource.
+
+Finally, Talos could be connected to an RTL composition and physical
+implementation flow. Generating a structural design from the selected
+IP configuration, synthesizing it automatically and returning the
+measured results to the characterization database would close the loop
+between exploration and implementation. This extension would turn the
+current decision-support framework into an end-to-end system while
+retaining synthesis as the final source of physical accuracy.
