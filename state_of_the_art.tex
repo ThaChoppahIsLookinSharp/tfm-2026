@@ -125,13 +125,12 @@ requirements.
 \renewcommand{\arraystretch}{1.15}
 
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{llllll}
+\begin{tabular}{lllll}
 \hline
 Accelerator &
 Technology &
 Precision &
 Compute organization &
-Main feature &
 Implementation \\
 \hline
 
@@ -139,44 +138,36 @@ Eyeriss \cite{eyeriss} &
 65 nm CMOS &
 INT16 &
 Spatial PE array, row-stationary &
-Data reuse, compression and data gating &
 Silicon \\
 
 TPU v1 \cite{tpuv1} &
 28 nm CMOS &
 INT8, 32-bit accum. &
 $256\times256$ systolic array &
-High-throughput matrix multiplication &
 Silicon \\
 
 Envision \cite{envision} &
 28 nm FDSOI &
 INT4/8/16 &
 2-D SIMD MAC array &
-Precision/voltage scaling and sparsity &
 Silicon \\
 
 TinyVers \cite{tinyvers} &
 22 nm FDX &
 INT2/4/8 &
 Reconfigurable spatial accelerator &
-Runtime dataflow reconfiguration,
-structured sparsity &
 Silicon \\
 
 SCNN \cite{scnn} &
 16 nm FinFET &
 INT16, 24-bit accum. &
 Sparse PE array &
-Compressed weights and activations,
-zero-skipping &
 Post-synthesis \\
 
 DepFiN \cite{depfin} &
 12 nm &
 INT8 &
 Depth-first CNN processor &
-Layer fusion and reduced off-chip traffic &
 Silicon \\
 
 DIANA \cite{diana} &
@@ -184,20 +175,113 @@ DIANA \cite{diana} &
 INT8 digital;
 mixed-precision analog &
 Digital accelerator + analog IMC &
-Heterogeneous digital/analog execution &
 Silicon \\
 
 SAURIA \cite{sauria2023} &
 22 nm &
 FP16 &
 Output-stationary systolic array &
-On-the-fly \textit{im2col} &
-Post-layout ASIC \\
+Post-layout ASIC$^{a}$ \\
 
 \hline
 \end{tabular}%
 }
+
+\vspace{1mm}
+\begin{minipage}{0.97\linewidth}
+\footnotesize
+$^{a}$ The SAURIA results considered in this work correspond to the
+post-layout ASIC implementation reported in \cite{sauria2023}, rather
+than to measured silicon results. A SAURIA instance was subsequently
+integrated into the Kameleon SoC and fabricated in silicon. 
+The accelerator itself has been demonstrated in silicon, although the
+PPA figures used here originate from the earlier post-layout evaluation.
+\end{minipage}
+
 \end{table}
+
+% \begin{table}[htbp]
+% \centering
+% \caption{Representative DNN hardware accelerators discussed in this work.}
+% \label{tab:dnn_accelerator_comparison}
+
+% \setlength{\tabcolsep}{3.2pt}
+% \renewcommand{\arraystretch}{1.15}
+
+% \resizebox{\textwidth}{!}{%
+% \begin{tabular}{llllll}
+% \hline
+% Accelerator &
+% Technology &
+% Precision &
+% Compute organization &
+% Main feature &
+% Implementation \\
+% \hline
+
+% Eyeriss \cite{eyeriss} &
+% 65 nm CMOS &
+% INT16 &
+% Spatial PE array, row-stationary &
+% Data reuse, compression and data gating &
+% Silicon \\
+
+% TPU v1 \cite{tpuv1} &
+% 28 nm CMOS &
+% INT8, 32-bit accum. &
+% $256\times256$ systolic array &
+% High-throughput matrix multiplication &
+% Silicon \\
+
+% Envision \cite{envision} &
+% 28 nm FDSOI &
+% INT4/8/16 &
+% 2-D SIMD MAC array &
+% Precision/voltage scaling and sparsity &
+% Silicon \\
+
+% TinyVers \cite{tinyvers} &
+% 22 nm FDX &
+% INT2/4/8 &
+% Reconfigurable spatial accelerator &
+% Runtime dataflow reconfiguration,
+% structured sparsity &
+% Silicon \\
+
+% SCNN \cite{scnn} &
+% 16 nm FinFET &
+% INT16, 24-bit accum. &
+% Sparse PE array &
+% Compressed weights and activations,
+% zero-skipping &
+% Post-synthesis \\
+
+% DepFiN \cite{depfin} &
+% 12 nm &
+% INT8 &
+% Depth-first CNN processor &
+% Layer fusion and reduced off-chip traffic &
+% Silicon \\
+
+% DIANA \cite{diana} &
+% 22 nm &
+% INT8 digital;
+% mixed-precision analog &
+% Digital accelerator + analog IMC &
+% Heterogeneous digital/analog execution &
+% Silicon \\
+
+% SAURIA \cite{sauria2023} &
+% 22 nm &
+% FP16 &
+% Output-stationary systolic array &
+% On-the-fly \textit{im2col} &
+% Post-layout ASIC \\
+
+% \hline
+% \end{tabular}%
+% }
+% \end{table}
 
 \subsubsection{The complex problem}
 
