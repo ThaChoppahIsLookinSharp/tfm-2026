@@ -30,6 +30,7 @@ Workload & Numerical format & Use \\
 AlexNet & INT16 & Complete CNN workload \\
 SqueezeNet 1.0 & INT8 & Quantized integer workload \\
 SqueezeNet 1.0 & FP16 & Floating-point workload \\
+VGG16 & FP16 & Comparison with SAURIA \\
 ResNet18 first layer & FP32 & Controlled convolution workload \\
 \hline
 \end{tabular}
@@ -49,6 +50,10 @@ uses quantized convolution operations with unsigned 8-bit activations,
 signed 8-bit weights, and unsigned 8-bit outputs. The FP16 model
 provides the same type of CNN workload using half-precision
 floating-point values.
+
+An FP16 version of VGG16 is also used for the comparison with SAURIA,
+which reports results for the same network and numerical format
+\cite{sauria2023}.
 
 Finally, the first convolutional layer of ResNet18 is provided as a
 smaller controlled workload. This allows complete Level 1 and Level 2
@@ -647,6 +652,162 @@ hardware configuration.
 
 \begin{table*}[t]
 \centering
+\caption{Best Talos implementations obtained for the INT16 AlexNet
+workload used for comparison with Eyeriss V2}
+\label{tab:eyeriss_int16_v2_results}
+
+\setlength{\tabcolsep}{3.2pt}
+\renewcommand{\arraystretch}{1.15}
+
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}ccccccclccccccc@{}}
+\hline
+\textbf{Obj.} &
+\makecell{\textbf{Best}\\\textbf{run}} &
+\makecell{\textbf{Energy}\\\textbf{[J]}} &
+\makecell{\textbf{Latency}\\\textbf{[s]}} &
+\makecell{\textbf{Inf.}\\\textbf{[s$^{-1}$]}} &
+\makecell{\textbf{Area}\\\textbf{[mm$^2$]}} &
+\makecell{\textbf{Power}\\\textbf{[W]}} &
+\textbf{PE} &
+\makecell{\textbf{PE}\\\textbf{array}} &
+\makecell{\textbf{RF size}\\\textbf{[bit]}} &
+\makecell{\textbf{RF BW}\\\textbf{[bit/cycle]}} &
+\makecell{\textbf{GB size}\\\textbf{[bit]}} &
+\makecell{\textbf{GB BW}\\\textbf{[bit/cycle]}} &
+\makecell{\textbf{L1}\\\textbf{arch.}} &
+\makecell{\textbf{L2}\\\textbf{sol.}} \\
+\hline
+
+E &
+seed\_24 &
+0.112869 &
+0.0316643 &
+31.5813 &
+5.111114 &
+3.564564 &
+\texttt{pe\_tiny\_xpu\_int16} &
+$16\times32$ &
+64 &
+16 &
+131072 &
+1024 &
+39 &
+2555 \\
+
+E+A &
+seed\_22 &
+0.244724 &
+0.810516 &
+1.23378 &
+0.512155 &
+0.301937 &
+\texttt{pe\_tiny\_xpu\_int16} &
+$8\times4$ &
+64 &
+8 &
+32768 &
+128 &
+9 &
+8796 \\
+
+A &
+large\_pool &
+0.450138 &
+1.240105 &
+0.806383 &
+0.201889 &
+0.362984 &
+\texttt{pe\_tiny\_xpu\_int16} &
+$4\times4$ &
+128 &
+16 &
+8192 &
+64 &
+42 &
+7665 \\
+
+P &
+seed\_25 &
+4.708420 &
+0.0165771 &
+60.3241 &
+1493.550121 &
+284.031252 &
+\texttt{pe\_sauria\_int16} &
+$32\times32$ &
+256 &
+256 &
+65536 &
+1024 &
+8 &
+0 \\
+
+A+P &
+seed\_21 &
+0.198234 &
+0.111362 &
+8.97969 &
+1.700708 &
+1.780077 &
+\texttt{pe\_tiny\_xpu\_int16} &
+$16\times16$ &
+64 &
+8 &
+16384 &
+256 &
+69 &
+8796 \\
+
+E+P &
+seed\_24 &
+0.124780 &
+0.0197103 &
+50.7350 &
+8.831982 &
+6.330738 &
+\texttt{pe\_tiny\_xpu\_int16} &
+$32\times32$ &
+64 &
+16 &
+65536 &
+1024 &
+51 &
+2555 \\
+
+E+A+P &
+seed\_21 &
+0.198234 &
+0.111362 &
+8.97969 &
+1.700708 &
+1.780077 &
+\texttt{pe\_tiny\_xpu\_int16} &
+$16\times16$ &
+64 &
+8 &
+16384 &
+256 &
+69 &
+8796 \\
+
+\hline
+\end{tabular}%
+}
+
+\vspace{1mm}
+\begin{minipage}{0.97\textwidth}
+\footnotesize
+The workload corresponds to the INT16 AlexNet configuration used for
+comparison with Eyeriss. E, A, and P denote energy per inference,
+area, and workload performance, respectively. The reported
+architecture and solution indices identify the selected Level~1
+architecture and Level~2 physical implementation.
+\end{minipage}
+\end{table*}
+
+\begin{table*}[t]
+\centering
 \caption{Representative architectures selected from the exhaustive
 INT16 Eyeriss AlexNet convolution design space using an augmented
 Tchebycheff score for multi-objective selection. (4batch)}
@@ -1120,12 +1281,21 @@ INT8 &
 \makecell{278.7 inf/s\\
 1470.6 inf/s} \\
 
+SAURIA \cite{sauria2023} &
+\makecell{22\,nm\\GF22FDX} &
+FP16 &
+--- &
+0.897\,mm$^2$ &
+258\,mW &
+\makecell{$\sim$6.10 inf/s$^{f}$\\
+284\,GFLOP/s peak} \\
+
 \textbf{Talos (E+A+P)} &
 \makecell{\textbf{65\,nm}\\\textbf{CMOS}} &
 \textbf{INT16} &
-\textbf{50.14\,mJ$^{f}$} &
+\textbf{50.14\,mJ$^{g}$} &
 \textbf{1.78\,mm$^2$} &
-\textbf{0.430\,W$^{f}$} &
+\textbf{0.430\,W$^{g}$} &
 \textbf{8.58 inf/s} \\
 
 \hline
@@ -1155,7 +1325,14 @@ throughput and inference efficiency as
 $P = (\mathrm{inf/s})/(\mathrm{inf/J})$
 \cite{chen2019eyerissv2}.
 
-$^{f}$ Talos results correspond to the Level~2 implementation
+$^{f}$ SAURIA reports a VGG-16 execution time of 164\,ms using its
+on-the-fly data feeder and assuming 6.4\,GB/s of external DRAM
+bandwidth, corresponding to approximately 6.10\,inferences/s.
+The reported 258\,mW corresponds to accelerator power during
+computation. The paper does not directly report energy per VGG-16
+inference \cite{sauria2023}.
+
+$^{g}$ Talos results correspond to the Level~2 implementation
 selected for the combined energy, area, and performance objective
 (architecture~108). Energy and power exclude the external DRAM
 contribution. The on-chip energy is computed as
@@ -1335,7 +1512,674 @@ multi-objective comparison was recalculated over the complete feasible
 set from all eleven runs.
 As a result, the E+A+P case selects the implementation obtained from
 the larger exploration pool.
+
 \end{minipage}
+\end{table*}
+\begin{table*}[t]
+\centering
+\caption{Best Talos implementations obtained for the INT8 MobileNet
+workload under the different Level~2 objective combinations.}
+\label{tab:mobilenet_int8_results}
+
+\setlength{\tabcolsep}{3.5pt}
+\renewcommand{\arraystretch}{1.15}
+
+\resizebox{0.98\textwidth}{!}{%
+\begin{tabular}{@{}lccccc@{}}
+\hline
+\textbf{Case} &
+\makecell{\textbf{Energy}\\\textbf{[J]}} &
+\makecell{\textbf{Area}\\\textbf{[mm$^2$]}} &
+\makecell{\textbf{Latency}\\\textbf{[s]}} &
+\makecell{\textbf{Performance}\\\textbf{[inf/s]}} &
+\makecell{\textbf{Power}\\\textbf{[W]}} \\
+\hline
+
+E &
+0.112869445 &
+5.111114 &
+0.031664310 &
+31.5813 &
+3.564564 \\
+
+A &
+0.446843088 &
+0.265306 &
+1.071744580 &
+0.9331 &
+0.416931 \\
+
+E+A &
+0.244724465 &
+0.512155 &
+0.810516235 &
+1.2338 &
+0.301937 \\
+
+P &
+4.708420140 &
+1493.550121 &
+0.016577120 &
+60.3241 &
+284.031252 \\
+
+A+P &
+0.198233640 &
+1.700708 &
+0.111362410 &
+8.9797 &
+1.780077 \\
+
+E+P &
+0.124780467 &
+8.831982 &
+0.019710255 &
+50.7350 &
+6.330738 \\
+
+E+A+P &
+0.198233640 &
+1.700708 &
+0.111362410 &
+8.9797 &
+1.780077 \\
+
+\hline
+\end{tabular}%
+}
+
+\vspace{1mm}
+\begin{minipage}{0.96\textwidth}
+\footnotesize
+The workload corresponds to MobileNet using INT8 operands.
+E, A, and P denote energy per inference, area, and workload
+performance, respectively.
+\end{minipage}
+\end{table*}
+
+
+\subsection{TABLAS A ENSEÑAR}
+
+\begin{table*}[t]
+\centering
+\caption{Talos design configurations obtained for an INT16 AlexNet
+workload under different optimization objectives.}
+\label{tab:alexnet_int16_talos}
+
+\setlength{\tabcolsep}{3.2pt}
+\renewcommand{\arraystretch}{1.15}
+
+\resizebox{0.99\textwidth}{!}{%
+\begin{tabular}{@{}lcccccccc@{}}
+\hline
+\textbf{Configuration} &
+\textbf{Technology} &
+\textbf{Precision} &
+\makecell{\textbf{On-chip Energy}\\\textbf{(mJ/inf.)$^{a}$}} &
+\makecell{\textbf{Energy incl. DRAM}\\\textbf{(mJ/inf.)$^{b}$}} &
+\textbf{Area} &
+\makecell{\textbf{On-chip}\\\textbf{Power$^{a}$}} &
+\makecell{\textbf{Total}\\\textbf{Power$^{b}$}} &
+\makecell{\textbf{Latency}\\\textbf{(cycles)$^{c}$}} \\
+\hline
+
+Talos (E) &
+65\,nm CMOS &
+INT16 &
+39.757 &
+112.869 &
+5.111\,mm$^2$ &
+1.256\,W &
+3.565\,W &
+6332862 \\
+
+Talos (E+A) &
+65\,nm CMOS &
+INT16 &
+88.076 &
+244.724 &
+0.512\,mm$^2$ &
+0.109\,W &
+0.302\,W &
+162103247 \\
+
+Talos (A) &
+65\,nm CMOS &
+INT16 &
+55.723 &
+450.138 &
+0.202\,mm$^2$ &
+0.045\,W &
+0.363\,W &
+248021034 \\
+
+Talos (P) &
+65\,nm CMOS &
+INT16 &
+4650.562 &
+4708.420 &
+1493.550\,mm$^2$ &
+280.541\,W &
+284.031\,W &
+3315424 \\
+
+Talos (A+P) &
+65\,nm CMOS &
+INT16 &
+51.819 &
+198.911 &
+1.701\,mm$^2$ &
+0.465\,W &
+1.786\,W &
+22272482 \\
+
+Talos (E+P) &
+65\,nm CMOS &
+INT16 &
+45.035 &
+124.780 &
+8.832\,mm$^2$ &
+2.285\,W &
+6.331\,W &
+3942051 \\
+
+Talos (E+A+P) &
+65\,nm CMOS &
+INT16 &
+51.142 &
+198.234 &
+1.701\,mm$^2$ &
+0.459\,W &
+1.780\,W &
+22272482 \\
+
+\hline
+\end{tabular}%
+}
+
+\vspace{2mm}
+\begin{minipage}{0.99\textwidth}
+\footnotesize
+
+$^{a}$ On-chip energy includes the selected processing elements and
+on-chip memory hierarchy, excluding the modeled external DRAM
+contribution. On-chip power is computed over the complete workload
+execution.
+
+$^{b}$ Total energy and power include the modeled external DRAM
+contribution. The total workload energy is the quantity used by Talos
+when energy is included as an optimization objective.
+
+$^{c}$ Latency is expressed in workload cycles assuming the 200\,MHz
+operating frequency used for the Talos characterization.
+
+The workload corresponds to AlexNet using 16-bit integer operands.
+AlexNet is a standard convolutional neural network architecture;
+however, INT16 is not part of the original AlexNet specification and
+should be understood here as the numerical representation selected
+for this Talos experiment.
+
+\end{minipage}
+
+\end{table*}
+
+\begin{table*}[t]
+\centering
+\caption{Comparison of the Talos FP16 VGG-16 configurations selected
+under different optimization objectives and the SAURIA accelerator.}
+\label{tab:vgg16_fp16_sauria_comparison}
+
+\setlength{\tabcolsep}{3.2pt}
+\renewcommand{\arraystretch}{1.15}
+
+\resizebox{0.99\textwidth}{!}{%
+\begin{tabular}{@{}lcccccccc@{}}
+\hline
+\textbf{Configuration} &
+\textbf{Technology} &
+\textbf{Precision} &
+\makecell{\textbf{On-chip Energy}\\\textbf{(mJ/inf.)$^{a}$}} &
+\makecell{\textbf{Energy incl. DRAM}\\\textbf{(mJ/inf.)$^{b}$}} &
+\textbf{Area} &
+\makecell{\textbf{On-chip}\\\textbf{Power$^{a}$}} &
+\makecell{\textbf{Total}\\\textbf{Power$^{b}$}} &
+\textbf{Performance} \\
+\hline
+
+Talos (E) &
+65\,nm CMOS &
+FP16 &
+763.4 &
+1201.6 &
+14.450\,mm$^2$ &
+3.774\,W &
+5.940\,W &
+4.94 inf/s \\
+
+Talos (E+A) &
+65\,nm CMOS &
+FP16 &
+1259.4 &
+2689.6 &
+0.483\,mm$^2$ &
+0.114\,W &
+0.243\,W &
+0.091 inf/s \\
+
+Talos (A) &
+65\,nm CMOS &
+FP16 &
+1534.2 &
+5784.9 &
+0.226\,mm$^2$ &
+0.058\,W &
+0.220\,W &
+0.038 inf/s \\
+
+Talos (P) &
+65\,nm CMOS &
+FP16 &
+4239.2 &
+4345.4 &
+114.820\,mm$^2$ &
+26.203\,W &
+26.860\,W &
+6.18 inf/s \\
+
+Talos (A+P) &
+65\,nm CMOS &
+FP16 &
+927.8 &
+2121.9 &
+1.975\,mm$^2$ &
+0.518\,W &
+1.184\,W &
+0.558 inf/s \\
+
+Talos (E+P) &
+65\,nm CMOS &
+FP16 &
+790.5 &
+1320.8 &
+14.450\,mm$^2$ &
+3.961\,W &
+6.617\,W &
+5.01 inf/s \\
+
+Talos (E+A+P) &
+65\,nm CMOS &
+FP16 &
+762.3 &
+1336.5 &
+3.641\,mm$^2$ &
+0.947\,W &
+1.660\,W &
+1.24 inf/s \\
+
+\hline
+
+SAURIA \cite{sauria2023} &
+\makecell{22\,nm\\GF22FDX} &
+FP16 &
+--$^{c}$ &
+--$^{c}$ &
+0.897\,mm$^2$ &
+0.258\,W$^{d}$ &
+--$^{c}$ &
+284\,GFLOP/s peak$^{d}$ \\
+
+\hline
+\end{tabular}%
+}
+
+\vspace{1mm}
+\begin{minipage}{0.97\textwidth}
+\footnotesize
+
+$^{a}$ Talos on-chip energy excludes the external DRAM contribution,
+i.e.,
+$E_{\mathrm{on-chip}} =
+E_{\mathrm{workload}} - E_{\mathrm{DRAM}}$.
+The corresponding on-chip power is computed over the complete
+workload execution.
+
+$^{b}$ Total Talos energy and power include the modeled external DRAM
+contribution. The total workload energy is also the quantity used by
+the optimization when energy is included as an objective.
+
+$^{c}$ SAURIA does not report a directly comparable VGG-16
+energy-per-inference value including the external DRAM contribution.
+Consequently, neither total energy nor total system power is shown.
+
+$^{d}$ SAURIA reports a post-layout FP16 implementation in
+GF22FDX 22\,nm with an area of 0.897\,mm$^2$, an average accelerator
+power of 258\,mW at peak throughput, and a peak throughput of
+284\,GFLOP/s \cite{sauria}. The reported power corresponds to the
+accelerator and is therefore compared with the Talos on-chip power
+rather than its total power including DRAM.
+
+The comparison should be interpreted as indicative rather than as a
+direct benchmark. Talos and SAURIA use different technology nodes,
+and the published SAURIA performance is reported as peak arithmetic
+throughput rather than VGG-16 inferences per second.
+
+\end{minipage}
+\end{table*}
+
+\begin{table*}[t]
+\centering
+\caption{Comparison of the Talos INT16 AlexNet convolutional
+configurations selected under different optimization objectives and
+the Eyeriss v1 accelerator.}
+\label{tab:eyeriss_v1_comparison}
+
+\setlength{\tabcolsep}{3.2pt}
+\renewcommand{\arraystretch}{1.15}
+
+\resizebox{0.99\textwidth}{!}{%
+\begin{tabular}{@{}lcccccccc@{}}
+\hline
+\textbf{Configuration} &
+\textbf{Technology} &
+\textbf{Precision} &
+\makecell{\textbf{On-chip Energy}\\\textbf{(mJ/inf.)$^{a}$}} &
+\makecell{\textbf{Energy incl. DRAM}\\\textbf{(mJ/inf.)$^{b}$}} &
+\textbf{Area} &
+\makecell{\textbf{On-chip}\\\textbf{Power$^{a}$}} &
+\makecell{\textbf{Total}\\\textbf{Power$^{b}$}} &
+\makecell{\textbf{Latency}\\\textbf{(cycles)$^{c}$}} \\
+\hline
+
+Talos (E) &
+65\,nm CMOS &
+INT16 &
+44.060 &
+57.059 &
+3.251\,mm$^2$ &
+0.728\,W &
+0.943\,W &
+12107646 \\
+
+Talos (E+A) &
+65\,nm CMOS &
+INT16 &
+56.486 &
+71.998 &
+2.828\,mm$^2$ &
+0.616\,W &
+0.785\,W &
+18336893 \\
+
+Talos (A) &
+65\,nm CMOS &
+INT16 &
+45.536 &
+214.718 &
+0.265\,mm$^2$ &
+0.058\,W &
+0.275\,W &
+155908379 \\
+
+Talos (P) &
+65\,nm CMOS &
+INT16 &
+550.904 &
+553.165 &
+386.255\,mm$^2$ &
+74.224\,W &
+74.528\,W &
+1484444 \\
+
+Talos (A+P) &
+65\,nm CMOS &
+INT16 &
+44.060 &
+57.059 &
+3.251\,mm$^2$ &
+0.728\,W &
+0.943\,W &
+12107646 \\
+
+Talos (E+P) &
+65\,nm CMOS &
+INT16 &
+78.835 &
+87.571 &
+46.633\,mm$^2$ &
+10.442\,W &
+11.599\,W &
+1509958 \\
+
+Talos (E+A+P) &
+65\,nm CMOS &
+INT16 &
+44.060 &
+57.059 &
+3.251\,mm$^2$ &
+0.728\,W &
+0.943\,W &
+12107646 \\
+
+\hline
+
+Eyeriss v1 \cite{chen2017eyeriss} &
+65\,nm CMOS &
+INT16 &
+8.01$^{d}$ &
+--$^{e}$ &
+12.25\,mm$^2$ &
+0.278\,W$^{d}$ &
+--$^{e}$ &
+5763689$^{f}$ \\
+
+\hline
+\end{tabular}%
+}
+
+\vspace{2mm}
+\begin{minipage}{0.99\textwidth}
+\footnotesize
+
+$^{a}$ Talos on-chip figures include the selected PEs and on-chip
+memory hierarchy, excluding the external DRAM contribution.
+
+$^{b}$ Talos total figures include the external DRAM power and energy
+estimated from the workload activity.
+
+$^{c}$ The Talos workload reproduces the Eyeriss AlexNet convolutional
+benchmark with batch size 4. Energy and latency are normalized per
+image. Both Talos and Eyeriss v1 operate at a 200\,MHz core frequency
+in this comparison.
+
+$^{d}$ Eyeriss v1 reports a measured chip power of 278\,mW and a
+throughput of 34.7 frames/s for the five convolutional layers of
+AlexNet at 1\,V. Its energy per image is therefore derived as
+$E_{\mathrm{inf}}=P/(\mathrm{inf/s})\approx8.01$\,mJ/inf.
+
+$^{e}$ Eyeriss v1 reports the external DRAM traffic (15.4\,MB for a
+batch of four AlexNet images), but does not report the corresponding
+external-memory energy or total system power. These quantities are
+therefore left unspecified.
+
+$^{f}$ Eyeriss v1 latency is expressed as equivalent cycles per image
+and is derived from its measured 34.7 frames/s throughput at 200\,MHz:
+$N_{\mathrm{cycles}}=200\times10^6/34.7\approx5.76\times10^6$ cycles.
+
+\end{minipage}
+
+\end{table*}
+
+\begin{table*}[t]
+\centering
+\caption{Comparison of the Talos INT8 MobileNet V1 0.5/128
+configurations selected under different optimization objectives and
+the Eyeriss v2 accelerator.}
+\label{tab:eyerissv2_mobilenet_comparison}
+
+\setlength{\tabcolsep}{3.2pt}
+\renewcommand{\arraystretch}{1.15}
+
+\resizebox{0.99\textwidth}{!}{%
+\begin{tabular}{@{}lcccccccc@{}}
+\hline
+\textbf{Configuration} &
+\textbf{Technology} &
+\textbf{Precision} &
+\makecell{\textbf{On-chip Energy}\\\textbf{(mJ/inf.)$^{a}$}} &
+\makecell{\textbf{Energy incl. DRAM}\\\textbf{(mJ/inf.)$^{b}$}} &
+\textbf{Area} &
+\makecell{\textbf{On-chip}\\\textbf{Power$^{a}$}} &
+\makecell{\textbf{Total}\\\textbf{Power$^{b}$}} &
+\makecell{\textbf{Latency}\\\textbf{(cycles)$^{f}$}} \\
+\hline
+
+Talos (E) &
+65\,nm CMOS &
+INT8 &
+0.972 &
+2.795 &
+5.672\,mm$^2$ &
+1.199\,W &
+3.450\,W &
+162026 \\
+
+Talos (E+A) &
+65\,nm CMOS &
+INT8 &
+2.881 &
+7.276 &
+0.441\,mm$^2$ &
+0.090\,W &
+0.227\,W &
+6416591 \\
+
+Talos (A) &
+65\,nm CMOS &
+INT8 &
+1.889 &
+17.320 &
+0.170\,mm$^2$ &
+0.041\,W &
+0.373\,W &
+9284696 \\
+
+Talos (P) &
+65\,nm CMOS &
+INT8 &
+14.094 &
+15.524 &
+110.515\,mm$^2$ &
+24.326\,W &
+26.793\,W &
+115879 \\
+
+Talos (A+P) &
+65\,nm CMOS &
+INT8 &
+1.399 &
+4.828 &
+1.536\,mm$^2$ &
+0.388\,W &
+1.338\,W &
+721433 \\
+
+Talos (E+P) &
+65\,nm CMOS &
+INT8 &
+2.079 &
+3.540 &
+15.237\,mm$^2$ &
+3.097\,W &
+5.275\,W &
+134229 \\
+
+Talos (E+A+P) &
+65\,nm CMOS &
+INT8 &
+1.388 &
+4.816 &
+1.536\,mm$^2$ &
+0.385\,W &
+1.335\,W &
+721433 \\
+
+\hline
+
+Eyeriss v2 dense \cite{chen2019eyerissv2} &
+65\,nm TSMC LP &
+INT8 &
+0.508$^{c}$ &
+--$^{d}$ &
+--$^{e}$ &
+0.651\,W$^{c}$ &
+--$^{d}$ &
+155994$^{g}$ \\
+
+\hline
+\end{tabular}%
+}
+
+\vspace{2mm}
+\begin{minipage}{0.99\textwidth}
+\footnotesize
+
+$^{a}$ Talos on-chip figures include the selected PEs and on-chip
+memory hierarchy, excluding the external DRAM contribution.
+
+$^{b}$ Talos total figures include the modeled external DRAM
+contribution. The total energy is also the quantity used by the
+optimization whenever energy is included as an objective.
+
+$^{c}$ Eyeriss v2 reports inference/J and inference/s rather than
+energy per inference and average power directly. For the dense
+MobileNet V1 0.5/128 workload, the paper reports 1969.8 inf/J and
+1282.1 inf/s. The values shown here are therefore derived as
+\[
+E_{\mathrm{inf}} =
+\frac{1}{1969.8}
+\approx 0.508\,\text{mJ/inf.},
+\]
+and
+\[
+P =
+E_{\mathrm{inf}}\times 1282.1
+\approx 0.651\,\text{W}.
+\]
+These values are treated as on-chip figures because the paper reports
+external DRAM traffic separately and its power breakdown is given for
+the accelerator's on-chip components.
+
+$^{d}$ The Eyeriss v2 paper reports external DRAM traffic for the
+MobileNet workload, but does not provide the corresponding DRAM energy
+or total system power. Therefore, no directly comparable value is
+reported for energy including DRAM or total power.
+
+$^{e}$ Eyeriss v2 is reported as an implementation with 2695k
+NAND-2-equivalent logic gates and 246\,kB of on-chip SRAM rather than
+as a directly comparable silicon area in mm$^2$. The area is therefore
+left unspecified in this table.
+
+$^{f}$ Talos and Eyeriss v2 operate at 200\,MHz in this comparison.
+Talos latency is reported directly in workload cycles at this
+frequency.
+
+$^{g}$ Eyeriss v2 latency in cycles is derived from the reported
+throughput at 200\,MHz:
+\[
+N_{\mathrm{cycles}} =
+\frac{200\times10^6}{1282.1}
+\approx 155994
+\]
+cycles per inference. The Eyeriss v2 benchmark uses batch size 1,
+MobileNet V1 with width multiplier 0.5, and a $128\times128$ input.
+
+The dense Eyeriss v2 result is used as the direct reference because
+the Talos workload models a dense MobileNet V1 0.5/128 network and
+does not reproduce the sparsity exploited by the sparse Eyeriss v2
+configuration.
+
+\end{minipage}
+
 \end{table*}
 %\subsection{Impact of the Hierarchical Exploration}
 
