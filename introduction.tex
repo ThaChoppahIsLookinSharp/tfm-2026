@@ -119,7 +119,7 @@ a hierarchical design space exploration framework for DNN
 accelerators.
 
 The %{hypothesis is examined through the}
-development proccess %{of a tool that}
+development process %{of a tool that}
 separates high-level architectural exploration from the selection
 and evaluation of hardware IP implementations, allowing both stages
 to be
@@ -132,25 +132,46 @@ the validation of a structured methodology for separating
 architectural
 and hardware-oriented design decisions.
 
-\todo[inline]{Blablabla frase para introducir las milestones}
-\todo[inline]{Milestones, deberían ir in el propossed approach?}
-\todo[inline]{16 agosto, las tengo en project development, que onda}
+To achieve this objective, a set of milestones was established to guide the development and validation of the proposed framework.
+
+\subsection{Development milestones}
+
+The first milestone was the definition of the hierarchical
+methodology, separating architectural exploration from hardware IP
+instantiation.
+
+The second milestone was the implementation of the Level 1
+architectural genome and its decoding into accelerator configurations.
+
+The third milestone was the integration with ZigZag, including the
+generation of accelerator descriptions and the extraction of
+evaluation metrics.
+
+The next milestone was the definition of the abstract accelerator
+representation used to connect both levels. After that, the IP pool
+and compatibility logic were implemented, allowing abstract
+components to be matched with concrete hardware blocks. Finally, the
+Level 2 genome and preliminary PPA evaluator were added, and the
+complete flow was validated through tests and smoke examples.
+
+These milestones show that the project evolved from a methodological
+proposal into a working software prototype.
 
 \begin{itemize}
-    \item Develop a mechanism to automatically generate
-    and evaluate candidate accelerator architectures using an
-    existing DSE engine.
     \item Define a hierarchical exploration methodology that
     decouples high-level architecture exploration from low-level
     hardware instantiation.
+    \item Develop a mechanism to automatically generate
+    and evaluate candidate accelerator architectures using an
+    existing DSE engine.
     \item Develop a hardware characterization representation capable
-    of
-    containing enough information related to PPA while maintaining a
+    of containing enough information related to PPA while maintaining a
     high-level approach.
     \item Design the framework with modular components and pluggable
     evaluation functions to allow users to adapt optimization
     criteria and hardware models.
 \end{itemize}
+
 
 
 \subsection{Proposed approach}

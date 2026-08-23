@@ -349,6 +349,21 @@ example IP pool.
 tendrían que andar reflejadas en el project development}
 \subsection{HW Implementation}
 \todo[inline]{Propuesta de fujo de diseño para generar la síntesis del código SystemVerilog generado mediante las herramientas EDA y en las tecnologies disponibles en la UAB}
+
+Once the final architecture is selected, an accelerator RTL designs can
+be assembled in SystemVerilog by composing previously characterized processing and memory blocks. The main components included tiny-XPU INT16
+PEs, FPnew FP16 FMA units, simple INT8 MACs, BaseJump register files, 
+and OpenEye-compatible global buffers; the required number of instances, 
+array dimensions, interfaces, and precisions were fixed through parameterized 
+top-level wrappers. 
+
+The designs used in the results chapter were synthesized with Cadence Genus 23.15 using the TSMC 65 nm low-power 9-track standard-cell library 
+(tcbn65lptc.lib) at the nominal NCCOM/TT corner (1.2 V and 25 °C), targeting 200 MHz. 
+Memories were synthesized from RTL into standard cells rather than 
+treated as opaque SRAM macros, while external DRAM and its PHY were 
+excluded from the accelerator silicon boundary. Area, timing, and vectorless
+power estimates were then extracted from the mapped Genus netlists and reports.
+
 \subsection{Development milestones}
 The development of the tool can be summarized through several
 milestones.

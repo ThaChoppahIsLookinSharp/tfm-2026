@@ -504,79 +504,79 @@ the Eyeriss v1 accelerator.}
 Talos (E) &
 65\,nm CMOS &
 INT16 &
-44.060 &
-57.059 &
-3.251\,mm$^2$ &
-0.728\,W &
-0.943\,W &
-12.108 &
-16.52 inf/s \\
+30.364 &
+45.537 &
+5.111\,mm$^2$ &
+0.304\,W &
+0.455\,W &
+5.000 &
+40.00 inf/s \\
 
 Talos (E+A) &
 65\,nm CMOS &
 INT16 &
-56.486 &
-71.998 &
-2.828\,mm$^2$ &
-0.616\,W &
-0.785\,W &
-18.337 &
-10.91 inf/s \\
+45.592 &
+121.455 &
+0.575\,mm$^2$ &
+0.031\,W &
+0.082\,W &
+73.632 &
+2.72 inf/s \\
 
 Talos (A) &
 65\,nm CMOS &
 INT16 &
-45.536 &
-214.718 &
-0.265\,mm$^2$ &
-0.058\,W &
-0.275\,W &
-155.908 &
-1.28 inf/s \\
+60.189 &
+231.357 &
+0.318\,mm$^2$ &
+0.018\,W &
+0.069\,W &
+166.801 &
+1.20 inf/s \\
 
 Talos (P) &
 65\,nm CMOS &
 INT16 &
-550.904 &
-553.165 &
-386.255\,mm$^2$ &
-74.224\,W &
-74.528\,W &
-1.484 &
-134.73 inf/s \\
+2001.636 &
+2003.898 &
+14145.161\,mm$^2$ &
+67.030\,W &
+67.106\,W &
+1.493 &
+133.95 inf/s \\
 
 Talos (A+P) &
 65\,nm CMOS &
 INT16 &
-44.060 &
-57.059 &
-3.251\,mm$^2$ &
-0.728\,W &
-0.943\,W &
-12.108 &
-16.52 inf/s \\
+51.649 &
+86.318 &
+3.129\,mm$^2$ &
+0.183\,W &
+0.305\,W &
+14.132 &
+14.15 inf/s \\
 
 Talos (E+P) &
 65\,nm CMOS &
 INT16 &
-78.835 &
-87.571 &
-46.633\,mm$^2$ &
-10.442\,W &
-11.599\,W &
-1.510 &
-132.45 inf/s \\
+66.490 &
+77.362 &
+30.510\,mm$^2$ &
+1.801\,W &
+2.096\,W &
+1.845 &
+108.37 inf/s \\
 
 Talos (E+A+P) &
 65\,nm CMOS &
 INT16 &
-44.060 &
-57.059 &
-3.251\,mm$^2$ &
-0.728\,W &
-0.943\,W &
-12.108 &
-16.52 inf/s \\
+32.521 &
+64.195 &
+3.217\,mm$^2$ &
+0.183\,W &
+0.362\,W &
+8.876 &
+22.53 inf/s \\
 
 \hline
 
@@ -600,13 +600,15 @@ $\sim$5.76$^{e}$ &
 \footnotesize
 
 $^{a}$ Talos on-chip energy excludes the external DRAM contribution.
-The corresponding on-chip power is computed over the complete workload
-execution. The Talos AlexNet convolutional workload uses batch size 4;
-energy and latency are normalized per image.
+The Talos AlexNet convolutional workload uses batch size 4. The
+reported energy, power, and latency values are normalized per image
+by dividing the corresponding batch-level values by four.
 
 $^{b}$ Talos total energy and power include the modeled external DRAM
 contribution. The total workload energy is the quantity used by Talos
-when energy is included as an optimization objective.
+when energy is included as an optimization objective. As for the
+on-chip quantities, the reported values are normalized from batch size
+4 to a per-image basis.
 
 $^{c}$ Eyeriss v1 reports a measured chip power of 278\,mW and a
 throughput of 34.7 frames/s for the five convolutional layers of
@@ -621,11 +623,11 @@ $^{e}$ Eyeriss v1 operates at a 200\,MHz core frequency. Its equivalent
 latency is derived from the reported throughput as
 $N_{\mathrm{cycles}}=200\times10^6/34.7\simeq5.76$ million cycles per
 image. Talos latency is reported in equivalent million cycles per image
-at the same 200\,MHz reference frequency.
+at the same 200\,MHz reference frequency. Talos throughput is converted
+from batch throughput to image throughput by multiplying by four.
 
 \end{minipage}
 \end{table*}
-
 For this workload, the balanced E+A+P objective selects the same Talos
 implementation as the E and A+P cases. The design occupies
 3.251~mm$^2$, which is considerably smaller than the 12.25~mm$^2$
