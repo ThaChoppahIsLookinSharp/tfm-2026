@@ -1,1609 +1,304 @@
 \clearpage
 \section{Results}
 
-This section evaluates the implemented hierarchical exploration
-framework. Rather than describing the internal structure of Talos,
-which was presented in the previous chapter, the experiments focus
-on the design alternatives obtained through the exploration and on
-the effect of introducing characterized hardware IP information
-after the architectural exploration stage.
+This section evaluates the implemented Talos flow using the final
+exploration results. The objective of these experiments is not only to
+find the minimum value of a single metric, but also to show the type of
+accelerator configurations that are obtained when energy, area and
+performance are considered together.
 
+The section is organized in three parts. First, a complete INT16
+AlexNet exploration is used as an end-to-end proof of concept of the
+framework. Then, Talos configurations are compared against published
+accelerators using workloads selected to make each comparison as close
+as possible. Finally, the architectural estimates produced by Talos are
+compared against synthesized implementations of the selected designs.
 
 \subsection{Experimental Setup}
 
-\subsubsection{Workloads}
+All final experiments use the hierarchical exploration flow described
+in the previous chapter. Level~1 explores the abstract architecture
+using NSGA-II and ZigZag, while Level~2 selects characterized hardware
+IPs and evaluates the resulting physical implementation.
 
-Several workloads with different numerical representations were used
-during the development and evaluation of Talos. All of them are
-provided as ONNX models, since this is the workload representation
-used by the ZigZag integration.
-
-The workloads considered for the experiments are summarized in
-Table~\ref{tab:workloads}.
-
-\begin{table}[h]
-\centering
-\begin{tabular}{lll}
-\hline
-Workload & Numerical format & Use \\
-\hline
-AlexNet & INT16 & Complete CNN workload \\
-SqueezeNet 1.0 & INT8 & Quantized integer workload \\
-SqueezeNet 1.0 & FP16 & Floating-point workload \\
-VGG16 & FP16 & Comparison with SAURIA \\
-ResNet18 first layer & FP32 & Controlled convolution workload \\
-\hline
-\end{tabular}
-\caption{Workloads considered during the Talos evaluation.}
-\label{tab:workloads}
-\end{table}
-
-The INT16 AlexNet model follows the AlexNet topology used by Eyeriss.
-It contains the five convolutional layers and the three fully
-connected layers. Since the original quantized parameters are not
-available, this model is used to preserve the layer dimensions and
-numerical representation required by the exploration rather than as
-an executable inference model.
-
-Two versions of SqueezeNet 1.0 are also available. The INT8 version
-uses quantized convolution operations with unsigned 8-bit activations,
-signed 8-bit weights, and unsigned 8-bit outputs. The FP16 model
-provides the same type of CNN workload using half-precision
-floating-point values.
-
-An FP16 version of VGG16 is also used for the comparison with SAURIA,
-which reports results for the same network and numerical format
-\cite{sauria2023}.
-
-Finally, the first convolutional layer of ResNet18 is provided as a
-smaller controlled workload. This allows complete Level 1 and Level 2
-explorations to be executed with a lower simulation time while still
-keeping the structure of a real convolutional layer.
-
-Using workloads with different precisions is relevant for the Level 2
-experiments because the physical PE pool also contains implementations
-with different numerical formats. Talos obtains the operand
-representation directly from the ONNX model and reports when the
-selected PE representation does not match the workload. Talos does
-not automatically quantize or convert the input network.
-
-
-\subsubsection{Hardware Characterization Setup}
-
-The physical IP characterization used for the final experiments was
-performed for a TSMC 65~nm technology.
-
-The characterized IPs were obtained using Cadence Genus after mapping
-the RTL to the target standard-cell library. The common
-characterization point used by the current pools is:
+The final comparisons use four workload configurations:
 
 \begin{itemize}
-    \item target reference frequency of 200~MHz;
-    \item supply voltage of 1.2~V;
-    \item temperature of 25~$^\circ$C;
-    \item NCCOM process corner.
+    \item a complete AlexNet network using INT16 operands, used as the
+    main proof-of-concept exploration;
+    \item the five convolutional layers of AlexNet using INT16 and the
+    Eyeriss batch-size-four setup, used for comparison with Eyeriss v1;
+    \item MobileNet V1 0.5/128 using INT8 operands, used for comparison
+    with the dense Eyeriss v2 result;
+    \item VGG-16 using FP16 operands, used for comparison with SAURIA.
 \end{itemize}
 
-The power characterization provides an idle and an active operating
-point for each IP. These values were obtained using the vectorless
-power flow described in the previous chapter.
+\subsubsection{Characterized Hardware IP Pools}
 
-Memory blocks and processing elements use the same characterization
-conditions so that they can later be combined in the same Level 2
-implementation. The resulting areas, delays, maximum frequencies, and
-power values are stored in the Talos IP pools.
+The Level~2 exploration does not use generic analytical costs for the
+on-chip components. Instead, it selects implementations from
+characterized hardware IP pools. Three different compute pools are
+used in the experiments, matching the numerical representation of
+each workload: INT8, INT16, and FP16.
 
-Three characterized pools are considered in the experiments.
+All IPs were characterized using Cadence Genus after mapping the RTL
+to a TSMC 65~nm standard-cell library. The common characterization
+conditions were a reference frequency of 200~MHz, a supply voltage of
+1.2~V, a temperature of 25~$^\circ$C, and the NCCOM process corner.
+Power was obtained using the vectorless characterization flow
+described in the previous chapter. For every component, Talos stores
+its area, timing information, idle and active power, and, when
+applicable, the corresponding operation or memory-access energy.
 
-The first one,
-\texttt{ip\_pool\_characterized\_65nm.yaml}, contains the integer
-processing elements and the characterized memory implementations. It
-is used to study architectures implemented using integer compute
-units.
-
-The second one,
-\texttt{ip\_pool\_fp16\_65nm.yaml}, contains the characterized FP16
-processing elements together with the same register-file and
-global-buffer alternatives.
-
-The third one,
-\texttt{ip\_pool\_fp32\_65nm.yaml}, contains the characterized FP32
-processing elements and the characterized memory pool.
-
-The FP16 pool contains two processing-element alternatives, while the
-FP32 pool contains three. Both use twelve register-file
-implementations and three global-buffer implementations. The integer
-pool contains the characterized integer processing elements and the
-same memory characterization.
-
-The different pools are intentionally kept separate. This allows the
-physical exploration to be repeated using a coherent set of
-processing elements for a given numerical representation, without
-changing the Level 1 architectural representation.
-
-Talos also contains an example pool and a synthetic 65~nm pool. These
-were used during the development and validation of the framework, but
-they are not intended to represent the final physical
-characterization used to draw conclusions from the experiments.
-
-External DRAM is treated separately from the accelerator IPs. When a
-characterized DRAM is not provided, Talos uses the fixed platform
-proxy described in the previous chapter. Therefore, the DRAM is not
-part of the Level 2 IP selection.
-
-
-\subsubsection{Exploration Configuration}
-
-The experiments use the complete hierarchical Talos flow.
-
-Level 1 explores the abstract architecture using NSGA-II and ZigZag.
-In the current implementation, the architectural screening is
-performed using energy, latency, and area at the same time. These
-three objectives are used to preserve different architectural
-trade-offs before physical IP selection.
-
-The Level 1 design space contains the PE-array dimensions, local
-storage capacity and bandwidth, global-buffer capacity and bandwidth,
-and the PE-array dimensions served by the global buffer. The exact
-definition of this genome was presented in the previous chapter.
-
-After Level 1, a limited number of architectures from the resulting
-set are transferred to Level 2. The ZigZag workload activity profile
-associated with each architecture is transferred together with it, so
-the mapping does not need to be regenerated during the physical
-exploration.
-
-Level 2 is evaluated using both available exploration strategies when
-required. Exhaustive exploration is used when the number of compatible
-IP combinations is small enough to enumerate all of them. NSGA-II can
-instead be used for larger physical design spaces.
-
-The Level 2 experiments consider area, energy, and workload
-performance, both individually and in combination. When exhaustive exploration uses more than one objective, a
-representative solution is selected using the logarithmic augmented
-Tchebycheff score defined in the following section.
-
-The population size, number of generations, number of architectures
-transferred to Level 2, and user constraints will be reported together
-with each final experiment. This avoids tying the experimental setup
-to intermediate runs performed during the development of the tool.
-
-
-\subsection{Hardware IP Characterization Results}
-
-%\subsubsection{Processing Element Characterization}
-
-% Final table generated from the characterization used in the
-% experiments.
-%
-% Suggested columns:
-% PE
-% numerical format
-% area
-% max frequency
-% delay
-% active power
-% idle power
-% MACs/cycle
-%
-% Separate integer, FP16 and FP32 implementations if the resulting
-% table becomes too large.
-%
-% Compare only the final characterization values used by the
-% experiments.
-
-
-%\subsubsection{Memory Characterization}
-
-% Final table generated from the characterized memory pool.
-%
-% Suggested RF columns:
-% memory
-% ports
-% capacity
-% bandwidth
-% area
-% max frequency
-% idle power
-% active power
-% read energy
-% write energy
-%
-% Suggested GB columns:
-% memory
-% capacity
-% bandwidth
-% area
-% max frequency
-% idle power
-% active power
-% read/write energy
-%
-% Discuss scaling with capacity and bandwidth once the final
-% characterization has been fixed.
-
-
-\subsubsection{Available IP Design Space}
-
-The physical design space depends on the IP pool selected for each
-experiment.
-
-The characterized integer pool contains seven PE implementations.
-Six of them provide one MAC per cycle, while the OpenEye composite PE
-provides two MACs per cycle and already includes the three local
-register-file roles used by Talos. Most of the integer PEs use signed
-INT8 arithmetic, while the TMS4517 implementation uses UINT8.
-
-The integer pool also contains twelve register-file implementations
-and three global-buffer alternatives.
-
-The FP16 pool contains two FP16 PEs, twelve register files, and three
-global buffers. The FP32 pool contains three FP32 PEs and the same
-memory alternatives.
-
-Therefore, the three characterized pools provide different compute
-alternatives while reusing the same characterized memory design
-space. This makes it possible to study the effect of changing the PE
-implementation and numerical format without changing the available
-memory IPs.
-
-Not every IP is necessarily compatible with every abstract component.
-Capacity and bandwidth requirements are taken from the Level 1
-architecture and are used to reduce the compatible memory
-alternatives. In addition, the workload-aware evaluation can reject a
-PE or memory that cannot sustain the activity required by the mapping.
-
-Therefore, the actual Level 2 design-space size is architecture
-dependent and will be reported together with the final exploration
-results.
-
-
-%\subsection{Level 1 Architecture Exploration}
-
-%\subsubsection{Explored Architectures}
-
-% Final Level 1 results.
-%
-% For each workload:
-% number of evaluated architectures
-% number of unique architectures
-% number of feasible architectures
-% Pareto/front information
-%
-% Suggested plots:
-% energy vs latency
-% energy vs area
-% latency vs area
-%
-% Use the new final runs only.
-
-
-%\subsubsection{Selected Architectural Candidates}
-
-% Architectures finally transferred to Level 2.
-%
-% Report:
-% PE array
-% RF requirements
-% GB requirements
-% L1 latency
-% L1 energy
-% L1 area
-%
-% Explain why the points are relevant, but do not repeat the genome
-% definition.
-
-
-%\subsection{IP-Based Evaluation Results}
-
-%\subsubsection{Feasible IP Implementations}
-
-% For every selected L1 architecture:
-% theoretical compatible combinations
-% evaluated combinations
-% valid combinations
-% rejected combinations
-%
-% Separate:
-% compatibility rejection
-% workload throughput/bandwidth rejection
-% user-constraint rejection.
-
-
-%\subsubsection{Impact of Processing Element Selection}
-
-% Keep architecture and memories fixed.
-%
-% Compare different PEs from:
-% - integer pool
-% - FP16 pool
-% - FP32 pool
-%
-% Metrics:
-% area
-% power
-% energy/inference
-% fmax
-% workload feasibility.
-
-
-%\subsubsection{Impact of Memory Selection}
-
-% Keep architecture and PE fixed.
-%
-% Change RF / GB implementation.
-%
-% Compare:
-% area
-% power
-% energy
-% bandwidth
-% accesses/cycle
-% feasibility.
-
-%\subsubsection{Workload-Aware PPA Results}
-
-% Main Level 2 result table.
-%
-% Suggested columns:
-% workload
-% L1 architecture
-% pool
-% PE
-% RFs
-% GB
-% area
-% energy/inference
-% average power
-% workload latency
-% workload throughput
-% physical fmax
-% balanced score if applicable.
-
-
-\subsection{Target-Oriented Architecture Selection}
-
-A complete target sweep was performed for the INT16 AlexNet workload
-in order to study how the preferred architecture changes with the
-optimization objective. The sweep considered single-objective targets
-for energy, area, and performance, as well as the main multi-objective
-combinations.
-
-For the single-objective cases, the winning architecture is the one
-with the minimum value of the corresponding objective. For the
-multi-objective cases, the objectives are expressed as logarithmic
-relative deviations from the ideal point,
-
-\[
-r_i(x)=
-\ln\left(
-\frac{f_i(x)}
-{f_i^{\min}}
-\right),
-\]
-
-and candidates are ranked using an augmented Tchebycheff score,
-
-\[
-S(x)=
-100\left[
-\max_i r_i(x)
-+
-0.05\sum_i r_i(x)
-\right].
-\]
-
-This formulation emphasizes the worst relative degradation with
-respect to the ideal value while using the sum of deviations as a
-secondary discrimination term. The ideal values are computed over the
-feasible solutions considered in the corresponding sweep. When
-architectures, seeds, or runs are compared, Talos recalculates one
-common ideal over the complete feasible set being compared. Local
-scores calculated inside an individual architecture are not used for
-cross-architecture selection.
-
-The Level 2 energy objective is \texttt{workload\_energy\_j}, which
-includes external DRAM energy. On-chip energy is computed as workload
-energy minus DRAM energy and is shown only for reporting and
-comparison.
-
-Table~\ref{tab:alexnet_target_winners} summarizes the winning Level~1
-architecture for each target. The energy, area, and latency columns
-correspond to the selected feasible Level~2 implementation associated
-with the architecture. For the performance-only target, several
-Level~2 implementations can sustain the same Level~1 mapping and
-therefore tie in workload latency; in that case, secondary metrics are
-used only to choose a representative physical implementation.
+Table~\ref{tab:characterized_pes} summarizes the processing elements
+available to Level~2 for the three numerical formats considered in the
+final experiments.
 
 \begin{table*}[t]
 \centering
-\caption{Winning architectures for the INT16 AlexNet target sweep
-using the augmented Tchebycheff score for multi-objective selection.
-Energy values exclude external DRAM energy.}
-\label{tab:alexnet_target_winners}
-
-\setlength{\tabcolsep}{4pt}
-\renewcommand{\arraystretch}{1.15}
-
-\resizebox{0.98\textwidth}{!}{%
-\begin{tabular}{@{}lcccccccc@{}}
-\hline
-\textbf{Target} &
-\textbf{Arch.} &
-\textbf{PE array} &
-\makecell{\textbf{RF size}\\\textbf{(bit)}} &
-\makecell{\textbf{RF BW}\\\textbf{(bit/cycle)}} &
-\makecell{\textbf{GB size}\\\textbf{(Kib)}} &
-\makecell{\textbf{GB BW}\\\textbf{(bit/cycle)}} &
-\makecell{\textbf{On-chip Energy}\\\textbf{(mJ/inf.)$^{a}$}} &
-\makecell{\textbf{Area / Latency}\\\textbf{(mm$^2$ / ms)}} \\
-\hline
-
-Energy &
-144 &
-$32\times 8$ &
-128 &
-16 &
-128 &
-1024 &
-44.99 &
-3.251 / 58.95 \\
-
-Energy + Area &
-46 &
-$4\times 8$ &
-64 &
-8 &
-32 &
-128 &
-88.29 &
-0.512 / 810.52 \\
-
-Area &
-146 &
-$4\times 4$ &
-256 &
-16 &
-8 &
-64 &
-65.39 &
-0.2653 / 1129.8 \\
-
-Performance &
-67 &
-$32\times 32$ &
-256 &
-256 &
-64 &
-1024 &
-4627.69 &
-1491.556 / 16.58 \\
-
-Area + Performance &
-108 &
-$16\times 8$ &
-256 &
-32 &
-32 &
-256 &
-50.14 &
-1.780 / 116.59 \\
-
-Energy + Performance &
-104 &
-$32\times 32$ &
-64 &
-16 &
-128 &
-1024 &
-47.81 &
-8.832 / 21.08 \\
-
-Energy + Area + Performance &
-108 &
-$16\times 8$ &
-256 &
-32 &
-32 &
-256 &
-50.14 &
-1.780 / 116.59 \\
-
-\hline
-\end{tabular}%
-}
-
-\vspace{1mm}
-\begin{minipage}{0.96\textwidth}
-\footnotesize
-$^{a}$ The reported energy corresponds to the on-chip contribution,
-computed as
-$E_{\mathrm{on-chip}} = E_{\mathrm{workload}} - E_{\mathrm{DRAM}}$.
-The architectures were selected using the original sweep energy
-objective, which considers total workload energy including external
-DRAM. DRAM energy is removed here only for reporting and comparison
-purposes.
-\end{minipage}
-
-\end{table*}
-
-
-Table with optimizing at level 1.
-
-\begin{table*}[t]
-\centering
-\caption{Winning architectures for the legacy INT16 AlexNet target
-sweep using an independent ZigZag-based Level~1 search for each
-optimization target and the augmented Tchebycheff score for
-multi-objective selection.}
-\label{tab:alexnet_legacy_target_winners}
-
-\setlength{\tabcolsep}{4pt}
-\renewcommand{\arraystretch}{1.15}
-
-\resizebox{0.98\textwidth}{!}{%
-\begin{tabular}{@{}lcccccccc@{}}
-\hline
-\textbf{Target} &
-\textbf{Arch.} &
-\textbf{PE array} &
-\makecell{\textbf{RF size}\\\textbf{(bit)}} &
-\makecell{\textbf{RF BW}\\\textbf{(bit/cycle)}} &
-\makecell{\textbf{GB size}\\\textbf{(Kib)}} &
-\makecell{\textbf{GB BW}\\\textbf{(bit/cycle)}} &
-\makecell{\textbf{On-chip Energy}\\\textbf{(mJ/inf.)$^{a}$}} &
-\makecell{\textbf{Area / Latency}\\\textbf{(mm$^2$ / ms)}} \\
-\hline
-
-Energy &
-5 &
-$8\times 32$ &
-128 &
-16 &
-128 &
-1024 &
-49.69 &
-3.251 / 66.19 \\
-
-Energy + Area &
-3 &
-$4\times 8$ &
-256 &
-8 &
-8 &
-64 &
-103.53 &
-0.445 / 1048.94 \\
-
-Area &
-0 &
-$4\times 4$ &
-64 &
-8 &
-8 &
-64 &
-68.80 &
-0.171 / 1868.89 \\
-
-Performance &
-0 &
-$32\times 32$ &
-512 &
-256 &
-128 &
-64 &
-4597.68 &
-1491.556 / 16.56 \\
-
-Area + Performance &
-28 &
-$16\times 8$ &
-256 &
-32 &
-32 &
-256 &
-48.74 &
-1.780 / 113.07 \\
-
-Energy + Performance &
-24 &
-$16\times 32$ &
-512 &
-16 &
-8 &
-256 &
-120.54 &
-20.733 / 27.35 \\
-
-Energy + Area + Performance &
-50 &
-$16\times 4$ &
-64 &
-8 &
-32 &
-128 &
-80.93 &
-0.682 / 522.69 \\
-
-\hline
-\end{tabular}%
-}
-
-\vspace{1mm}
-\begin{minipage}{0.96\textwidth}
-\footnotesize
-
-$^{a}$ The reported energy corresponds to the on-chip contribution,
-computed as
-$E_{\mathrm{on-chip}} =
-E_{\mathrm{workload}} - E_{\mathrm{DRAM}}$.
-The architectures were selected using total workload energy including
-external DRAM. DRAM energy is removed here only for reporting and
-comparison purposes.
-
-Unlike the common-handoff sweep, Level~1 is executed independently
-for each optimization target in this experiment. Consequently,
-architecture indices are local to each target and the same architecture
-index in two different rows does not necessarily represent the same
-hardware configuration.
-
-\end{minipage}
-\end{table*}
-
-\begin{table*}[t]
-\centering
-\caption{Best Talos implementations obtained for the INT16 AlexNet
-workload used for comparison with Eyeriss V2}
-\label{tab:eyeriss_int16_v2_results}
-
-\setlength{\tabcolsep}{3.2pt}
-\renewcommand{\arraystretch}{1.15}
-
-\resizebox{\textwidth}{!}{%
-\begin{tabular}{@{}ccccccclccccccc@{}}
-\hline
-\textbf{Obj.} &
-\makecell{\textbf{Best}\\\textbf{run}} &
-\makecell{\textbf{Energy}\\\textbf{[J]}} &
-\makecell{\textbf{Latency}\\\textbf{[s]}} &
-\makecell{\textbf{Inf.}\\\textbf{[s$^{-1}$]}} &
-\makecell{\textbf{Area}\\\textbf{[mm$^2$]}} &
-\makecell{\textbf{Power}\\\textbf{[W]}} &
-\textbf{PE} &
-\makecell{\textbf{PE}\\\textbf{array}} &
-\makecell{\textbf{RF size}\\\textbf{[bit]}} &
-\makecell{\textbf{RF BW}\\\textbf{[bit/cycle]}} &
-\makecell{\textbf{GB size}\\\textbf{[bit]}} &
-\makecell{\textbf{GB BW}\\\textbf{[bit/cycle]}} &
-\makecell{\textbf{L1}\\\textbf{arch.}} &
-\makecell{\textbf{L2}\\\textbf{sol.}} \\
-\hline
-
-E &
-seed\_24 &
-0.112869 &
-0.0316643 &
-31.5813 &
-5.111114 &
-3.564564 &
-\texttt{pe\_tiny\_xpu\_int16} &
-$16\times32$ &
-64 &
-16 &
-131072 &
-1024 &
-39 &
-2555 \\
-
-E+A &
-seed\_22 &
-0.244724 &
-0.810516 &
-1.23378 &
-0.512155 &
-0.301937 &
-\texttt{pe\_tiny\_xpu\_int16} &
-$8\times4$ &
-64 &
-8 &
-32768 &
-128 &
-9 &
-8796 \\
-
-A &
-large\_pool &
-0.450138 &
-1.240105 &
-0.806383 &
-0.201889 &
-0.362984 &
-\texttt{pe\_tiny\_xpu\_int16} &
-$4\times4$ &
-128 &
-16 &
-8192 &
-64 &
-42 &
-7665 \\
-
-P &
-seed\_25 &
-4.708420 &
-0.0165771 &
-60.3241 &
-1493.550121 &
-284.031252 &
-\texttt{pe\_sauria\_int16} &
-$32\times32$ &
-256 &
-256 &
-65536 &
-1024 &
-8 &
-0 \\
-
-A+P &
-seed\_21 &
-0.198234 &
-0.111362 &
-8.97969 &
-1.700708 &
-1.780077 &
-\texttt{pe\_tiny\_xpu\_int16} &
-$16\times16$ &
-64 &
-8 &
-16384 &
-256 &
-69 &
-8796 \\
-
-E+P &
-seed\_24 &
-0.124780 &
-0.0197103 &
-50.7350 &
-8.831982 &
-6.330738 &
-\texttt{pe\_tiny\_xpu\_int16} &
-$32\times32$ &
-64 &
-16 &
-65536 &
-1024 &
-51 &
-2555 \\
-
-E+A+P &
-seed\_21 &
-0.198234 &
-0.111362 &
-8.97969 &
-1.700708 &
-1.780077 &
-\texttt{pe\_tiny\_xpu\_int16} &
-$16\times16$ &
-64 &
-8 &
-16384 &
-256 &
-69 &
-8796 \\
-
-\hline
-\end{tabular}%
-}
-
-\vspace{1mm}
-\begin{minipage}{0.97\textwidth}
-\footnotesize
-The workload corresponds to the INT16 AlexNet configuration used for
-comparison with Eyeriss. E, A, and P denote energy per inference,
-area, and workload performance, respectively. The reported
-architecture and solution indices identify the selected Level~1
-architecture and Level~2 physical implementation.
-\end{minipage}
-\end{table*}
-
-\begin{table*}[t]
-\centering
-\caption{Representative architectures selected from the exhaustive
-INT16 Eyeriss AlexNet convolution design space using an augmented
-Tchebycheff score for multi-objective selection. (4batch)}
-\label{tab:eyeriss_int16_target_winners}
-
-\setlength{\tabcolsep}{4pt}
-\renewcommand{\arraystretch}{1.15}
-
-\resizebox{0.98\textwidth}{!}{%
-\begin{tabular}{@{}lcccccccc@{}}
-\hline
-\textbf{Target} &
-\textbf{Arch.} &
-\textbf{PE array} &
-\makecell{\textbf{RF size}\\\textbf{(bit)}} &
-\makecell{\textbf{RF BW}\\\textbf{(bit/cycle)}} &
-\makecell{\textbf{GB size}\\\textbf{(Kib)}} &
-\makecell{\textbf{GB BW}\\\textbf{(bit/cycle)}} &
-\makecell{\textbf{On-chip Energy}\\\textbf{(mJ/image)$^{a}$}} &
-\makecell{\textbf{Area / Latency}\\\textbf{(mm$^2$ / ms)}} \\
-\hline
-
-Energy &
-14 &
-$32\times 8$ &
-128 &
-16 &
-128 &
-512 &
-44.06 &
-3.251 / 242.15 \\
-
-Energy + Area &
-41 &
-$8\times 4$ &
-128 &
-16 &
-8 &
-64 &
-45.59 &
-0.575 / 1472.64 \\
-
-Area &
-27 &
-$4\times 4$ &
-256 &
-32 &
-8 &
-64 &
-45.54 &
-0.2653 / 3118.17 \\
-
-Performance &
-22 &
-$32\times 32$ &
-512 &
-128 &
-32 &
-128 &
-550.90 &
-386.255 / 29.69 \\
-
-Area + Performance &
-14 &
-$32\times 8$ &
-128 &
-16 &
-128 &
-512 &
-44.06 &
-3.251 / 242.15 \\
-
-Energy + Performance &
-33 &
-$32\times 32$ &
-256 &
-128 &
-16 &
-256 &
-78.84 &
-46.633 / 30.20 \\
-
-Energy + Area + Performance &
-14 &
-$32\times 8$ &
-128 &
-16 &
-128 &
-512 &
-44.06 &
-3.251 / 242.15 \\
-
-\hline
-\end{tabular}%
-}
-
-\vspace{1mm}
-\begin{minipage}{0.96\textwidth}
-\footnotesize
-$^{a}$ The reported energy corresponds to the on-chip contribution,
-computed as
-$E_{\mathrm{on-chip}} =
-E_{\mathrm{workload}} - E_{\mathrm{DRAM}}$.
-The Eyeriss-compatible AlexNet workload uses a batch size of four;
-therefore, the reported value is
-$E_{\mathrm{on-chip}}/4$ and is expressed in mJ/image.
-The architectures are selected using total workload energy including
-external DRAM. DRAM energy is removed only from the reported values.
-Latency corresponds to the execution of the complete batch.
-\end{minipage}
-
-\end{table*}
-% NOTE: The FP16 and FP32 tables below still use the winners from
-% their original result post-processing. Recomputing them with the
-% augmented Tchebycheff score requires the corresponding candidate CSVs.
-% They are intentionally left unchanged here rather than inferring new
-% winners from the already-selected rows.
-\begin{table*}[t]
-\centering
-\caption{Winning architectures for the FP16 target sweep using an
-independent ZigZag-based Level~1 search for each optimization target.}
-\label{tab:fp16_target_winners}
-
-\setlength{\tabcolsep}{4pt}
-\renewcommand{\arraystretch}{1.15}
-
-\resizebox{0.98\textwidth}{!}{%
-\begin{tabular}{@{}lcccccccc@{}}
-\hline
-\textbf{Target} &
-\textbf{Arch.} &
-\textbf{PE array} &
-\makecell{\textbf{RF size}\\\textbf{(bit)}} &
-\makecell{\textbf{RF BW}\\\textbf{(bit/cycle)}} &
-\makecell{\textbf{GB size}\\\textbf{(Kib)}} &
-\makecell{\textbf{GB BW}\\\textbf{(bit/cycle)}} &
-\makecell{\textbf{On-chip Energy}\\\textbf{(mJ/inf.)$^{a}$}} &
-\makecell{\textbf{Area / Latency}\\\textbf{(mm$^2$ / ms)}} \\
-\hline
-
-Energy &
-8 &
-$32\times32$ &
-512 &
-16 &
-32 &
-256 &
-37.02 &
-32.070 / 4.97 \\
-
-Energy + Area &
-13 &
-$4\times4$ &
-128 &
-32 &
-32 &
-256 &
-38.45 &
-0.546 / 304.39 \\
-
-Area &
-13 &
-$4\times4$ &
-128 &
-32 &
-32 &
-256 &
-38.45 &
-0.546 / 304.39 \\
-
-Performance &
-0 &
-$32\times32$ &
-64 &
-64 &
-64 &
-512 &
-1091.94 &
-1444.727 / 3.93 \\
-
-Area + Performance &
-30 &
-$16\times4$ &
-128 &
-16 &
-64 &
-1024 &
-37.70 &
-1.953 / 86.83 \\
-
-Energy + Performance &
-8 &
-$32\times32$ &
-512 &
-16 &
-32 &
-256 &
-37.02 &
-32.070 / 4.97 \\
-
-Energy + Area + Performance &
-30 &
-$16\times4$ &
-128 &
-16 &
-64 &
-1024 &
-37.70 &
-1.953 / 86.83 \\
-
-\hline
-\end{tabular}%
-}
-
-\vspace{1mm}
-\begin{minipage}{0.96\textwidth}
-\footnotesize
-
-$^{a}$ The reported energy corresponds to the on-chip contribution,
-computed as
-$E_{\mathrm{on-chip}} =
-E_{\mathrm{workload}} - E_{\mathrm{DRAM}}$.
-The architectures are selected using the original optimization
-objectives, where energy corresponds to total workload energy
-including external DRAM. DRAM energy is removed here only for
-reporting and comparison purposes.
-
-Level~1 is executed independently for each optimization target.
-Consequently, architecture indices are local to each target and the
-same index in different rows does not necessarily identify the same
-architecture. For the performance-only target, multiple Level~2
-implementations achieve the same minimum workload latency; the
-reported physical metrics correspond to the lowest-energy
-implementation among the tied solutions.
-
-\end{minipage}
-
-\end{table*}
-
-\begin{table*}[t]
-\centering
-\caption{Winning architectures for the FP32 target sweep using an
-independent ZigZag-based Level~1 search for each optimization target.}
-\label{tab:fp32_target_winners}
-
-\setlength{\tabcolsep}{4pt}
-\renewcommand{\arraystretch}{1.15}
-
-\resizebox{0.98\textwidth}{!}{%
-\begin{tabular}{@{}lcccccccc@{}}
-\hline
-\textbf{Target} &
-\textbf{Arch.} &
-\textbf{PE array} &
-\makecell{\textbf{RF size}\\\textbf{(bit)}} &
-\makecell{\textbf{RF BW}\\\textbf{(bit/cycle)}} &
-\makecell{\textbf{GB size}\\\textbf{(Kib)}} &
-\makecell{\textbf{GB BW}\\\textbf{(bit/cycle)}} &
-\makecell{\textbf{On-chip Energy}\\\textbf{(mJ/inf.)$^{a}$}} &
-\makecell{\textbf{Area / Latency}\\\textbf{(mm$^2$ / ms)}} \\
-\hline
-
-Energy &
-53 &
-$16\times16$ &
-128 &
-128 &
-128 &
-1024 &
-15.43 &
-12.649 / 4.63 \\
-
-Energy + Area &
-45 &
-$8\times4$ &
-1024 &
-32 &
-32 &
-256 &
-17.73 &
-1.750 / 44.16 \\
-
-Area &
-27 &
-$4\times4$ &
-512 &
-64 &
-16 &
-256 &
-25.14 &
-0.794 / 128.96 \\
-
-Performance &
-6 &
-$32\times32$ &
-128 &
-128 &
-64 &
-512 &
-366.06 &
-1468.647 / 1.32 \\
-
-Area + Performance &
-53 &
-$16\times16$ &
-128 &
-128 &
-128 &
-1024 &
-15.43 &
-12.649 / 4.63 \\
-
-Energy + Performance &
-30 &
-$32\times32$ &
-1024 &
-32 &
-32 &
-1024 &
-25.12 &
-89.523 / 1.32 \\
-
-Energy + Area + Performance &
-53 &
-$16\times16$ &
-128 &
-128 &
-128 &
-1024 &
-15.43 &
-12.649 / 4.63 \\
-
-\hline
-\end{tabular}%
-}
-
-\vspace{1mm}
-\begin{minipage}{0.96\textwidth}
-\footnotesize
-
-$^{a}$ The reported energy corresponds to the on-chip contribution,
-computed as
-$E_{\mathrm{on-chip}} =
-E_{\mathrm{workload}} - E_{\mathrm{DRAM}}$.
-The architectures are selected using the original optimization
-objectives, where energy corresponds to total workload energy
-including external DRAM. DRAM energy is removed here only for
-reporting and comparison purposes.
-
-Level~1 is executed independently for each optimization target.
-Consequently, architecture indices are local to each target and the
-same index in different rows does not necessarily identify the same
-architecture. For the performance-only target, multiple Level~2
-implementations achieve the same minimum workload latency; the
-reported physical metrics correspond to the lowest-energy
-implementation among the tied solutions.
-
-\end{minipage}
-
-\end{table*}
-
-
-
-The results show that the preferred architecture changes substantially
-when optimizing the individual extremes. Minimum area favours a small
-$4\times4$ PE array, while minimum energy favours a $32\times8$
-array and maximum performance favours a $32\times32$ array. This
-confirms that the architectural parameters cannot be selected
-independently of the optimization target.
-
-The multi-objective selections expose different compromises.
-Architecture~108 is selected for both area--performance and the
-combined energy--area--performance objective. It uses a
-$16\times8$ PE array and reaches approximately 116.59~ms per
-inference with 1.78~mm$^2$ of area and 50.14~mJ of reported on-chip
-energy. In contrast, architecture~104 is selected for the
-energy--performance objective. Its larger $32\times32$ array reduces
-latency to approximately 21.08~ms, at the cost of increasing area to
-8.83~mm$^2$, while retaining a similar on-chip energy of 47.81~mJ.
-This illustrates how introducing area into the objective favours a
-smaller implementation even when this requires a substantial latency
-trade-off.
-
-For the area-only target, architectures~31 and~146 obtain the same
-minimum physical area of approximately 0.2653~mm$^2$. Table~
-\ref{tab:alexnet_target_winners} reports architecture~146 as the
-representative solution. The area-only result should therefore be
-interpreted as a tie at the primary objective rather than as a unique
-global winner.
-
-For the performance-only target, architecture~67 reaches approximately
-16.58~ms per inference, or 60.3~inferences/s. Several Level~2
-implementations can sustain the same Level~1 mapping and therefore tie
-in workload latency. The reported physical metrics correspond to one
-representative implementation of the winning architectural
-configuration.
-
-\subsection{Comparison with Published Accelerators}
-
-To give some context to the implementations generated by Talos, one
-representative accelerator configuration is compared with DNN
-accelerators reported in the literature.
-
-This comparison is intended as a reference rather than as a direct
-benchmark. The accelerators use different technologies, numerical
-precisions, workloads, operating points, and architectures.
-
-\begin{table*}[t]
-\centering
-\caption{Comparison of representative DNN accelerators and the
-Talos design selected for the combined energy, area, and performance
-objective.}
-\label{tab:dnn_accelerator_comparison}
-
-\setlength{\tabcolsep}{4pt}
-\renewcommand{\arraystretch}{1.15}
-
-\resizebox{0.98\textwidth}{!}{%
-\begin{tabular}{@{}lcccccc@{}}
-\hline
-\textbf{Accelerator} &
-\textbf{Technology} &
-\textbf{Precision} &
-\makecell{\textbf{Energy /}\\\textbf{inf.}} &
-\textbf{Area} &
-\textbf{Power} &
-\textbf{Performance} \\
-\hline
-
-TinyVers \cite{tinyvers} &
-22\,nm FDX &
-INT2/4/8 &
-\makecell{0.56--17.3\\$\mu$J$^{a}$} &
-6.25\,mm$^2$ &
-\makecell{1.7\,$\mu$W--\\20\,mW} &
-\makecell{up to\\17.6\,GOPS} \\
-
-Eyeriss \cite{chen2017eyeriss} &
-\makecell{65\,nm\\LP CMOS} &
-INT16 &
-8.01\,mJ$^{b}$ &
-12.25\,mm$^2$ &
-278\,mW &
-34.7 inf/s \\
-
-ENVISION \cite{envision,chen2019eyerissv2} &
-\makecell{28\,nm\\FDSOI} &
-4/8/16 bit &
-0.936\,mJ$^{b}$ &
-1.87\,mm$^2$ &
-7.6--290\,mW &
-$\sim$47 inf/s \\
-
-UNPU \cite{lee2018unpu,chen2019eyerissv2} &
-\makecell{65\,nm\\CMOS} &
-1--16 bit &
-0.911\,mJ$^{b}$ &
-16\,mm$^2$ &
-3.2--297\,mW &
-\makecell{691.2\,GOPS (8 bit)\\
-7.37\,TOPS (1 bit)} \\
-
-Eyeriss v2 \cite{chen2019eyerissv2} &
-\makecell{65\,nm\\CMOS} &
-INT8 &
-\makecell{1.50\,mJ$^{c}$\\
-0.391\,mJ$^{d}$} &
-\makecell{2695k NAND2\\
-+ 246\,kB SRAM} &
-\makecell{$\sim$419--\\574\,mW$^{e}$} &
-\makecell{278.7 inf/s\\
-1470.6 inf/s} \\
-
-SAURIA \cite{sauria2023} &
-\makecell{22\,nm\\GF22FDX} &
-FP16 &
---- &
-0.897\,mm$^2$ &
-258\,mW &
-\makecell{$\sim$6.10 inf/s$^{f}$\\
-284\,GFLOP/s peak} \\
-
-\textbf{Talos (E+A+P)} &
-\makecell{\textbf{65\,nm}\\\textbf{CMOS}} &
-\textbf{INT16} &
-\textbf{50.14\,mJ$^{g}$} &
-\textbf{1.78\,mm$^2$} &
-\textbf{0.430\,W$^{g}$} &
-\textbf{8.58 inf/s} \\
-
-\hline
-\end{tabular}%
-}
-
-\vspace{1mm}
-\begin{minipage}{0.92\textwidth}
-\footnotesize
-
-$^{a}$ TinyVers energy depends on the workload:
-0.555\,$\mu$J for OC-SVM, 2.12\,$\mu$J for TCN keyword spotting,
-6.27\,$\mu$J for CAE machine monitoring, and 17.33\,$\mu$J for
-ResNet-8 on CIFAR-10 \cite{tinyvers}.
-
-$^{b}$ Energy per inference corresponds to the convolutional layers
-of AlexNet. The Eyeriss value is derived from its reported power and
-throughput, while the ENVISION and UNPU values are taken from the
-comparison reported in \cite{chen2019eyerissv2}.
-
-$^{c}$ Eyeriss v2 energy per inference for AlexNet.
-
-$^{d}$ Eyeriss v2 energy per inference for MobileNet.
-
-$^{e}$ Approximate Eyeriss v2 power derived from the reported
-throughput and inference efficiency as
-$P = (\mathrm{inf/s})/(\mathrm{inf/J})$
-\cite{chen2019eyerissv2}.
-
-$^{f}$ SAURIA reports a VGG-16 execution time of 164\,ms using its
-on-the-fly data feeder and assuming 6.4\,GB/s of external DRAM
-bandwidth, corresponding to approximately 6.10\,inferences/s.
-The reported 258\,mW corresponds to accelerator power during
-computation. The paper does not directly report energy per VGG-16
-inference \cite{sauria2023}.
-
-$^{g}$ Talos results correspond to the Level~2 implementation
-selected for the combined energy, area, and performance objective
-(architecture~108). Energy and power exclude the external DRAM
-contribution. The on-chip energy is computed as
-$E_{\mathrm{on-chip}} =
-E_{\mathrm{workload}} - E_{\mathrm{DRAM}}$,
-and the reported power corresponds to the resulting average on-chip
-power over the workload execution. The Talos workload is the complete
-INT16 AlexNet model used in the exploration.
-
-Cross-accelerator comparisons should be interpreted as indicative
-rather than direct benchmarks. The designs differ in CMOS technology,
-numerical precision, workload definition, operating conditions, and
-reported performance metric. In particular, some published AlexNet
-energy values include only the convolutional layers, whereas the Talos
-results correspond to the complete workload used in the exploration.
-\end{minipage}
-\end{table*}
-
-\begin{table*}[t]
-\centering
-\caption{Best Talos implementations obtained for the FP16 VGG16
-workload under the different Level 2 objective combinations.}
-\label{tab:vgg16_fp16_results}
-
-\setlength{\tabcolsep}{3.2pt}
-\renewcommand{\arraystretch}{1.15}
-
-\resizebox{\textwidth}{!}{%
-\begin{tabular}{@{}ccccccclccccccc@{}}
-\hline
-\textbf{Obj.} &
-\makecell{\textbf{Best}\\\textbf{run}} &
-\makecell{\textbf{Energy}\\\textbf{[J]}} &
-\makecell{\textbf{Latency}\\\textbf{[s]}} &
-\makecell{\textbf{Inf.}\\\textbf{[s$^{-1}$]}} &
-\makecell{\textbf{Area}\\\textbf{[mm$^2$]}} &
-\makecell{\textbf{Power}\\\textbf{[W]}} &
-\textbf{PE} &
-\makecell{\textbf{PE}\\\textbf{array}} &
-\makecell{\textbf{RF size}\\\textbf{[bit]}} &
-\makecell{\textbf{RF BW}\\\textbf{[bit/cycle]}} &
-\makecell{\textbf{GB size}\\\textbf{[KiB]}} &
-\makecell{\textbf{GB BW}\\\textbf{[bit/cycle]}} &
-\makecell{\textbf{L1}\\\textbf{arch.}} &
-\makecell{\textbf{L2}\\\textbf{sol.}} \\
-\hline
-
-E &
-seed\_8 &
-1.20161 &
-0.202291 &
-4.94338 &
-14.4504 &
-5.94003 &
-\texttt{pe\_fpnew\_fp16\_fma} &
-$32\times32$ &
-256 &
-16 &
-128 &
-512 &
-75 &
-804 \\
-
-E+A &
-seed\_2 &
-2.68957 &
-11.0469 &
-0.0905232 &
-0.483009 &
-0.243469 &
-\texttt{pe\_fpnew\_fp16\_fma} &
-$4\times4$ &
-64 &
-16 &
-32 &
-256 &
-46 &
-3110 \\
-
-A &
-seed\_10 &
-5.78485 &
-26.2478 &
-0.0380984 &
-0.226259 &
-0.220394 &
-\texttt{pe\_fpnew\_fp16\_fma} &
-$4\times4$ &
-128 &
-8 &
-8 &
-64 &
-10 &
-4665 \\
-
-P &
-seed\_4 &
-4.34541 &
-0.161779 &
-6.18126 &
-114.82 &
-26.8601 &
-\texttt{pe\_sauria\_fp16} &
-$32\times32$ &
-1024 &
-256 &
-128 &
-1024 &
-17 &
-0 \\
-
-A+P &
-seed\_2 &
-2.12187 &
-1.79265 &
-0.557832 &
-1.97488 &
-1.18365 &
-\texttt{pe\_fpnew\_fp16\_fma} &
-$16\times8$ &
-256 &
-32 &
-32 &
-256 &
-12 &
-1608 \\
-
-E+P &
-seed\_3 &
-1.32083 &
-0.1996 &
-5.01002 &
-14.4504 &
-6.6174 &
-\texttt{pe\_fpnew\_fp16\_fma} &
-$32\times32$ &
-128 &
-32 &
-64 &
-1024 &
-56 &
-804 \\
-
-E+A+P &
-large\_pool &
-1.33646 &
-0.805047 &
-1.24216 &
-3.64061 &
-1.6601 &
-\texttt{pe\_fpnew\_fp16\_fma} &
-$32\times8$ &
-128 &
-16 &
-128 &
-1024 &
-93 &
-1555 \\
-
-\hline
-\end{tabular}%
-}
-
-\vspace{1mm}
-\begin{minipage}{0.97\textwidth}
-\footnotesize
-The workload corresponds to VGG16 adapted to ONNX using FP16
-operands. Level 1 is explored using energy, latency, and area
-simultaneously. The first column indicates the Level 2 objective
-combination, where E, A, and P denote energy per inference, area, and
-workload performance, respectively.
-
-The reported implementations were selected from ten independent runs
-using the standard exploration configuration and an additional run
-using a larger exploration pool. The common ideal used for the
-multi-objective comparison was recalculated over the complete feasible
-set from all eleven runs.
-As a result, the E+A+P case selects the implementation obtained from
-the larger exploration pool.
-
-\end{minipage}
-\end{table*}
-\begin{table*}[t]
-\centering
-\caption{Best Talos implementations obtained for the INT8 MobileNet
-workload under the different Level~2 objective combinations.}
-\label{tab:mobilenet_int8_results}
+\caption{Characterized processing elements used by the Level~2
+exploration.}
+\label{tab:characterized_pes}
 
 \setlength{\tabcolsep}{3.5pt}
 \renewcommand{\arraystretch}{1.15}
 
 \resizebox{0.98\textwidth}{!}{%
-\begin{tabular}{@{}lccccc@{}}
+\begin{tabular}{@{}llrrrrrr@{}}
 \hline
-\textbf{Case} &
-\makecell{\textbf{Energy}\\\textbf{[J]}} &
+\textbf{Precision} &
+\textbf{Processing element} &
 \makecell{\textbf{Area}\\\textbf{[mm$^2$]}} &
-\makecell{\textbf{Latency}\\\textbf{[s]}} &
-\makecell{\textbf{Performance}\\\textbf{[inf/s]}} &
-\makecell{\textbf{Power}\\\textbf{[W]}} \\
+\makecell{\textbf{Idle power}\\\textbf{[mW]}} &
+\makecell{\textbf{Active power}\\\textbf{[mW]}} &
+\makecell{\textbf{$f_{\max}$}\\\textbf{[MHz]}} &
+\makecell{\textbf{MACs /}\\\textbf{cycle}} &
+\makecell{\textbf{Dynamic energy}\\\textbf{[pJ/MAC]}} \\
 \hline
 
-E &
-0.112869445 &
-5.111114 &
-0.031664310 &
-31.5813 &
-3.564564 \\
+INT8 &
+\texttt{pe\_tms4517\_simple} &
+0.001275 &
+0.106 &
+0.436 &
+322.27 &
+1 &
+1.649 \\
 
-A &
-0.446843088 &
-0.265306 &
-1.071744580 &
-0.9331 &
-0.416931 \\
+INT8 &
+\texttt{pe\_gemmini\_like} &
+0.002025 &
+0.115 &
+0.404 &
+253.74 &
+1 &
+1.449 \\
 
-E+A &
-0.244724465 &
-0.512155 &
-0.810516235 &
-1.2338 &
-0.301937 \\
+INT8 &
+\texttt{pe\_sauria} &
+0.002398 &
+0.345 &
+0.741 &
+287.60 &
+1 &
+1.978 \\
 
-P &
-4.708420140 &
-1493.550121 &
-0.016577120 &
-60.3241 &
-284.031252 \\
+INT8 &
+\texttt{pe\_simple\_mac} &
+0.001166 &
+0.118 &
+0.467 &
+268.53 &
+1 &
+1.744 \\
 
-A+P &
-0.198233640 &
-1.700708 &
-0.111362410 &
-8.9797 &
-1.780077 \\
+INT8 &
+\texttt{pe\_tiny\_xpu} &
+0.001293 &
+0.106 &
+0.463 &
+267.38 &
+1 &
+1.782 \\
 
-E+P &
-0.124780467 &
-8.831982 &
-0.019710255 &
-50.7350 &
-6.330738 \\
+INT8 &
+\texttt{pe\_alibaba\_int8} &
+0.002676 &
+0.529 &
+1.153 &
+346.86 &
+1 &
+3.120 \\
 
-E+A+P &
-0.198233640 &
-1.700708 &
-0.111362410 &
-8.9797 &
-1.780077 \\
+INT8 &
+\texttt{pe\_openeye\_composite\_int8} &
+0.070829 &
+13.893 &
+13.979 &
+278.55 &
+2 &
+0.216 \\
+
+\hline
+
+INT16 &
+\texttt{pe\_sauria\_int16} &
+0.005094 &
+0.593 &
+1.649 &
+208.20 &
+1 &
+5.281 \\
+
+INT16 &
+\texttt{pe\_gemmini\_like\_int16} &
+0.005190 &
+0.354 &
+1.598 &
+200.48 &
+1 &
+6.221 \\
+
+INT16 &
+\texttt{pe\_tiny\_xpu\_int16} &
+0.003149 &
+0.187 &
+1.048 &
+200.12 &
+1 &
+4.305 \\
+
+\hline
+
+FP16 &
+\texttt{pe\_sauria\_fp16} &
+0.005479 &
+1.125 &
+1.778 &
+200.00 &
+1 &
+3.261 \\
+
+FP16 &
+\texttt{pe\_fpnew\_fp16\_fma} &
+0.004672 &
+1.061 &
+1.605 &
+200.08 &
+1 &
+2.723 \\
 
 \hline
 \end{tabular}%
 }
-
-\vspace{1mm}
-\begin{minipage}{0.96\textwidth}
-\footnotesize
-The workload corresponds to MobileNet using INT8 operands.
-E, A, and P denote energy per inference, area, and workload
-performance, respectively.
-\end{minipage}
 \end{table*}
 
+The number of alternatives is intentionally different between
+precisions. The INT8 pool provides seven compute implementations,
+while the INT16 and FP16 pools contain three and two alternatives,
+respectively. Level~2 can therefore select between different physical
+PE implementations without changing the Level~1 architecture.
 
-\subsection{TABLAS A ENSEÑAR}
+One particular case is
+\texttt{pe\_openeye\_composite\_int8}. Unlike the other INT8
+implementations, it provides two MAC operations per cycle and
+represents a larger composite processing element. This explains its
+considerably larger area and static power and gives Level~2 a
+different area--performance trade-off from the remaining INT8
+implementations.
+
+The memory design space is shared by the three pools. It contains
+twelve small register-file implementations and three larger
+global-buffer implementations. The register files include both 1RW
+and 1R1W organizations and cover several capacities and access
+bandwidths. The main ranges of the characterized memory components
+are summarized in Table~\ref{tab:characterized_memories}.
+
+The INT16 pool is used for both AlexNet experiments, the INT8 pool
+for the MobileNet/Eyeriss v2 comparison, and the FP16 pool for the
+VGG-16/SAURIA comparison. This keeps the workload numerical
+representation and the Level~2 compute implementation consistent
+throughout the final evaluation.
+
+\begin{table}[t]
+\centering
+\caption{Characterized memory design space shared by the INT8,
+INT16, and FP16 Level~2 pools.}
+\label{tab:characterized_memories}
+
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.15}
+
+\resizebox{0.98\columnwidth}{!}{%
+\begin{tabular}{@{}lccccc@{}}
+\hline
+\textbf{Type} &
+\textbf{Count} &
+\makecell{\textbf{Capacity}\\\textbf{[bit]}} &
+\makecell{\textbf{Bandwidth}\\\textbf{[bit/cycle]}} &
+\makecell{\textbf{Area}\\\textbf{[mm$^2$]}} &
+\makecell{\textbf{$f_{\max}$}\\\textbf{[MHz]}} \\
+\hline
+
+Register file &
+12 &
+64--2048 &
+8--256 &
+0.000719--0.021068 &
+794--1045 \\
+
+Global buffer &
+3 &
+8192--131072 &
+64--1024 &
+0.0856--1.3902 &
+591--681 \\
+
+\hline
+\end{tabular}%
+}
+\end{table}
+
+The register-file pool ranges from 64 to 2048 bits and provides
+bandwidths between 8 and 256 bits per cycle. The three global-buffer
+alternatives correspond to 8192, 32768, and 131072 bits, with
+bandwidths of 64, 256, and 1024 bits per cycle, respectively.
+Level~2 does not necessarily consider all of these implementations
+for every architecture. Capacity and bandwidth requirements inherited
+from Level~1 are used to discard incompatible memories before the
+physical objective is evaluated.
+
+External DRAM is modeled separately from the on-chip accelerator. For
+this reason, the tables report both on-chip energy and power and, when
+available, the corresponding values including the modeled DRAM
+contribution. This distinction is particularly important when comparing
+Talos against published chips, since most accelerator papers report
+chip power but do not provide the energy of the complete external
+memory system.
+
+The Level~2 objectives are denoted as E, A, and P. E minimizes energy
+per inference, A minimizes accelerator area, and P favors workload
+performance. Their combinations correspond to multi-objective selection
+using the scoring method described in the previous chapter.
+
+\subsection{End-to-End INT16 AlexNet Exploration}
+\label{sec:results_alexnet_proof}
+
+The complete INT16 AlexNet experiment is used as the main proof of
+concept of the tool. Unlike the Eyeriss-specific experiment presented
+later, this workload contains the complete AlexNet topology used by
+Talos, including the convolutional and fully connected layers. The
+objective here is therefore not to reproduce a published accelerator,
+but to show the different physical designs obtained by the complete
+Talos exploration flow.
+
+Table~\ref{tab:alexnet_int16_talos} shows the selected implementation
+for each Level~2 objective combination.
 
 \begin{table*}[t]
 \centering
-\caption{Talos design configurations obtained for an INT16 AlexNet
-workload under different optimization objectives.}
+\caption{Talos design configurations obtained for the complete INT16
+AlexNet workload under different Level~2 optimization objectives.}
 \label{tab:alexnet_int16_talos}
 
 \setlength{\tabcolsep}{3.2pt}
@@ -1710,30 +405,89 @@ $^{b}$ Total energy and power include the modeled external DRAM
 contribution. The total workload energy is the quantity used by Talos
 when energy is included as an optimization objective.
 
-$^{c}$ Latency is expressed in workload cycles assuming the 200\,MHz
+$^{c}$ Latency is expressed in workload cycles at the 200\,MHz
 operating frequency used for the Talos characterization.
 
-The workload corresponds to AlexNet using 16-bit integer operands.
-AlexNet is a standard convolutional neural network architecture;
-however, INT16 is not part of the original AlexNet specification and
-should be understood here as the numerical representation selected
-for this Talos experiment.
+The workload corresponds to the complete AlexNet topology using
+16-bit integer operands. INT16 is the numerical representation selected
+for this Talos experiment and is not part of the original AlexNet
+specification.
 
 \end{minipage}
-
 \end{table*}
+
+The results show the expected conflict between the three objectives.
+The energy-only configuration obtains the lowest total energy,
+112.869~mJ per inference, but requires 5.111~mm$^2$. At the opposite
+extreme, the area-only configuration reduces the accelerator to only
+0.202~mm$^2$, but its latency increases to 248021034 cycles and the
+large execution time also increases the total energy to
+450.138~mJ per inference.
+
+The performance-only result shows why a performance objective should
+not normally be used without an area or energy constraint. Talos keeps
+increasing the available parallel hardware until it obtains the lowest
+latency in the explored set. The resulting implementation reaches
+3315424 cycles, but requires 1493.550~mm$^2$ and more than 280~W of
+on-chip power. This point is not a realistic accelerator target, but it
+is useful to verify that the exploration is correctly exposing the
+trade-off instead of hiding it behind a fixed architecture template.
+
+The combined objectives produce more useful designs. In particular,
+the E+A+P configuration uses 1.701~mm$^2$, consumes 51.142~mJ of
+on-chip energy per inference, and completes the workload in 22272482
+cycles. It is not the best point in any single metric, but it avoids the
+very large area of the performance-oriented configurations and the very
+large latency of the area-oriented configurations. The A+P and E+A+P
+solutions also converge to the same area and latency, while including
+energy in the objective slightly improves both the on-chip and total
+energy. This configuration is therefore used as the representative
+balanced design in the later synthesis validation.
+
+Another result visible in Table~\ref{tab:alexnet_int16_talos} is the
+importance of the external memory contribution. For the E+A+P design,
+the on-chip energy is 51.142~mJ per inference, while the complete model
+including DRAM reaches 198.234~mJ. The difference is even larger for
+some of the area-oriented points. This is why the following comparisons
+keep on-chip and total figures separated whenever the published
+accelerator does not report DRAM energy.
+
+\subsection{Comparison with Published Accelerators}
+
+The next experiments compare Talos against three published DNN
+accelerators. A different workload is used for each comparison in order
+to reproduce the network, precision, and operating conditions reported
+by the corresponding paper as closely as possible.
+
+These comparisons should still be interpreted as reference points
+rather than exact chip-to-chip benchmarks. Talos uses characterized RTL
+blocks and analytical workload activity, while the published results
+come from fabricated accelerators or post-layout implementations.
+Voltage, memory system assumptions, physical design effort, and the
+exact definition of reported power can also differ between works.
+
+\subsubsection{Eyeriss v1: AlexNet INT16}
+
+Eyeriss v1 provides the closest comparison for the INT16 flow because
+both designs use a 65~nm technology, 16-bit integer arithmetic and a
+200~MHz core frequency. For this experiment, the Talos workload is not
+the complete AlexNet model from the previous subsection. Instead, it
+reproduces the five AlexNet convolutional layers and the batch-size-four
+setup used by Eyeriss. Talos energy and latency are normalized per
+image.
 
 \begin{table*}[t]
 \centering
-\caption{Comparison of the Talos FP16 VGG-16 configurations selected
-under different optimization objectives and the SAURIA accelerator.}
-\label{tab:vgg16_fp16_sauria_comparison}
+\caption{Comparison of the Talos INT16 AlexNet convolutional
+configurations selected under different optimization objectives and
+the Eyeriss v1 accelerator.}
+\label{tab:eyeriss_v1_comparison}
 
-\setlength{\tabcolsep}{3.2pt}
+\setlength{\tabcolsep}{2.8pt}
 \renewcommand{\arraystretch}{1.15}
 
 \resizebox{0.99\textwidth}{!}{%
-\begin{tabular}{@{}lcccccccc@{}}
+\begin{tabular}{@{}lccccccccc@{}}
 \hline
 \textbf{Configuration} &
 \textbf{Technology} &
@@ -1743,6 +497,387 @@ under different optimization objectives and the SAURIA accelerator.}
 \textbf{Area} &
 \makecell{\textbf{On-chip}\\\textbf{Power$^{a}$}} &
 \makecell{\textbf{Total}\\\textbf{Power$^{b}$}} &
+\makecell{\textbf{Latency}\\\textbf{(Mcycles/inf.)}} &
+\textbf{Performance} \\
+\hline
+
+Talos (E) &
+65\,nm CMOS &
+INT16 &
+44.060 &
+57.059 &
+3.251\,mm$^2$ &
+0.728\,W &
+0.943\,W &
+12.108 &
+16.52 inf/s \\
+
+Talos (E+A) &
+65\,nm CMOS &
+INT16 &
+56.486 &
+71.998 &
+2.828\,mm$^2$ &
+0.616\,W &
+0.785\,W &
+18.337 &
+10.91 inf/s \\
+
+Talos (A) &
+65\,nm CMOS &
+INT16 &
+45.536 &
+214.718 &
+0.265\,mm$^2$ &
+0.058\,W &
+0.275\,W &
+155.908 &
+1.28 inf/s \\
+
+Talos (P) &
+65\,nm CMOS &
+INT16 &
+550.904 &
+553.165 &
+386.255\,mm$^2$ &
+74.224\,W &
+74.528\,W &
+1.484 &
+134.73 inf/s \\
+
+Talos (A+P) &
+65\,nm CMOS &
+INT16 &
+44.060 &
+57.059 &
+3.251\,mm$^2$ &
+0.728\,W &
+0.943\,W &
+12.108 &
+16.52 inf/s \\
+
+Talos (E+P) &
+65\,nm CMOS &
+INT16 &
+78.835 &
+87.571 &
+46.633\,mm$^2$ &
+10.442\,W &
+11.599\,W &
+1.510 &
+132.45 inf/s \\
+
+Talos (E+A+P) &
+65\,nm CMOS &
+INT16 &
+44.060 &
+57.059 &
+3.251\,mm$^2$ &
+0.728\,W &
+0.943\,W &
+12.108 &
+16.52 inf/s \\
+
+\hline
+
+Eyeriss v1 \cite{chen2017eyeriss} &
+65\,nm CMOS &
+INT16 &
+8.01$^{c}$ &
+--$^{d}$ &
+12.25\,mm$^2$ &
+0.278\,W$^{c}$ &
+--$^{d}$ &
+$\sim$5.76$^{e}$ &
+34.7 inf/s$^{e}$ \\
+
+\hline
+\end{tabular}%
+}
+
+\vspace{1mm}
+\begin{minipage}{0.97\textwidth}
+\footnotesize
+
+$^{a}$ Talos on-chip energy excludes the external DRAM contribution.
+The corresponding on-chip power is computed over the complete workload
+execution. The Talos AlexNet convolutional workload uses batch size 4;
+energy and latency are normalized per image.
+
+$^{b}$ Talos total energy and power include the modeled external DRAM
+contribution. The total workload energy is the quantity used by Talos
+when energy is included as an optimization objective.
+
+$^{c}$ Eyeriss v1 reports a measured chip power of 278\,mW and a
+throughput of 34.7 frames/s for the five convolutional layers of
+AlexNet at a batch size of 4. Its energy per image is therefore derived
+as $E_{\mathrm{inf}}=P/(\mathrm{inf/s})\simeq8.01$\,mJ/inf.
+
+$^{d}$ Eyeriss v1 reports external DRAM traffic, but not the
+corresponding external-memory energy or total system power. These
+quantities are therefore left unspecified.
+
+$^{e}$ Eyeriss v1 operates at a 200\,MHz core frequency. Its equivalent
+latency is derived from the reported throughput as
+$N_{\mathrm{cycles}}=200\times10^6/34.7\simeq5.76$ million cycles per
+image. Talos latency is reported in equivalent million cycles per image
+at the same 200\,MHz reference frequency.
+
+\end{minipage}
+\end{table*}
+
+For this workload, the balanced E+A+P objective selects the same Talos
+implementation as the E and A+P cases. The design occupies
+3.251~mm$^2$, which is considerably smaller than the 12.25~mm$^2$
+reported for Eyeriss. However, the energy and performance results are
+worse. Talos requires 44.060~mJ of on-chip energy per image and
+12107646 cycles, compared with 8.01~mJ and approximately 5763689
+cycles for Eyeriss.
+
+This result is useful for two reasons. First, it shows that reducing
+area alone does not mean that the generated design is competitive in
+energy or latency. Second, it provides a realistic reference for the
+current Talos cost model: the generated architecture is much smaller,
+but the custom Eyeriss implementation is clearly more efficient for the
+specific row-stationary AlexNet workload for which it was designed.
+The comparison is also not completely symmetric because Eyeriss power
+is measured at 1~V, while the Talos IP characterization uses 1.2~V.
+
+As in the complete AlexNet experiment, optimizing only performance
+produces an extreme design. The P configuration reduces latency to
+1484444 cycles, but does so with an area of 386.255~mm$^2$ and more
+than 74~W of on-chip power. The E+P result reaches a latency close to
+this point with a much smaller, although still large, 46.633~mm$^2$
+implementation. This again shows the need to consider area together
+with performance during the physical selection stage.
+
+\subsubsection{Eyeriss v2: MobileNet V1 INT8}
+
+The Eyeriss v2 comparison uses the dense MobileNet V1 0.5/128 result.
+This is a particularly useful reference because both Talos and Eyeriss
+v2 use a 65~nm technology, INT8 arithmetic and a 200~MHz operating
+frequency. The dense Eyeriss result is used instead of the sparse mode
+because the Talos workload does not model the sparsity exploited by the
+sparse Eyeriss v2 configuration.
+
+\begin{table*}[t]
+\centering
+\caption{Comparison of the Talos INT8 MobileNet V1 0.5/128
+configurations selected under different optimization objectives and
+the dense Eyeriss v2 accelerator.}
+\label{tab:eyerissv2_mobilenet_comparison}
+
+\setlength{\tabcolsep}{2.8pt}
+\renewcommand{\arraystretch}{1.15}
+
+\resizebox{0.99\textwidth}{!}{%
+\begin{tabular}{@{}lccccccccc@{}}
+\hline
+\textbf{Configuration} &
+\textbf{Technology} &
+\textbf{Precision} &
+\makecell{\textbf{On-chip Energy}\\\textbf{(mJ/inf.)$^{a}$}} &
+\makecell{\textbf{Energy incl. DRAM}\\\textbf{(mJ/inf.)$^{b}$}} &
+\textbf{Area} &
+\makecell{\textbf{On-chip}\\\textbf{Power$^{a}$}} &
+\makecell{\textbf{Total}\\\textbf{Power$^{b}$}} &
+\makecell{\textbf{Latency}\\\textbf{(Mcycles/inf.)}} &
+\textbf{Performance} \\
+\hline
+
+Talos (E) &
+65\,nm CMOS &
+INT8 &
+0.972 &
+2.795 &
+5.672\,mm$^2$ &
+1.199\,W &
+3.450\,W &
+0.162 &
+1234.37 inf/s \\
+
+Talos (E+A) &
+65\,nm CMOS &
+INT8 &
+2.881 &
+7.276 &
+0.441\,mm$^2$ &
+0.090\,W &
+0.227\,W &
+6.417 &
+31.17 inf/s \\
+
+Talos (A) &
+65\,nm CMOS &
+INT8 &
+1.889 &
+17.320 &
+0.170\,mm$^2$ &
+0.041\,W &
+0.373\,W &
+9.285 &
+21.54 inf/s \\
+
+Talos (P) &
+65\,nm CMOS &
+INT8 &
+14.094 &
+15.524 &
+110.515\,mm$^2$ &
+24.326\,W &
+26.793\,W &
+0.116 &
+1725.94 inf/s \\
+
+Talos (A+P) &
+65\,nm CMOS &
+INT8 &
+1.399 &
+4.828 &
+1.536\,mm$^2$ &
+0.388\,W &
+1.338\,W &
+0.721 &
+277.23 inf/s \\
+
+Talos (E+P) &
+65\,nm CMOS &
+INT8 &
+2.079 &
+3.540 &
+15.237\,mm$^2$ &
+3.097\,W &
+5.275\,W &
+0.134 &
+1489.99 inf/s \\
+
+Talos (E+A+P) &
+65\,nm CMOS &
+INT8 &
+1.388 &
+4.816 &
+1.536\,mm$^2$ &
+0.385\,W &
+1.335\,W &
+0.721 &
+277.23 inf/s \\
+
+\hline
+
+Eyeriss v2 \cite{chen2019eyerissv2} &
+65\,nm TSMC LP &
+INT8 &
+0.508$^{c}$ &
+--$^{d}$ &
+\makecell{2695k NAND2\\+ 246\,kB SRAM$^{e}$} &
+0.651\,W$^{c}$ &
+--$^{d}$ &
+$\sim$0.156$^{f}$ &
+1282.1 inf/s$^{f}$ \\
+
+\hline
+\end{tabular}%
+}
+
+\vspace{1mm}
+\begin{minipage}{0.97\textwidth}
+\footnotesize
+
+$^{a}$ Talos on-chip energy excludes the external DRAM contribution.
+The corresponding on-chip power is computed over the complete workload
+execution.
+
+$^{b}$ Talos total energy and power include the modeled external DRAM
+contribution. The total workload energy is also the quantity used by
+the optimization whenever energy is included as an objective.
+
+$^{c}$ For dense MobileNet V1 0.5/128, Eyeriss v2 reports
+1969.8\,inf/J and 1282.1\,inf/s. The corresponding on-chip energy and
+average chip power are derived as
+$E_{\mathrm{inf}}=1/1969.8\simeq0.508$\,mJ/inf. and
+$P=(1282.1)/(1969.8)\simeq0.651$\,W.
+
+$^{d}$ Eyeriss v2 reports external DRAM traffic for the MobileNet
+workload, but does not provide the corresponding DRAM energy or total
+system power.
+
+$^{e}$ Eyeriss v2 reports 2695k NAND-2-equivalent gates for the
+logic and 246\,kB of on-chip SRAM. The reported gate count excludes the
+SRAM macros. Since the paper does not provide the complete post-layout
+silicon area in mm$^2$, the physical cost is shown in its published form
+rather than converted to an approximate area.
+
+$^{f}$ Both Talos and Eyeriss v2 use a 200\,MHz operating frequency in
+this comparison. Eyeriss v2 equivalent latency is derived from its
+reported throughput as
+$N_{\mathrm{cycles}}=200\times10^6/1282.1\simeq0.156$ million cycles
+per inference. The MobileNet benchmark uses batch size 1, width
+multiplier 0.5, and a $128\times128$ input.
+
+\end{minipage}
+\end{table*}
+
+The energy-oriented Talos point is the closest configuration to Eyeriss
+v2 in terms of performance. It completes the workload in 162026 cycles,
+which is very close to the 155994-cycle value derived for Eyeriss v2.
+Its on-chip energy, however, is 0.972~mJ per inference compared with
+0.508~mJ for Eyeriss v2, and its on-chip power is 1.199~W compared with
+0.651~W. Therefore, the current Talos implementation approaches the
+published accelerator in latency for this workload, but still pays a
+clear energy and power penalty.
+
+The E+P point reduces latency further to 134229 cycles, at the cost of a
+15.237~mm$^2$ accelerator and 2.079~mJ of on-chip energy. The
+performance-only point is faster again, but its area rises to
+110.515~mm$^2$. In contrast, the balanced E+A+P point reduces the area
+to 1.536~mm$^2$ and on-chip power to 0.385~W, while still completing an
+inference in 721433 cycles. This design is significantly slower than
+Eyeriss v2, but represents a much more conservative physical point in
+the explored Talos space.
+
+Eyeriss v2 does not provide a complete post-layout area in
+mm$^2$ for this implementation. Instead, the paper reports 2695k
+NAND-2-equivalent logic gates, excluding SRAM, together with 246\,kB of
+on-chip SRAM. Consequently, the physical cost is retained in the
+published gate-and-memory form rather than converted to a potentially
+misleading silicon-area estimate.
+
+The MobileNet result also shows that the configuration preferred by a
+balanced objective does not need to be the configuration that most
+closely reproduces the published accelerator. Talos can instead expose
+both alternatives: a point with similar latency to Eyeriss v2 and a
+smaller balanced point when area is also considered.
+
+\subsubsection{SAURIA: VGG-16 FP16}
+
+SAURIA is used as the floating-point comparison. Both experiments use
+VGG-16 with FP16 arithmetic, but the physical technologies are
+different: Talos uses the characterized 65~nm pool, while SAURIA is a
+post-layout GF22FDX 22~nm implementation. For the VGG-16 exploration,
+the final E+A+P solution was selected from the larger exploration pool,
+which produced the best balanced point over the complete set of runs.
+
+\begin{table*}[t]
+\centering
+\caption{Comparison of the Talos FP16 VGG-16 configurations selected
+under different optimization objectives and the SAURIA accelerator.}
+\label{tab:vgg16_fp16_sauria_comparison}
+
+\setlength{\tabcolsep}{2.8pt}
+\renewcommand{\arraystretch}{1.15}
+
+\resizebox{0.99\textwidth}{!}{%
+\begin{tabular}{@{}lccccccccc@{}}
+\hline
+\textbf{Configuration} &
+\textbf{Technology} &
+\textbf{Precision} &
+\makecell{\textbf{On-chip Energy}\\\textbf{(mJ/inf.)$^{a}$}} &
+\makecell{\textbf{Energy incl. DRAM}\\\textbf{(mJ/inf.)$^{b}$}} &
+\textbf{Area} &
+\makecell{\textbf{On-chip}\\\textbf{Power$^{a}$}} &
+\makecell{\textbf{Total}\\\textbf{Power$^{b}$}} &
+\makecell{\textbf{Latency}\\\textbf{(Mcycles/inf.)}} &
 \textbf{Performance} \\
 \hline
 
@@ -1754,6 +889,7 @@ FP16 &
 14.450\,mm$^2$ &
 3.774\,W &
 5.940\,W &
+40.46 &
 4.94 inf/s \\
 
 Talos (E+A) &
@@ -1764,6 +900,7 @@ FP16 &
 0.483\,mm$^2$ &
 0.114\,W &
 0.243\,W &
+2209.38 &
 0.091 inf/s \\
 
 Talos (A) &
@@ -1774,6 +911,7 @@ FP16 &
 0.226\,mm$^2$ &
 0.058\,W &
 0.220\,W &
+5249.56 &
 0.038 inf/s \\
 
 Talos (P) &
@@ -1784,6 +922,7 @@ FP16 &
 114.820\,mm$^2$ &
 26.203\,W &
 26.860\,W &
+32.36 &
 6.18 inf/s \\
 
 Talos (A+P) &
@@ -1794,6 +933,7 @@ FP16 &
 1.975\,mm$^2$ &
 0.518\,W &
 1.184\,W &
+358.53 &
 0.558 inf/s \\
 
 Talos (E+P) &
@@ -1804,6 +944,7 @@ FP16 &
 14.450\,mm$^2$ &
 3.961\,W &
 6.617\,W &
+39.92 &
 5.01 inf/s \\
 
 Talos (E+A+P) &
@@ -1814,6 +955,7 @@ FP16 &
 3.641\,mm$^2$ &
 0.947\,W &
 1.660\,W &
+161.01 &
 1.24 inf/s \\
 
 \hline
@@ -1821,12 +963,13 @@ FP16 &
 SAURIA \cite{sauria2023} &
 \makecell{22\,nm\\GF22FDX} &
 FP16 &
---$^{c}$ &
---$^{c}$ &
+$\sim$42.3$^{c}$ &
+--$^{d}$ &
 0.897\,mm$^2$ &
-0.258\,W$^{d}$ &
---$^{c}$ &
-284\,GFLOP/s peak$^{d}$ \\
+0.258\,W$^{c}$ &
+--$^{d}$ &
+$\sim$91.02$^{e}$ &
+\makecell{$\sim$6.10 inf/s$^{e}$\\284\,GFLOP/s peak} \\
 
 \hline
 \end{tabular}%
@@ -1847,445 +990,211 @@ $^{b}$ Total Talos energy and power include the modeled external DRAM
 contribution. The total workload energy is also the quantity used by
 the optimization when energy is included as an objective.
 
-$^{c}$ SAURIA does not report a directly comparable VGG-16
-energy-per-inference value including the external DRAM contribution.
-Consequently, neither total energy nor total system power is shown.
+$^{c}$ The SAURIA VGG-16 on-chip energy is a derived estimate obtained
+from the reported accelerator power and VGG-16 execution time:
+$E \simeq 0.258\,\mathrm{W}\times0.164\,\mathrm{s}
+\simeq42.3\,\mathrm{mJ/inference}$.
+The 258\,mW value is reported for operation at peak throughput;
+therefore, the derived VGG-16 energy should be interpreted as an
+approximate value rather than a directly measured
+energy-per-inference result.
 
-$^{d}$ SAURIA reports a post-layout FP16 implementation in
-GF22FDX 22\,nm with an area of 0.897\,mm$^2$, an average accelerator
-power of 258\,mW at peak throughput, and a peak throughput of
-284\,GFLOP/s \cite{sauria}. The reported power corresponds to the
-accelerator and is therefore compared with the Talos on-chip power
-rather than its total power including DRAM.
+$^{d}$ A directly comparable SAURIA total energy or system power
+including external DRAM is not reported.
 
-The comparison should be interpreted as indicative rather than as a
-direct benchmark. Talos and SAURIA use different technology nodes,
-and the published SAURIA performance is reported as peak arithmetic
-throughput rather than VGG-16 inferences per second.
+$^{e}$ SAURIA reports a VGG-16 execution time of approximately
+164\,ms using the on-the-fly data feeder and assuming 6.4\,GB/s of
+external DRAM bandwidth. Using the reported maximum frequency of
+555\,MHz gives approximately
+$0.164\times555\times10^6 \simeq 91.02$ million cycles per inference,
+corresponding to approximately 6.10 inferences/s. The benchmark
+considers convolutional and fully-connected layers and excludes
+pooling and activation layers.
+
+Talos latency cycles are derived from the reported workload latency
+using the 200\,MHz reference frequency employed in the characterization
+and Level~2 evaluation.
 
 \end{minipage}
 \end{table*}
+The VGG-16 exploration presents the same general trade-off observed in
+the integer workloads. The area-only point is very small, at
+0.226~mm$^2$, but only processes 0.038 inferences/s. The
+performance-only point reaches 6.18 inferences/s, which is close to the
+VGG-16 rate derived from the SAURIA execution time, but requires
+114.820~mm$^2$ and 26.203~W of on-chip power. It is therefore not a
+competitive physical implementation even though it reaches a similar
+workload-level throughput.
+
+The balanced E+A+P point is more representative of what Talos is
+intended to generate. It occupies 3.641~mm$^2$, consumes 0.947~W of
+on-chip power and reaches 1.24 inferences/s. SAURIA is still clearly
+better in area, power and performance, with 0.897~mm$^2$, 0.258~W and
+approximately 6.10 inferences/s. However, this is also the least direct
+of the three published-accelerator comparisons because SAURIA uses a
+much newer 22~nm technology and a heavily optimized custom FP16
+implementation.
+
+The energy-only Talos point reaches 4.94 inferences/s and the E+P point
+reaches 5.01 inferences/s, but both require 14.450~mm$^2$ and several
+watts of on-chip power. This shows that, for the current characterized
+FP16 pool, obtaining a SAURIA-like throughput is possible only by
+accepting a much larger physical cost. The result therefore identifies
+the FP16 compute implementation as an important target for future
+improvement of the available IP pool.
+
+\subsection{Validation Against Synthesized Implementations}
+
+The comparisons above evaluate the quality of the final accelerator
+points against published designs. A different question is whether the
+physical cost predicted by Talos is representative of the hardware
+that is obtained when the selected configuration is actually built.
+For this purpose, the E+A+P configurations were instantiated and
+synthesized, and their resulting area and active power were compared
+against the Talos Level~2 estimates.
+
+Table~\ref{tab:talos_estimation_validation} summarizes the available
+validation results. External DRAM is excluded, since the synthesized
+implementation only contains the on-chip accelerator.
 
 \begin{table*}[t]
 \centering
-\caption{Comparison of the Talos INT16 AlexNet convolutional
-configurations selected under different optimization objectives and
-the Eyeriss v1 accelerator.}
-\label{tab:eyeriss_v1_comparison}
+\caption{Summary of the deviation between Talos architectural
+estimates and synthesized E+A+P accelerator configurations.}
+\label{tab:talos_estimation_validation}
 
-\setlength{\tabcolsep}{3.2pt}
+\setlength{\tabcolsep}{3.5pt}
 \renewcommand{\arraystretch}{1.15}
 
-\resizebox{0.99\textwidth}{!}{%
-\begin{tabular}{@{}lcccccccc@{}}
+\resizebox{0.98\textwidth}{!}{%
+\begin{tabular}{@{}lrrrrrr@{}}
 \hline
 \textbf{Configuration} &
-\textbf{Technology} &
-\textbf{Precision} &
-\makecell{\textbf{On-chip Energy}\\\textbf{(mJ/inf.)$^{a}$}} &
-\makecell{\textbf{Energy incl. DRAM}\\\textbf{(mJ/inf.)$^{b}$}} &
-\textbf{Area} &
-\makecell{\textbf{On-chip}\\\textbf{Power$^{a}$}} &
-\makecell{\textbf{Total}\\\textbf{Power$^{b}$}} &
-\makecell{\textbf{Latency}\\\textbf{(cycles)$^{c}$}} \\
+\makecell{\textbf{Area}\\\textbf{Talos (mm$^2$)}} &
+\makecell{\textbf{Area}\\\textbf{Synth. (mm$^2$)}} &
+\makecell{\textbf{Area}\\\textbf{Deviation}} &
+\makecell{\textbf{Power}\\\textbf{Talos (W)}} &
+\makecell{\textbf{Power}\\\textbf{Synth. (W)}} &
+\makecell{\textbf{Power}\\\textbf{Deviation}} \\
 \hline
 
-Talos (E) &
-65\,nm CMOS &
-INT16 &
-44.060 &
-57.059 &
-3.251\,mm$^2$ &
-0.728\,W &
-0.943\,W &
-12107646 \\
+Eyeriss/AlexNet INT16 &
+3.251 &
+3.332 &
+$-2.43\%$ &
+0.728 &
+0.664 &
+$+9.56\%$ \\
 
-Talos (E+A) &
-65\,nm CMOS &
-INT16 &
-56.486 &
-71.998 &
-2.828\,mm$^2$ &
-0.616\,W &
-0.785\,W &
-18336893 \\
+SAURIA/VGG-16 FP16 &
+3.641 &
+2.657 &
+$+37.04\%$ &
+0.947 &
+0.651 &
+$+45.46\%$ \\
 
-Talos (A) &
-65\,nm CMOS &
-INT16 &
-45.536 &
-214.718 &
-0.265\,mm$^2$ &
-0.058\,W &
-0.275\,W &
-155908379 \\
+AlexNet INT16 &
+1.701 &
+1.729 &
+$-1.64\%$ &
+0.459 &
+0.373 &
+$+23.12\%$ \\
 
-Talos (P) &
-65\,nm CMOS &
-INT16 &
-550.904 &
-553.165 &
-386.255\,mm$^2$ &
-74.224\,W &
-74.528\,W &
-1484444 \\
-
-Talos (A+P) &
-65\,nm CMOS &
-INT16 &
-44.060 &
-57.059 &
-3.251\,mm$^2$ &
-0.728\,W &
-0.943\,W &
-12107646 \\
-
-Talos (E+P) &
-65\,nm CMOS &
-INT16 &
-78.835 &
-87.571 &
-46.633\,mm$^2$ &
-10.442\,W &
-11.599\,W &
-1509958 \\
-
-Talos (E+A+P) &
-65\,nm CMOS &
-INT16 &
-44.060 &
-57.059 &
-3.251\,mm$^2$ &
-0.728\,W &
-0.943\,W &
-12107646 \\
-
-\hline
-
-Eyeriss v1 \cite{chen2017eyeriss} &
-65\,nm CMOS &
-INT16 &
-8.01$^{d}$ &
---$^{e}$ &
-12.25\,mm$^2$ &
-0.278\,W$^{d}$ &
---$^{e}$ &
-5763689$^{f}$ \\
+Eyeriss v2/MobileNet INT8 &
+1.536 &
+1.554 &
+$-1.18\%$ &
+0.385 &
+0.333 &
+$+15.61\%$ \\
 
 \hline
 \end{tabular}%
 }
 
-\vspace{2mm}
-\begin{minipage}{0.99\textwidth}
+\vspace{1mm}
+\begin{minipage}{0.96\textwidth}
 \footnotesize
-
-$^{a}$ Talos on-chip figures include the selected PEs and on-chip
-memory hierarchy, excluding the external DRAM contribution.
-
-$^{b}$ Talos total figures include the external DRAM power and energy
-estimated from the workload activity.
-
-$^{c}$ The Talos workload reproduces the Eyeriss AlexNet convolutional
-benchmark with batch size 4. Energy and latency are normalized per
-image. Both Talos and Eyeriss v1 operate at a 200\,MHz core frequency
-in this comparison.
-
-$^{d}$ Eyeriss v1 reports a measured chip power of 278\,mW and a
-throughput of 34.7 frames/s for the five convolutional layers of
-AlexNet at 1\,V. Its energy per image is therefore derived as
-$E_{\mathrm{inf}}=P/(\mathrm{inf/s})\approx8.01$\,mJ/inf.
-
-$^{e}$ Eyeriss v1 reports the external DRAM traffic (15.4\,MB for a
-batch of four AlexNet images), but does not report the corresponding
-external-memory energy or total system power. These quantities are
-therefore left unspecified.
-
-$^{f}$ Eyeriss v1 latency is expressed as equivalent cycles per image
-and is derived from its measured 34.7 frames/s throughput at 200\,MHz:
-$N_{\mathrm{cycles}}=200\times10^6/34.7\approx5.76\times10^6$ cycles.
-
+The deviation is computed as
+$\Delta=(X_{\mathrm{Talos}}-X_{\mathrm{synth}})/
+X_{\mathrm{synth}}\times100$.
+Positive values indicate that Talos overestimates the synthesized
+result, whereas negative values indicate an underestimation.
+Talos power corresponds to the estimated on-chip workload power and
+is compared against the active power obtained from synthesis.
+External DRAM is excluded from this comparison.
 \end{minipage}
 
 \end{table*}
 
-\begin{table*}[t]
-\centering
-\caption{Comparison of the Talos INT8 MobileNet V1 0.5/128
-configurations selected under different optimization objectives and
-the Eyeriss v2 accelerator.}
-\label{tab:eyerissv2_mobilenet_comparison}
+For the two INT16 configurations, the area estimate is very close to
+the synthesized result. The Eyeriss-compatible design is underestimated
+by 2.43\%, while the complete AlexNet design is underestimated by only
+1.64\%. This is a good result for the area model and shows that summing
+the characterized physical IPs gives a useful estimate of the final
+accelerator footprint for these two cases.
 
-\setlength{\tabcolsep}{3.2pt}
-\renewcommand{\arraystretch}{1.15}
+Power is less accurate, but the error remains moderate for the integer
+implementations. Talos overestimates the Eyeriss-compatible design by
+9.56\% and the complete AlexNet design by 23.12\%. In both cases the
+error is conservative: the implementation obtained after synthesis
+consumes less active power than predicted by Talos.
 
-\resizebox{0.99\textwidth}{!}{%
-\begin{tabular}{@{}lcccccccc@{}}
-\hline
-\textbf{Configuration} &
-\textbf{Technology} &
-\textbf{Precision} &
-\makecell{\textbf{On-chip Energy}\\\textbf{(mJ/inf.)$^{a}$}} &
-\makecell{\textbf{Energy incl. DRAM}\\\textbf{(mJ/inf.)$^{b}$}} &
-\textbf{Area} &
-\makecell{\textbf{On-chip}\\\textbf{Power$^{a}$}} &
-\makecell{\textbf{Total}\\\textbf{Power$^{b}$}} &
-\makecell{\textbf{Latency}\\\textbf{(cycles)$^{f}$}} \\
-\hline
+The FP16 VGG-16 configuration shows a larger difference. Talos
+estimates 3.641~mm$^2$ and 0.947~W, while the synthesized design reports
+2.657~mm$^2$ and 0.651~W. The corresponding deviations are 37.04\% in
+area and 45.46\% in power. Therefore, the current Level~2 model should
+not be interpreted as a replacement for physical implementation. It is
+accurate enough to guide the exploration and rank candidate IP
+combinations, but its precision depends on the type of IPs being
+combined. In the current experiments the integer configurations match
+the synthesis results considerably better than the FP16 configuration.
 
-Talos (E) &
-65\,nm CMOS &
-INT8 &
-0.972 &
-2.795 &
-5.672\,mm$^2$ &
-1.199\,W &
-3.450\,W &
-162026 \\
-
-Talos (E+A) &
-65\,nm CMOS &
-INT8 &
-2.881 &
-7.276 &
-0.441\,mm$^2$ &
-0.090\,W &
-0.227\,W &
-6416591 \\
-
-Talos (A) &
-65\,nm CMOS &
-INT8 &
-1.889 &
-17.320 &
-0.170\,mm$^2$ &
-0.041\,W &
-0.373\,W &
-9284696 \\
-
-Talos (P) &
-65\,nm CMOS &
-INT8 &
-14.094 &
-15.524 &
-110.515\,mm$^2$ &
-24.326\,W &
-26.793\,W &
-115879 \\
-
-Talos (A+P) &
-65\,nm CMOS &
-INT8 &
-1.399 &
-4.828 &
-1.536\,mm$^2$ &
-0.388\,W &
-1.338\,W &
-721433 \\
-
-Talos (E+P) &
-65\,nm CMOS &
-INT8 &
-2.079 &
-3.540 &
-15.237\,mm$^2$ &
-3.097\,W &
-5.275\,W &
-134229 \\
-
-Talos (E+A+P) &
-65\,nm CMOS &
-INT8 &
-1.388 &
-4.816 &
-1.536\,mm$^2$ &
-0.385\,W &
-1.335\,W &
-721433 \\
-
-\hline
-
-Eyeriss v2 dense \cite{chen2019eyerissv2} &
-65\,nm TSMC LP &
-INT8 &
-0.508$^{c}$ &
---$^{d}$ &
---$^{e}$ &
-0.651\,W$^{c}$ &
---$^{d}$ &
-155994$^{g}$ \\
-
-\hline
-\end{tabular}%
-}
-
-\vspace{2mm}
-\begin{minipage}{0.99\textwidth}
-\footnotesize
-
-$^{a}$ Talos on-chip figures include the selected PEs and on-chip
-memory hierarchy, excluding the external DRAM contribution.
-
-$^{b}$ Talos total figures include the modeled external DRAM
-contribution. The total energy is also the quantity used by the
-optimization whenever energy is included as an objective.
-
-$^{c}$ Eyeriss v2 reports inference/J and inference/s rather than
-energy per inference and average power directly. For the dense
-MobileNet V1 0.5/128 workload, the paper reports 1969.8 inf/J and
-1282.1 inf/s. The values shown here are therefore derived as
-\[
-E_{\mathrm{inf}} =
-\frac{1}{1969.8}
-\approx 0.508\,\text{mJ/inf.},
-\]
-and
-\[
-P =
-E_{\mathrm{inf}}\times 1282.1
-\approx 0.651\,\text{W}.
-\]
-These values are treated as on-chip figures because the paper reports
-external DRAM traffic separately and its power breakdown is given for
-the accelerator's on-chip components.
-
-$^{d}$ The Eyeriss v2 paper reports external DRAM traffic for the
-MobileNet workload, but does not provide the corresponding DRAM energy
-or total system power. Therefore, no directly comparable value is
-reported for energy including DRAM or total power.
-
-$^{e}$ Eyeriss v2 is reported as an implementation with 2695k
-NAND-2-equivalent logic gates and 246\,kB of on-chip SRAM rather than
-as a directly comparable silicon area in mm$^2$. The area is therefore
-left unspecified in this table.
-
-$^{f}$ Talos and Eyeriss v2 operate at 200\,MHz in this comparison.
-Talos latency is reported directly in workload cycles at this
-frequency.
-
-$^{g}$ Eyeriss v2 latency in cycles is derived from the reported
-throughput at 200\,MHz:
-\[
-N_{\mathrm{cycles}} =
-\frac{200\times10^6}{1282.1}
-\approx 155994
-\]
-cycles per inference. The Eyeriss v2 benchmark uses batch size 1,
-MobileNet V1 with width multiplier 0.5, and a $128\times128$ input.
-
-The dense Eyeriss v2 result is used as the direct reference because
-the Talos workload models a dense MobileNet V1 0.5/128 network and
-does not reproduce the sparsity exploited by the sparse Eyeriss v2
-configuration.
-
-\end{minipage}
-
-\end{table*}
-%\subsection{Impact of the Hierarchical Exploration}
-
-
-%\subsubsection{Level 1 and Level 2 Ranking Comparison}
-
-% One of the main thesis results.
-%
-% Compare architectural preference before and after physical IP
-% instantiation.
-%
-% Important questions:
-% Does the best L1 point remain the best after IP selection?
-% Can an apparently worse L1 architecture obtain a better physical
-% implementation?
-%
-% Do this from the new final runs.
-
-
-%\subsubsection{Effect of Hardware Constraints}
-
-% Final constraint experiments.
-%
-% Suggested cases:
-% no constraints
-% area constraint
-% power constraint
-% minimum-frequency constraint
-% combined constraints.
-%
-% Repeat with one characterized pool and one representative workload.
-
-
-%\subsubsection{Design-Space Reduction}
-
-% Compare:
-% theoretical L1 architecture space
-% architectures actually evaluated
-% architectures transferred to L2
-% theoretical/compatible IP combinations
-% L2 combinations actually evaluated.
-%
-% This is the direct experiment for the hierarchical-search
-% hypothesis.
-
-
-%\subsubsection{Exploration Runtime}
-
-% Measure using the new final runs.
-%
-% L1 time
-% L2 time
-% total time
-% characterization time if relevant
-%
-% If possible, run the same small L2 space using exhaustive and
-% NSGA-II.
-
-
-%\subsection{Workload Case Studies}
-
-%\subsubsection{Integer Workload}
-
-% Use the characterized integer pool.
-%
-% Candidate workloads:
-% SqueezeNet INT8
-% AlexNet INT16, with the precision compatibility explicitly
-% considered.
-%
-% Report final architectural and physical alternatives.
-
-
-%\subsubsection{Floating-Point Workload}
-
-% Use FP16 and/or FP32 pool.
-%
-% Candidate workloads:
-% SqueezeNet FP16
-% ResNet18 first layer FP32.
-%
-% Keep workload and PE precision coherent for the final quantitative
-% comparison.
-
-
-%\subsubsection{Cross-Workload Comparison}
-
-% Compare the final results from at least two networks.
-%
-% Questions:
-% Does the preferred L1 architecture change?
-% Does the preferred PE change?
-% Does memory selection change?
-% Are the physical constraints equally important for each workload?
-%
-% Do not compare incompatible workload/PE precisions as if they were
-% equivalent implementations.
-
+This validation is important for the role of Level~2. The purpose of
+the level is to introduce technology-dependent information early enough
+to make better architectural decisions, without paying the cost of
+synthesizing every candidate in the design space. The results show that
+this approximation can be quite close for some configurations while
+still leaving enough error that the final selected accelerator should be
+validated by a conventional implementation flow.
 
 \subsection{Results Summary}
 
-% Fill only after all final experiments have been rerun.
-%
-% Keep quantitative:
-% design-space reduction
-% ranking changes
-% constraint effect
-% selected IP changes
-% workload dependence.
+The final experiments show several consistent behaviors across the
+three workloads.
+
+First, the Level~2 objective has a strong effect on the resulting
+hardware. Energy-only configurations tend to use more hardware to
+reduce memory traffic and execution time, while area-only
+configurations accept very long execution times. Performance-only
+optimization repeatedly produces very large accelerators with high
+power consumption. The multi-objective configurations avoid these
+extremes and produce more realistic accelerator candidates.
+
+Second, DRAM cannot be ignored when evaluating the generated designs.
+For several Talos points, the total energy including the modeled DRAM is
+much larger than the energy of the on-chip accelerator. Published
+accelerators often do not report this contribution, so separating both
+values is necessary to avoid presenting an unfair comparison.
+
+Third, the comparisons with Eyeriss v1, Eyeriss v2 and SAURIA show
+that Talos does not automatically outperform a custom accelerator
+optimized for one specific workload. The strongest result is obtained
+for the dense MobileNet/Eyeriss v2 case, where the Talos energy-oriented
+configuration reaches a very similar latency, although with higher
+on-chip energy and power. The Eyeriss v1 comparison shows a much
+smaller Talos area but worse energy and latency, while the SAURIA
+comparison shows that the current FP16 pool is still far from the
+physical efficiency of a custom 22~nm implementation.
+
+Finally, the synthesis validation supports the use of characterized IPs
+as a second exploration level. The area of both INT16 configurations is
+predicted within 2.5\% of the synthesized result, and their power is
+predicted within approximately 10--23\%. The FP16 case has a larger
+error, with Talos overestimating both area and power. Therefore, the
+current framework is best understood as a design-space reduction and
+selection tool: it can identify meaningful accelerator candidates using
+physical IP information, after which the final few designs can be
+passed to synthesis for accurate implementation results.
