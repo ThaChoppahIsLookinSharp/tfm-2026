@@ -628,28 +628,30 @@ from batch throughput to image throughput by multiplying by four.
 
 \end{minipage}
 \end{table*}
-For this workload, the balanced E+A+P objective selects the same Talos
-implementation as the E and A+P cases. The design occupies
-3.251~mm$^2$, which is considerably smaller than the 12.25~mm$^2$
-reported for Eyeriss. However, the energy and performance results are
-worse. Talos requires 44.060~mJ of on-chip energy per image and
-12.108 million cycles, compared with 8.01~mJ and approximately 5.76
-million cycles for Eyeriss.
+For this workload, the seven optimization objectives select different
+Talos implementations. The balanced E+A+P design occupies
+3.217~mm$^2$, 73.7\% less than the 12.25~mm$^2$ reported for Eyeriss.
+This area reduction comes at the cost of energy and performance: Talos
+requires 32.521~mJ of on-chip energy per image and 8.876 million cycles,
+approximately 4.1 and 1.5 times the respective Eyeriss values.
 
-This result is useful for two reasons. First, it shows that reducing
-area alone does not mean that the generated design is competitive in
-energy or latency. Second, it provides a realistic reference for the
-current Talos cost model: the generated architecture is much smaller,
-but the custom Eyeriss implementation is clearly more efficient for the
-specific row-stationary AlexNet workload for which it was designed.
-The comparison is also not completely symmetric because Eyeriss power
-is measured at 1~V, while the Talos IP characterization uses 1.2~V.
+The energy-oriented point exposes a different trade-off. It occupies
+5.111~mm$^2$ and completes an image in 5.000 million cycles, reaching
+40.00 inferences/s compared with 34.7 for Eyeriss. It therefore provides
+higher performance with less than half the area, but its 30.364~mJ of
+on-chip energy is still approximately 3.8 times the Eyeriss value. The
+custom Eyeriss implementation remains clearly more energy-efficient for
+the specific row-stationary AlexNet workload for which it was designed,
+but the Talos exploration can identify a smaller implementation with
+competitive latency. The comparison is also not completely symmetric
+because Eyeriss power is measured at 1~V, while the Talos IP
+characterization uses 1.2~V.
 
 As in the complete AlexNet experiment, optimizing only performance
 produces an extreme design. The P configuration reduces latency to
-1.484 million cycles, but does so with an area of 386.255~mm$^2$ and
-more than 74~W of on-chip power. The E+P result reaches a latency close
-to this point with a much smaller, although still large, 46.633~mm$^2$
+1.493 million cycles, but does so with an area of 14145.161~mm$^2$ and
+67.030~W of on-chip power. The E+P result reaches 1.845 million cycles
+with a much smaller, although still large, 30.510~mm$^2$
 implementation. This again shows the need to consider area together
 with performance during the physical selection stage.
 
@@ -1183,14 +1185,15 @@ accelerators often do not report this contribution, so separating both
 values is necessary to avoid presenting an unfair comparison.
 
 Third, the comparisons with Eyeriss v1, Eyeriss v2 and SAURIA show
-that Talos does not automatically outperform a custom accelerator
-optimized for one specific workload. The strongest result is obtained
-for the dense MobileNet/Eyeriss v2 case, where the Talos energy-oriented
-configuration reaches a very similar latency, although with higher
-on-chip energy and power. The Eyeriss v1 comparison shows a much
-smaller Talos area but worse energy and latency, while the SAURIA
-comparison shows that the current FP16 pool is still far from the
-physical efficiency of a custom 22~nm implementation.
+that Talos can find competitive performance points, although it does
+not match the energy efficiency of accelerators optimized for a
+specific workload. For Eyeriss v1, the energy-oriented Talos point
+uses less than half the area and reaches 40.00 inferences/s instead of
+34.7, but consumes approximately 3.8 times the on-chip energy. For the
+dense MobileNet/Eyeriss v2 case, the energy-oriented configuration
+reaches a very similar latency, although with higher on-chip energy and
+power. The SAURIA comparison shows that the current FP16 pool is still
+far from the physical efficiency of a custom 22~nm implementation.
 
 Finally, the synthesis validation supports the use of characterized IPs
 as a second exploration level. The area of both INT16 configurations is

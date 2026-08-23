@@ -53,9 +53,13 @@ without context.
 
 The comparisons with published accelerators provide a more demanding
 reference for the quality of the selected designs. For the Eyeriss v1
-AlexNet workload, the balanced Talos design occupies 3.251~mm$^2$,
-considerably less than the reported 12.25~mm$^2$, but requires more
-energy and approximately twice the latency. For dense MobileNet V1,
+AlexNet workload, the balanced Talos design occupies 3.217~mm$^2$,
+considerably less than the reported 12.25~mm$^2$, but requires
+approximately 4.1 times the on-chip energy and 1.5 times the latency.
+The energy-oriented point also occupies less than half the Eyeriss area
+and increases throughput from 34.7 to 40.00 inferences/s, although its
+on-chip energy remains approximately 3.8 times higher. For dense
+MobileNet V1,
 the energy-oriented Talos configuration reaches 0.162 million cycles
 per inference, close to the approximately 0.156 million cycles derived
 for Eyeriss v2, although its on-chip energy and power remain higher.
