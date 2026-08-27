@@ -640,18 +640,19 @@ The energy-oriented point exposes a different trade-off. It occupies
 5.111~mm$^2$ and completes an image in 5.000 million cycles, reaching
 40.00 inferences/s compared with 34.7 for Eyeriss. It therefore provides
 higher performance with less than half the area, but its 30.364~mJ of
-on-chip energy is still approximately 3.8 times the Eyeriss value. The
-custom Eyeriss implementation remains clearly more energy-efficient for
-the specific row-stationary AlexNet workload for which it was designed,
-but the Talos exploration can identify a smaller implementation with
-competitive latency. The comparison is also not completely symmetric
-because Eyeriss power is measured at 1~V, while the Talos IP
-characterization uses 1.2~V.
+on-chip energy is still approximately 3.8 times the Eyeriss value, and
+its 1.215~W of on-chip power is approximately 4.4 times the measured
+Eyeriss chip power. The custom Eyeriss implementation remains clearly
+more energy-efficient for the specific row-stationary AlexNet workload
+for which it was designed, but the Talos exploration can identify a
+smaller implementation with competitive latency. The comparison is
+also not completely symmetric because Eyeriss power is measured at
+1~V, while the Talos IP characterization uses 1.2~V.
 
 As in the complete AlexNet experiment, optimizing only performance
 produces an extreme design. The P configuration reduces latency to
 1.493 million cycles, but does so with an area of 14145.161~mm$^2$ and
-67.030~W of on-chip power. The E+P result reaches 1.845 million cycles
+268.136~W of on-chip power. The E+P result reaches 1.845 million cycles
 with a much smaller, although still large, 30.510~mm$^2$
 implementation. This again shows the need to consider area together
 with performance during the physical selection stage.
@@ -1132,34 +1133,22 @@ External DRAM is excluded from this comparison.
 \end{minipage}
 
 \end{table*}
-For the two INT16 configurations, the area estimate is very close to
-the synthesized result. The Eyeriss-compatible design is underestimated
-by 3.63\%, while the complete AlexNet design is underestimated by only
-1.64\%. Both estimates are therefore within 3.7\% of the synthesized
-area, showing that summing the characterized physical IPs gives a
-useful estimate of the final accelerator footprint for these two
-cases.
+The area estimate is close to the synthesized result for all four
+configurations. Talos slightly underestimates area in every case, with
+deviations between 1.18\% and 3.63\%. This consistent agreement across
+INT8, INT16, and FP16 shows that summing the characterized physical IPs
+provides a useful estimate of the final accelerator footprint for the
+configurations evaluated here.
 
-Power does not show the same consistency. Talos underestimates the
-Eyeriss-compatible design by 72.35\%, while it overestimates the
-complete AlexNet design by 23.12\%. The updated Eyeriss-compatible
+Power is less precise but follows a similarly consistent pattern. Talos
+overestimates synthesized active power by 10.73\% for the
+Eyeriss-compatible design, 11.92\% for the FP16 VGG-16 design, 23.12\%
+for the complete INT16 AlexNet design, and 15.61\% for the INT8
+MobileNet design. Thus, all four power estimates are conservative and
+remain within 23.2\% of synthesis. The updated Eyeriss-compatible
 synthesis reports 0.642~W of idle power and 0.662~W of active power.
 Its 4.999~ns critical path corresponds to a maximum frequency of
-200.040~MHz, satisfying the 200~MHz target. The power error is
-therefore not uniformly conservative and remains dependent on the
-specific implementation.
-
-The FP16 VGG-16 configuration shows a larger difference. Talos
-estimates 3.641~mm$^2$ and 0.947~W, while the synthesized design reports
-2.657~mm$^2$ and 0.651~W. The corresponding deviations are 37.04\% in
-area and 45.46\% in power. Therefore, the current Level~2 model should
-not be interpreted as a replacement for physical implementation. It is
-accurate enough to guide the exploration and rank candidate IP
-combinations, but its precision depends on the type of IPs being
-combined. In the current experiments, area is estimated more closely
-for the integer configurations, while power accuracy does not follow
-the same pattern: the Eyeriss-compatible design has the largest power
-deviation.
+200.040~MHz, satisfying the 200~MHz target.
 
 This validation is important for the role of Level~2. The purpose of
 the level is to introduce technology-dependent information early enough
@@ -1200,12 +1189,10 @@ power. The SAURIA comparison shows that the current FP16 pool is still
 far from the physical efficiency of a custom 22~nm implementation.
 
 Finally, the synthesis validation supports the use of characterized IPs
-as a second exploration level. The area of both INT16 configurations is
-predicted within 3.7\% of the synthesized result. Power is less
-consistent: Talos underestimates the Eyeriss-compatible design by
-72.35\%, while it overestimates the complete AlexNet and FP16 designs
-by 23.12\% and 45.46\%, respectively. Therefore, the current framework
-is best understood as a design-space reduction and selection tool: it
-can identify meaningful accelerator candidates using physical IP
-information, after which the final few designs can be passed to
+as a second exploration level. Across the four synthesized
+configurations, Talos underestimates area by 1.18--3.63\% and
+overestimates active power by 10.73--23.12\%. Therefore, the current
+framework is best understood as a design-space reduction and selection
+tool: it can identify meaningful accelerator candidates using physical
+IP information, after which the final few designs can be passed to
 synthesis for accurate implementation results.
