@@ -2,13 +2,13 @@
 \section{Project development}
 
 This section describes the decisions taken during the development of
-the project. The previous chapter defined the methodology. In this
+the project, according to the .defined methodology. In this
 chapter, the focus is how the requirements were translated into the
-structure of the tool: why the exploration was divided into two
+structure of the tool: how the exploration was divided into two
 levels, how the different parts are connected, and the scope that
 guided the implementation.
 
-The contribution of the thesis is Talos, a Python tool for
+The contribution of the thesis is the Talos tool, a Python tool for
 hierarchical design space exploration of DNN accelerators. Talos is
 intended as an architectural exploration tool: its purpose is to
 compare accelerator alternatives for a workload and a set of design
@@ -20,7 +20,7 @@ Talos is programmed in Python. The idea behind the software design is
 to make Talos easy to work on and modifiable without having to have
 broad knowledge about the full implementation. This is important
 because the tool is intended to be extended with new evaluation
-models, optimization objectives, workloads, and IP libraries.
+models, optimization objectives, workloads, IP libraries and technological nodes.
 
 The complete set of workload, IP-pool, and characterization
 requirements used by Talos is summarized in
@@ -59,7 +59,7 @@ configuration.
 accelerator description.
 \item ZigZag is used to evaluate the candidate in terms of energy,
 latency, and area-related cost.
-\item The architectural candidate can be converted into an abstract
+\item The architectural candidate is converted into an abstract
 accelerator representation.
 \item The second level selects compatible hardware IP blocks for the
 abstract components.
@@ -92,7 +92,7 @@ components such as the PE array, register files, and global buffer,
 but it does not yet select concrete IP implementations.
 
 This separation is important because the first level only needs to
-know what the architecture looks like, while the second level needs
+know what the architecture looks like, according to the structure of the DNN algorithm to be implemented, while the second level needs
 to know which hardware blocks could implement it.
 
 \subsubsection{Hardware architecture representation in ZigZag}
@@ -154,7 +154,8 @@ and a fixed bandwidth. This decision avoids letting the optimizer
 increase off-chip bandwidth without modeling the physical cost of
 the external memory interface.
 
-\subsection{Level 1: Architecture Exploration}
+\subsection{Level 1: Architectural Exploration}
+\label{subsec:genome}
 The first level of Talos performs architectural exploration. Its
 objective is to generate and evaluate accelerator candidates without
 selecting concrete hardware IP blocks yet.
@@ -197,7 +198,7 @@ configuration. This configuration is then used to generate the
 accelerator description consumed by ZigZag. ZigZag evaluates the
 mapping of the workload and provides the latency and dynamic energy
 information used by Talos. The area objective is evaluated separately
-using a Level 1 area calibration derived from the characterized IP
+using a Level 1 area calibration\footnote{calibration is the process of adjusting and tuning abstract software simulation models to match the physical measurements of real silicon or the high-fidelity golden data from low-level reference tools} derived from the characterized IP
 pool.
 
 Before starting the Level 1 exploration, Talos calibrates its energy
@@ -325,7 +326,7 @@ representation contains the following information:
 \item delay and maximum operating frequency;
 \item throughput;
 \item optional capacity and bandwidth;
-\item an idle and active power characterization;
+\item an idle and active power;
 \item the operating point associated with the power characterization,
 including frequency, voltage, temperature, and process corner;
 \item optional metadata describing properties required by the
@@ -353,7 +354,7 @@ require them in the same way. When an abstract component defines one
 of these requirements, Talos only considers IPs that provide at least
 the required capacity and bandwidth.
 
-The IP pool is loaded from a structured description file. This makes
+The IP pool is loaded from a structured description file (YAML format). This makes
 it possible to modify the set of available IPs without changing the
 code. The intended use is to populate this pool with values obtained
 from a coherent characterization flow, such as synthesis, memory
@@ -490,7 +491,7 @@ constraints.
 
 Area is accumulated across the selected components, taking into
 account the number of instances. Delay is approximated using the
-maximum delay among the selected blocks, throughput using the minimum
+maximum delay among the selected blocks, inference throughput using the minimum
 throughput, and the implementation frequency using the lowest maximum
 frequency of its components.
 
@@ -520,8 +521,7 @@ number of active PE instances and the characterized
 accesses reported by ZigZag are converted into an average access rate
 and compared with the bandwidth and access capability of the selected
 memory IP. If an implementation cannot sustain the original mapping,
-it is rejected instead of increasing the latency or generating a new
-mapping.
+it is rejected.
 
 This also defines how workload performance is calculated. The number
 of cycles for each layer is kept from the ZigZag mapping and the total
@@ -646,7 +646,7 @@ alternative selection heuristics when required.
 A cache mechanism is also included so that the same candidate does
 not need to be evaluated multiple times when several objectives are
 requested from the same result. This is especially useful when the
-evaluation step is expensive.
+evaluation step is expensive in memory and time.
 
 \subsection{Design Flow}
 The current Talos flow starts with the Level 1 architectural genome.
@@ -677,7 +677,7 @@ The exhaustive strategy evaluates all compatible IP combinations, up
 to a configurable maximum, and ranks the feasible implementations
 after the evaluation. NSGA-II explores only part of the design space
 and uses the selected objectives during the evolutionary search to
-obtain non-dominated alternatives.
+obtain non-dominated alternatives \todo{rephrase}(alternatives where you cannot improve one objective without worsening another).
 
 In both cases, the workload activity profile obtained from ZigZag in
 Level 1 is passed together with the abstract architecture. Therefore,
@@ -704,6 +704,7 @@ components.
 \item The feasible alternatives, their metrics, and the mapping
 generated by ZigZag for each selected architecture are exported for
 comparison.
+\item The ultimate mathematical output of NSGA-II is a Pareto front.
 \end{enumerate}
 
 Level 1 uses NSGA-II through \texttt{pymoo} and a fixed-length
@@ -788,7 +789,7 @@ The implemented tests cover several parts of the flow:
 \item compatibility checks between abstract components and IP blocks;
 \item rejection of invalid candidates when no compatible IP is
 available;
-\item generation and decoding of Level 2 genomes;
+\item (optional) generation and decoding of Level 2 genomes;
 \item construction of implemented accelerators;
 \item computation of area, delay, throughput, workload energy, and
 average power;
@@ -844,7 +845,48 @@ as an IP block in Level 2.
 %architectural alternatives and concrete IP combinations without
 %requiring an exhaustive joint exploration of both spaces.
 
+\subsection{Summary of the Chapter}
+
+This chapter presented the development of Talos and the main design
+decisions adopted to implement the proposed hierarchical exploration
+methodology. In particular, it described the separation between
+architectural exploration and physical IP selection, the
+representations used to connect both levels, the evaluation models,
+and the optimization mechanisms used throughout the flow.
+
+Milestone~\ref{milestone:m3} was addressed through the characterized
+IP representation and hardware pool. Physical components are described
+using the implementation and operating information required by the
+Level~2 PPA model, including area, timing, power, capacity, bandwidth,
+and workload-related capabilities when applicable. Compatibility
+between an abstract architecture and the available hardware is
+expressed through component requirements rather than RTL details.
+Consequently, different physical implementations can be evaluated
+while keeping the architectural representation independent of a
+particular RTL implementation or IP library.
+
+Milestone~\ref{milestone:m4} was fulfilled by keeping evaluation,
+optimization, workload description, hardware characterization, and
+exploration strategy as separate parts of the framework. Raw
+evaluation metrics are separated from the objectives selected by the
+optimizer, while workloads, constraints, IP pools, and objective
+combinations can be modified without redesigning the complete flow.
+Level~2 can additionally use either exhaustive enumeration or NSGA-II
+while sharing the same representation and evaluation model. This
+modularity also allows new characterization models and objective
+functions to be incorporated without changing the overall
+hierarchical methodology.
+
+The resulting implementation therefore provides the complete
+infrastructure required to move from workload-driven architectural
+exploration to the comparison of feasible physical implementations
+while maintaining the separation between both abstraction levels.
+The remaining milestone, Milestone~\ref{milestone:m5}, concerns the
+experimental validation of this methodology using representative DNN
+workloads and characterized hardware implementations, and is addressed
+in the following evaluation chapter.
 \subsection{Summary of Project Decisions}
+
 The development of Talos was guided by the decision to build a
 modular architectural exploration tool rather than a generator of one
 final accelerator.

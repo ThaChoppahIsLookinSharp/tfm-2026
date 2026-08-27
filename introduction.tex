@@ -103,11 +103,7 @@ from technology-dependent hardware IP instantiation,
 while still being modular to allow custom estimations on both levels.
 
 \subsection{Objective \& milestones}
-\todo[inline]{Checkear with Jordi \& Ricardo, mis notas dicen que un objetivo
-y varias milestones, pero ahora con este comment a lo mejor
-puedo haberlo apuntado mal}
-\todo[inline]{23\_aug. Actualizado. Tmb en project\_dev está conectado
-en el sentido de como hemos llegado o intentado llegar.}
+\label{subsec:milestones}
 The objective of this thesis is to assess the proposed hypothesis
 through the design and implementation of a tool based on
 a hierarchical design space exploration framework for DNN
@@ -129,26 +125,34 @@ and hardware-oriented design decisions.
 
 To achieve this objective, a set of milestones was established to guide the development and validation of the proposed framework.
 
-\begin{itemize}
-    \item Define a hierarchical exploration methodology that
+\begin{enumerate}
+    \renewcommand{\labelenumi}{M\arabic{enumi}.}
+    \renewcommand{\theenumi}{M\arabic{enumi}}
+
+    \item \label{milestone:m1}
+    Define a hierarchical exploration methodology that
     decouples high-level architectural exploration from low-level
     hardware instantiation.
 
-    \item Develop a mechanism to automatically generate and evaluate
+    \item \label{milestone:m2}
+    Develop a mechanism to automatically generate and evaluate
     candidate accelerator architectures using an existing DSE engine.
 
-    \item Define a hardware characterization representation that
+    \item \label{milestone:m3}
+    Define a hardware characterization representation that
     captures the information required for PPA evaluation while
     preserving a high level of abstraction.
 
-    \item Design the framework around modular components and
+    \item \label{milestone:m4}
+    Design the framework around modular components and
     pluggable evaluation functions, allowing optimization criteria
     and hardware models to be adapted or extended.
 
-    \item Validate the proposed methodology and implementation using
+    \item \label{milestone:m5}
+    Validate the proposed methodology and implementation using
     representative DNN workloads and characterized hardware
     implementations.
-\end{itemize}
+\end{enumerate}
 
 
 \subsection{Proposed approach}

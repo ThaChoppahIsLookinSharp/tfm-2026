@@ -24,10 +24,9 @@ IPs and evaluates the resulting physical implementation.
 The final comparisons use four workload configurations:
 
 \begin{itemize}
-    \item a complete AlexNet network using INT16 operands, used as the
-    main proof-of-concept exploration;
-    \item the five convolutional layers of AlexNet using INT16 and the
-    Eyeriss batch-size-four setup, used for comparison with Eyeriss v1;
+    \item a complete AlexNet network is the
+    main proof-of-concept exploration; the five convolutional layers of AlexNet using INT16 operands and the
+    Eyeriss batch-size-four setup, will be used for comparison with Eyeriss v1;
     \item MobileNet V1 0.5/128 using INT8 operands, used for comparison
     with the dense Eyeriss v2 result;
     \item VGG-16 using FP16 operands, used for comparison with SAURIA.
@@ -507,8 +506,8 @@ INT16 &
 30.364 &
 45.537 &
 5.111\,mm$^2$ &
-0.304\,W &
-0.455\,W &
+1.215\,W &
+1.821\,W &
 5.000 &
 40.00 inf/s \\
 
@@ -518,8 +517,8 @@ INT16 &
 45.592 &
 121.455 &
 0.575\,mm$^2$ &
-0.031\,W &
-0.082\,W &
+0.124\,W &
+0.330\,W &
 73.632 &
 2.72 inf/s \\
 
@@ -529,8 +528,8 @@ INT16 &
 60.189 &
 231.357 &
 0.318\,mm$^2$ &
-0.018\,W &
-0.069\,W &
+0.072\,W &
+0.277\,W &
 166.801 &
 1.20 inf/s \\
 
@@ -540,8 +539,8 @@ INT16 &
 2001.636 &
 2003.898 &
 14145.161\,mm$^2$ &
-67.030\,W &
-67.106\,W &
+268.136\,W &
+268.439\,W &
 1.493 &
 133.95 inf/s \\
 
@@ -551,8 +550,8 @@ INT16 &
 51.649 &
 86.318 &
 3.129\,mm$^2$ &
-0.183\,W &
-0.305\,W &
+0.731\,W &
+1.222\,W &
 14.132 &
 14.15 inf/s \\
 
@@ -562,8 +561,8 @@ INT16 &
 66.490 &
 77.362 &
 30.510\,mm$^2$ &
-1.801\,W &
-2.096\,W &
+7.208\,W &
+8.386\,W &
 1.845 &
 108.37 inf/s \\
 
@@ -573,8 +572,8 @@ INT16 &
 32.521 &
 64.195 &
 3.217\,mm$^2$ &
-0.183\,W &
-0.362\,W &
+0.733\,W &
+1.446\,W &
 8.876 &
 22.53 inf/s \\
 
@@ -600,15 +599,17 @@ $\sim$5.76$^{e}$ &
 \footnotesize
 
 $^{a}$ Talos on-chip energy excludes the external DRAM contribution.
-The Talos AlexNet convolutional workload uses batch size 4. The
-reported energy, power, and latency values are normalized per image
-by dividing the corresponding batch-level values by four.
+The Talos AlexNet convolutional workload uses batch size 4. Energy and
+equivalent latency are normalized per image by dividing the corresponding
+batch-level values by four. Average power is not divided by the batch
+size, since both energy and execution time scale by the same factor and
+therefore their ratio remains unchanged.
 
 $^{b}$ Talos total energy and power include the modeled external DRAM
 contribution. The total workload energy is the quantity used by Talos
-when energy is included as an optimization objective. As for the
-on-chip quantities, the reported values are normalized from batch size
-4 to a per-image basis.
+when energy is included as an optimization objective. Total energy is
+normalized from batch size 4 to a per-image basis, whereas average total
+power remains unchanged by this normalization.
 
 $^{c}$ Eyeriss v1 reports a measured chip power of 278\,mW and a
 throughput of 34.7 frames/s for the five convolutional layers of
@@ -1018,6 +1019,7 @@ pooling and activation layers.
 
 \end{minipage}
 \end{table*}
+
 The VGG-16 exploration presents the same general trade-off observed in
 the integer workloads. The area-only point is very small, at
 0.226~mm$^2$, but only processes 0.038 inferences/s. The
@@ -1083,17 +1085,17 @@ Eyeriss/AlexNet INT16 &
 3.217 &
 3.338 &
 $-3.63\%$ &
-0.183 &
+0.733 &
 0.662 &
-$-72.35\%$ \\
+$+10.73\%$ \\
 
 SAURIA/VGG-16 FP16 &
 3.641 &
-2.657 &
-$+37.04\%$ &
+3.706 &
+$-1.76\%$ &
 0.947 &
-0.651 &
-$+45.46\%$ \\
+0.846 &
+$+11.92\%$ \\
 
 AlexNet INT16 &
 1.701 &
@@ -1130,7 +1132,6 @@ External DRAM is excluded from this comparison.
 \end{minipage}
 
 \end{table*}
-
 For the two INT16 configurations, the area estimate is very close to
 the synthesized result. The Eyeriss-compatible design is underestimated
 by 3.63\%, while the complete AlexNet design is underestimated by only

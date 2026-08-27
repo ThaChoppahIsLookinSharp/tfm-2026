@@ -37,11 +37,24 @@ established. Its main output is a functional specification that makes
 the rest of the development less ambiguous. At this level, the tool is
 required to:
 
+\todo[inline]{que implica el onnx, porque? precsion, layers, etc
+en general input output, el output está escueto, no está claro el output
+a lo mejor da pa una figura, inputs X e Y, output Z.
+la characterización hecha por síntesis es relevante.
+Que la tecnología está presente en el input es relevante.
+}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\linewidth]{img/input_output.png}
+  \caption{Talos input/output overview used to define the functional requirements.}
+  \label{fig:talos-input-output}
+\end{figure}
+
 \begin{itemize}
-\item accept a DNN workload in ONNX format and obtain its numerical
-representation;
+\item accept a DNN workload in ONNX format;
 \item load and validate a YAML pool of characterized processing
-elements and memory IPs;
+elements and memory IPs using a certain technology node;
 \item generate and evaluate abstract accelerator architectures and
 preserve the workload activity obtained for the selected candidates;
 \item convert those candidates into Level~2 abstract components and
@@ -58,6 +71,7 @@ selected architecture, instead of hiding the trade-offs behind one
 design.
 \end{itemize}
 
+%figura here
 The complete input and configuration requirements are specified in
 Appendix~\ref{app:talos_requirements}.
 
@@ -253,9 +267,9 @@ first integration work with the selected exploration approach.
 
 The implementation started from the basic software skeleton of the
 project and progressively incorporated the main concepts defined in
-the previous phases. In particular, effort was dedicated not only to
-implementing functionality, but also to preserving the architectural
-qualities defined during the design stages. This meant keeping the
+the previous phases. In particular, effort was dedicated not only in
+implementing functionality, but also in preserving the architectural
+qualities defined during both design stages. This means keeping the
 code organized around well-separated components and maintaining a
 structure that would remain understandable as the project evolved.
 
@@ -268,7 +282,7 @@ new features. For that reason, implementation also acted as a source
 of feedback for refining previous design decisions.
 
 The implementation was built progressively. First, the architectural
-genome and its decoder were implemented. Then, the generation of
+genome (described in Subsection~\ref{subsec:genome}) and its decoder were implemented. Then, the generation of
 ZigZag-compatible accelerator descriptions was added. After that, the
 evaluator and objective extraction logic were introduced, allowing
 raw evaluation results to be exposed as different optimization
@@ -349,7 +363,7 @@ example IP pool.
 % flows.
 \subsection{HW Implementation}
 \todo[inline]{Propuesta de fujo de diseño para generar la síntesis del código SystemVerilog generado mediante las herramientas EDA y en las tecnologies disponibles en la UAB}
-
+\todo[inline]{Lista IP pool}
 Once the final architecture is selected, an accelerator RTL designs can
 be assembled in SystemVerilog by composing previously characterized processing and memory blocks. The main components included tiny-XPU INT16
 PEs, FPnew FP16 FMA units, simple INT8 MACs, BaseJump register files, 
@@ -364,18 +378,20 @@ treated as opaque SRAM macros, while external DRAM and its PHY were
 excluded from the accelerator silicon boundary. Area, timing, and vectorless
 power estimates were then extracted from the mapped Genus netlists and reports.
 
-\subsection{Fulfilment of the development milestones}
-The development milestones introduced in the Introduction provide a
+\subsection{Summary of the chapter.}
+The development milestones introduced in the Subsection~\ref{subsec:milestones} provide a
 direct way of assessing the resulting framework.
 
-The first milestone was fulfilled through the definition of the
+The milestone \ref{milestone:m1} was fulfilled through the definition of the
 two-level methodology. Architectural exploration is performed in
 Level~1 without selecting physical IPs, while Level~2 introduces the
 technology-dependent implementations. The abstract accelerator
 representation connects both levels without removing this separation.
 
-The second milestone was fulfilled through the Level~1 genome,
-NSGA-II exploration, and ZigZag integration. Together, these elements
+The milestone \ref{milestone:m2} was fulfilled through the Level~1 genome,
+NSGA-II exploration, using ZigZag which generates mappings for the
+candidate architectures and evaluates them according to the selected
+objectives. Together, these elements
 automatically generate candidate architectures, evaluate their
 mapping, energy, latency, and area-related cost, and preserve the
 selected alternatives for the second level.
@@ -387,12 +403,10 @@ component requirements. This allows the physical implementation to be
 evaluated without introducing RTL details into the architectural
 representation.
 
-The fourth milestone was fulfilled by separating the evaluators from
-the optimization objectives and by keeping the main parts of the flow
-as independent components. Workloads, IP pools, constraints, and
-objective combinations can be changed without modifying the complete
-exploration flow, and new objective functions can be added on top of
-the raw evaluation metrics.
+The fourth milestone was fulfilled by separating the evaluators from the optimization objectives and by keeping the main parts of the flow as independent components. Workloads,
+IP pools, constraints, and objective combinations can be changed without modifying the
+complete exploration flow, and new objective functions can be added on top of the raw
+evaluation metrics.
 
 Finally, the methodology and its implementation were validated with
 four workload configurations and characterized INT8, INT16, and FP16

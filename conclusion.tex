@@ -3,8 +3,8 @@
 
 \subsection{Conclusions}
 
-This thesis addressed the difficulty of exploring the large and
-strongly coupled design space of DNN accelerators. Architectural
+This thesis addresses the implementation of a flexible open.source EDA tool forexploring the large and
+strongly coupled design space for implementing application specific DNN accelerators. Architectural
 parameters such as the processing-element array, memory hierarchy and
 mapping determine the behavior of a design, but its final power,
 performance and area also depend on the physical blocks available in a
@@ -16,7 +16,7 @@ implemented efficiently.
 The main contribution of this work is Talos, a hierarchical design
 space exploration framework that separates these decisions into two
 connected levels. Level~1 explores abstract accelerator architectures
-using a discrete genome, NSGA-II and ZigZag. Selected candidates are
+using a discrete genome, NSGA-II, and ZigZag. Selected candidates are
 converted into an abstract accelerator representation that records
 their compute and memory requirements. Level~2 then matches these
 requirements with characterized processing elements and memory IPs and
@@ -86,7 +86,7 @@ therefore informative enough to reduce and rank the design space, but
 it does not replace synthesis or physical implementation of the final
 candidates.
 
-Within this scope, the results support the hypothesis of the thesis.
+Within this scope, the objective of this thesis has been achieved and the results support the hypothesis of the thesis.
 The hierarchical organization makes the exploration more manageable by
 restricting technology-dependent IP evaluation to architectures
 retained after Level~1, while conventional synthesis is required only
@@ -127,7 +127,7 @@ configurations. This would make it possible to explore on-chip storage
 and external bandwidth jointly without treating additional bandwidth
 as a cost-free resource.
 
-Finally, Talos could be connected to an RTL composition and physical
+Finally, Talos could be connected to both AI-based EDA tools and/or an RTL composition and physical
 implementation flow. Generating a structural design from the selected
 IP configuration, synthesizing it automatically and returning the
 measured results to the characterization database would close the loop
