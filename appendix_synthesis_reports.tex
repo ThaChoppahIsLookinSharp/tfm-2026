@@ -35,9 +35,11 @@ several thousand lines per configuration; only the first path (the
 critical path, from which the maximum frequency is derived) is
 reproduced here. Similarly, the SAURIA area report enumerates the
 $256$ FP16 processing elements individually, so only the top-level
-line is included, in landscape orientation because of its width. The complete files, together with the synthesis
-scripts and logs, are available in the project repository under
-\path{resultados/synthesis_reports_table/}.
+line is included, in landscape orientation because of its width. The
+reports reproduced here are stored in the thesis repository under
+\path{synthesis_reports/}, one directory per configuration; the
+complete synthesis artifacts, including scripts and logs, are kept
+with the raw results.
 
 \lstdefinestyle{rpt}{
     language={},
@@ -73,25 +75,25 @@ scripts and logs, are available in the project repository under
     \item[Configuration] E+A+P point of the complete INT16 AlexNet exploration of Section~\ref{sec:results_alexnet_proof}
 \end{description}
 
-\lstinputlisting[style=rpt,caption={\texttt{accelerator\_alexnet\_v2\_int16}: \texttt{qor.rpt}}]{resultados/synthesis_reports_table/artifacts_accelerator_alexnet_v2_int16/raw/accelerator_alexnet_v2_int16/qor.rpt}
+\lstinputlisting[style=rpt,caption={\texttt{accelerator\_alexnet\_v2\_int16}: \texttt{qor.rpt}}]{synthesis_reports/accelerator_alexnet_v2_int16/qor.rpt}
 
-\lstinputlisting[style=rptwide,caption={\texttt{accelerator\_alexnet\_v2\_int16}: \texttt{area.rpt}}]{resultados/synthesis_reports_table/artifacts_accelerator_alexnet_v2_int16/raw/accelerator_alexnet_v2_int16/area.rpt}
+\lstinputlisting[style=rptwide,caption={\texttt{accelerator\_alexnet\_v2\_int16}: \texttt{area.rpt}}]{synthesis_reports/accelerator_alexnet_v2_int16/area.rpt}
 
-\lstinputlisting[style=rpt,caption={\texttt{accelerator\_alexnet\_v2\_int16}: \texttt{gates.rpt}}]{resultados/synthesis_reports_table/artifacts_accelerator_alexnet_v2_int16/raw/accelerator_alexnet_v2_int16/gates.rpt}
+\lstinputlisting[style=rpt,caption={\texttt{accelerator\_alexnet\_v2\_int16}: \texttt{gates.rpt}}]{synthesis_reports/accelerator_alexnet_v2_int16/gates.rpt}
 
-\lstinputlisting[style=rpt,caption={\texttt{accelerator\_alexnet\_v2\_int16}: \texttt{clocks.rpt}}]{resultados/synthesis_reports_table/artifacts_accelerator_alexnet_v2_int16/raw/accelerator_alexnet_v2_int16/clocks.rpt}
+\lstinputlisting[style=rpt,caption={\texttt{accelerator\_alexnet\_v2\_int16}: \texttt{clocks.rpt}}]{synthesis_reports/accelerator_alexnet_v2_int16/clocks.rpt}
 
-\lstinputlisting[style=rpt,caption={\texttt{accelerator\_alexnet\_v2\_int16}: \texttt{check\_design.rpt}}]{resultados/synthesis_reports_table/artifacts_accelerator_alexnet_v2_int16/raw/accelerator_alexnet_v2_int16/check_design.rpt}
+\lstinputlisting[style=rpt,caption={\texttt{accelerator\_alexnet\_v2\_int16}: \texttt{check\_design.rpt}}]{synthesis_reports/accelerator_alexnet_v2_int16/check_design.rpt}
 
-\lstinputlisting[style=rptwide,caption={\texttt{accelerator\_alexnet\_v2\_int16}: \texttt{timing.rpt} (critical path only)},lastline=111]{resultados/synthesis_reports_table/artifacts_accelerator_alexnet_v2_int16/raw/accelerator_alexnet_v2_int16/timing.rpt}
+\lstinputlisting[style=rptwide,caption={\texttt{accelerator\_alexnet\_v2\_int16}: \texttt{timing.rpt} (critical path only)},lastline=111]{synthesis_reports/accelerator_alexnet_v2_int16/timing.rpt}
 
-\lstinputlisting[style=rpt,caption={\texttt{accelerator\_alexnet\_v2\_int16}: \texttt{power/idle\_activity.rpt}}]{resultados/synthesis_reports_table/artifacts_accelerator_alexnet_v2_int16/raw/accelerator_alexnet_v2_int16/power/idle_activity.rpt}
+\lstinputlisting[style=rpt,caption={\texttt{accelerator\_alexnet\_v2\_int16}: \texttt{power/idle\_activity.rpt}}]{synthesis_reports/accelerator_alexnet_v2_int16/power/idle_activity.rpt}
 
-\lstinputlisting[style=rpt,caption={\texttt{accelerator\_alexnet\_v2\_int16}: \texttt{power/idle.rpt}}]{resultados/synthesis_reports_table/artifacts_accelerator_alexnet_v2_int16/raw/accelerator_alexnet_v2_int16/power/idle.rpt}
+\lstinputlisting[style=rpt,caption={\texttt{accelerator\_alexnet\_v2\_int16}: \texttt{power/idle.rpt}}]{synthesis_reports/accelerator_alexnet_v2_int16/power/idle.rpt}
 
-\lstinputlisting[style=rpt,caption={\texttt{accelerator\_alexnet\_v2\_int16}: \texttt{power/active\_activity.rpt}}]{resultados/synthesis_reports_table/artifacts_accelerator_alexnet_v2_int16/raw/accelerator_alexnet_v2_int16/power/active_activity.rpt}
+\lstinputlisting[style=rpt,caption={\texttt{accelerator\_alexnet\_v2\_int16}: \texttt{power/active\_activity.rpt}}]{synthesis_reports/accelerator_alexnet_v2_int16/power/active_activity.rpt}
 
-\lstinputlisting[style=rpt,caption={\texttt{accelerator\_alexnet\_v2\_int16}: \texttt{power/active.rpt}}]{resultados/synthesis_reports_table/artifacts_accelerator_alexnet_v2_int16/raw/accelerator_alexnet_v2_int16/power/active.rpt}
+\lstinputlisting[style=rpt,caption={\texttt{accelerator\_alexnet\_v2\_int16}: \texttt{power/active.rpt}}]{synthesis_reports/accelerator_alexnet_v2_int16/power/active.rpt}
 
 \clearpage
 \subsection{Eyeriss v1 / AlexNet INT16 (E+A+P)}
@@ -103,25 +105,25 @@ scripts and logs, are available in the project repository under
     \item[Configuration] E+A+P point of the Eyeriss~v1 comparison
 \end{description}
 
-\lstinputlisting[style=rpt,caption={\texttt{accelerator\_eyerissv3\_int16}: \texttt{qor.rpt}}]{resultados/synthesis_reports_table/artifacts_accelerator_eyerissv3_int16/raw/accelerator_eyerissv3_int16/qor.rpt}
+\lstinputlisting[style=rpt,caption={\texttt{accelerator\_eyerissv3\_int16}: \texttt{qor.rpt}}]{synthesis_reports/accelerator_eyerissv3_int16/qor.rpt}
 
-\lstinputlisting[style=rptwide,caption={\texttt{accelerator\_eyerissv3\_int16}: \texttt{area.rpt}}]{resultados/synthesis_reports_table/artifacts_accelerator_eyerissv3_int16/raw/accelerator_eyerissv3_int16/area.rpt}
+\lstinputlisting[style=rptwide,caption={\texttt{accelerator\_eyerissv3\_int16}: \texttt{area.rpt}}]{synthesis_reports/accelerator_eyerissv3_int16/area.rpt}
 
-\lstinputlisting[style=rpt,caption={\texttt{accelerator\_eyerissv3\_int16}: \texttt{gates.rpt}}]{resultados/synthesis_reports_table/artifacts_accelerator_eyerissv3_int16/raw/accelerator_eyerissv3_int16/gates.rpt}
+\lstinputlisting[style=rpt,caption={\texttt{accelerator\_eyerissv3\_int16}: \texttt{gates.rpt}}]{synthesis_reports/accelerator_eyerissv3_int16/gates.rpt}
 
-\lstinputlisting[style=rpt,caption={\texttt{accelerator\_eyerissv3\_int16}: \texttt{clocks.rpt}}]{resultados/synthesis_reports_table/artifacts_accelerator_eyerissv3_int16/raw/accelerator_eyerissv3_int16/clocks.rpt}
+\lstinputlisting[style=rpt,caption={\texttt{accelerator\_eyerissv3\_int16}: \texttt{clocks.rpt}}]{synthesis_reports/accelerator_eyerissv3_int16/clocks.rpt}
 
-\lstinputlisting[style=rpt,caption={\texttt{accelerator\_eyerissv3\_int16}: \texttt{check\_design.rpt}}]{resultados/synthesis_reports_table/artifacts_accelerator_eyerissv3_int16/raw/accelerator_eyerissv3_int16/check_design.rpt}
+\lstinputlisting[style=rpt,caption={\texttt{accelerator\_eyerissv3\_int16}: \texttt{check\_design.rpt}}]{synthesis_reports/accelerator_eyerissv3_int16/check_design.rpt}
 
-\lstinputlisting[style=rptwide,caption={\texttt{accelerator\_eyerissv3\_int16}: \texttt{timing.rpt} (critical path only)},lastline=111]{resultados/synthesis_reports_table/artifacts_accelerator_eyerissv3_int16/raw/accelerator_eyerissv3_int16/timing.rpt}
+\lstinputlisting[style=rptwide,caption={\texttt{accelerator\_eyerissv3\_int16}: \texttt{timing.rpt} (critical path only)},lastline=111]{synthesis_reports/accelerator_eyerissv3_int16/timing.rpt}
 
-\lstinputlisting[style=rpt,caption={\texttt{accelerator\_eyerissv3\_int16}: \texttt{power/idle\_activity.rpt}}]{resultados/synthesis_reports_table/artifacts_accelerator_eyerissv3_int16/raw/accelerator_eyerissv3_int16/power/idle_activity.rpt}
+\lstinputlisting[style=rpt,caption={\texttt{accelerator\_eyerissv3\_int16}: \texttt{power/idle\_activity.rpt}}]{synthesis_reports/accelerator_eyerissv3_int16/power/idle_activity.rpt}
 
-\lstinputlisting[style=rpt,caption={\texttt{accelerator\_eyerissv3\_int16}: \texttt{power/idle.rpt}}]{resultados/synthesis_reports_table/artifacts_accelerator_eyerissv3_int16/raw/accelerator_eyerissv3_int16/power/idle.rpt}
+\lstinputlisting[style=rpt,caption={\texttt{accelerator\_eyerissv3\_int16}: \texttt{power/idle.rpt}}]{synthesis_reports/accelerator_eyerissv3_int16/power/idle.rpt}
 
-\lstinputlisting[style=rpt,caption={\texttt{accelerator\_eyerissv3\_int16}: \texttt{power/active\_activity.rpt}}]{resultados/synthesis_reports_table/artifacts_accelerator_eyerissv3_int16/raw/accelerator_eyerissv3_int16/power/active_activity.rpt}
+\lstinputlisting[style=rpt,caption={\texttt{accelerator\_eyerissv3\_int16}: \texttt{power/active\_activity.rpt}}]{synthesis_reports/accelerator_eyerissv3_int16/power/active_activity.rpt}
 
-\lstinputlisting[style=rpt,caption={\texttt{accelerator\_eyerissv3\_int16}: \texttt{power/active.rpt}}]{resultados/synthesis_reports_table/artifacts_accelerator_eyerissv3_int16/raw/accelerator_eyerissv3_int16/power/active.rpt}
+\lstinputlisting[style=rpt,caption={\texttt{accelerator\_eyerissv3\_int16}: \texttt{power/active.rpt}}]{synthesis_reports/accelerator_eyerissv3_int16/power/active.rpt}
 
 \clearpage
 \subsection{Eyeriss v2 / MobileNet V1 INT8 (E+A+P)}
@@ -133,25 +135,25 @@ scripts and logs, are available in the project repository under
     \item[Configuration] E+A+P point of the Eyeriss~v2 comparison
 \end{description}
 
-\lstinputlisting[style=rpt,caption={\texttt{accelerator\_eyerissv2\_int8}: \texttt{qor.rpt}}]{resultados/synthesis_reports_table/artifacts_accelerator_eyerissv2_int8/raw/accelerator_eyerissv2_int8/qor.rpt}
+\lstinputlisting[style=rpt,caption={\texttt{accelerator\_eyerissv2\_int8}: \texttt{qor.rpt}}]{synthesis_reports/accelerator_eyerissv2_int8/qor.rpt}
 
-\lstinputlisting[style=rptwide,caption={\texttt{accelerator\_eyerissv2\_int8}: \texttt{area.rpt}}]{resultados/synthesis_reports_table/artifacts_accelerator_eyerissv2_int8/raw/accelerator_eyerissv2_int8/area.rpt}
+\lstinputlisting[style=rptwide,caption={\texttt{accelerator\_eyerissv2\_int8}: \texttt{area.rpt}}]{synthesis_reports/accelerator_eyerissv2_int8/area.rpt}
 
-\lstinputlisting[style=rpt,caption={\texttt{accelerator\_eyerissv2\_int8}: \texttt{gates.rpt}}]{resultados/synthesis_reports_table/artifacts_accelerator_eyerissv2_int8/raw/accelerator_eyerissv2_int8/gates.rpt}
+\lstinputlisting[style=rpt,caption={\texttt{accelerator\_eyerissv2\_int8}: \texttt{gates.rpt}}]{synthesis_reports/accelerator_eyerissv2_int8/gates.rpt}
 
-\lstinputlisting[style=rpt,caption={\texttt{accelerator\_eyerissv2\_int8}: \texttt{clocks.rpt}}]{resultados/synthesis_reports_table/artifacts_accelerator_eyerissv2_int8/raw/accelerator_eyerissv2_int8/clocks.rpt}
+\lstinputlisting[style=rpt,caption={\texttt{accelerator\_eyerissv2\_int8}: \texttt{clocks.rpt}}]{synthesis_reports/accelerator_eyerissv2_int8/clocks.rpt}
 
-\lstinputlisting[style=rpt,caption={\texttt{accelerator\_eyerissv2\_int8}: \texttt{check\_design.rpt}}]{resultados/synthesis_reports_table/artifacts_accelerator_eyerissv2_int8/raw/accelerator_eyerissv2_int8/check_design.rpt}
+\lstinputlisting[style=rpt,caption={\texttt{accelerator\_eyerissv2\_int8}: \texttt{check\_design.rpt}}]{synthesis_reports/accelerator_eyerissv2_int8/check_design.rpt}
 
-\lstinputlisting[style=rptwide,caption={\texttt{accelerator\_eyerissv2\_int8}: \texttt{timing.rpt} (critical path only)},lastline=88]{resultados/synthesis_reports_table/artifacts_accelerator_eyerissv2_int8/raw/accelerator_eyerissv2_int8/timing.rpt}
+\lstinputlisting[style=rptwide,caption={\texttt{accelerator\_eyerissv2\_int8}: \texttt{timing.rpt} (critical path only)},lastline=88]{synthesis_reports/accelerator_eyerissv2_int8/timing.rpt}
 
-\lstinputlisting[style=rpt,caption={\texttt{accelerator\_eyerissv2\_int8}: \texttt{power/idle\_activity.rpt}}]{resultados/synthesis_reports_table/artifacts_accelerator_eyerissv2_int8/raw/accelerator_eyerissv2_int8/power/idle_activity.rpt}
+\lstinputlisting[style=rpt,caption={\texttt{accelerator\_eyerissv2\_int8}: \texttt{power/idle\_activity.rpt}}]{synthesis_reports/accelerator_eyerissv2_int8/power/idle_activity.rpt}
 
-\lstinputlisting[style=rpt,caption={\texttt{accelerator\_eyerissv2\_int8}: \texttt{power/idle.rpt}}]{resultados/synthesis_reports_table/artifacts_accelerator_eyerissv2_int8/raw/accelerator_eyerissv2_int8/power/idle.rpt}
+\lstinputlisting[style=rpt,caption={\texttt{accelerator\_eyerissv2\_int8}: \texttt{power/idle.rpt}}]{synthesis_reports/accelerator_eyerissv2_int8/power/idle.rpt}
 
-\lstinputlisting[style=rpt,caption={\texttt{accelerator\_eyerissv2\_int8}: \texttt{power/active\_activity.rpt}}]{resultados/synthesis_reports_table/artifacts_accelerator_eyerissv2_int8/raw/accelerator_eyerissv2_int8/power/active_activity.rpt}
+\lstinputlisting[style=rpt,caption={\texttt{accelerator\_eyerissv2\_int8}: \texttt{power/active\_activity.rpt}}]{synthesis_reports/accelerator_eyerissv2_int8/power/active_activity.rpt}
 
-\lstinputlisting[style=rpt,caption={\texttt{accelerator\_eyerissv2\_int8}: \texttt{power/active.rpt}}]{resultados/synthesis_reports_table/artifacts_accelerator_eyerissv2_int8/raw/accelerator_eyerissv2_int8/power/active.rpt}
+\lstinputlisting[style=rpt,caption={\texttt{accelerator\_eyerissv2\_int8}: \texttt{power/active.rpt}}]{synthesis_reports/accelerator_eyerissv2_int8/power/active.rpt}
 
 \clearpage
 \subsection{SAURIA / VGG-16 FP16 (E+A+P)}
@@ -163,25 +165,25 @@ scripts and logs, are available in the project repository under
     \item[Configuration] E+A+P point of the SAURIA comparison
 \end{description}
 
-\lstinputlisting[style=rpt,caption={\texttt{accelerator\_sauria\_vgg16\_float16}: \texttt{qor.rpt}}]{resultados/synthesis_reports_table/artifacts_accelerator_sauria_vgg16_float16/raw/accelerator_sauria_vgg16_float16/qor.rpt}
+\lstinputlisting[style=rpt,caption={\texttt{accelerator\_sauria\_vgg16\_float16}: \texttt{qor.rpt}}]{synthesis_reports/accelerator_sauria_vgg16_float16/qor.rpt}
 
 \begin{landscape}
-\lstinputlisting[style=rptwide,caption={\texttt{accelerator\_sauria\_vgg16\_float16}: \texttt{area.rpt} (top-level module only)},lastline=12]{resultados/synthesis_reports_table/artifacts_accelerator_sauria_vgg16_float16/raw/accelerator_sauria_vgg16_float16/area.rpt}
+\lstinputlisting[style=rptwide,caption={\texttt{accelerator\_sauria\_vgg16\_float16}: \texttt{area.rpt} (top-level module only)},lastline=12]{synthesis_reports/accelerator_sauria_vgg16_float16/area.rpt}
 \end{landscape}
 
 
-\lstinputlisting[style=rpt,caption={\texttt{accelerator\_sauria\_vgg16\_float16}: \texttt{gates.rpt}}]{resultados/synthesis_reports_table/artifacts_accelerator_sauria_vgg16_float16/raw/accelerator_sauria_vgg16_float16/gates.rpt}
+\lstinputlisting[style=rpt,caption={\texttt{accelerator\_sauria\_vgg16\_float16}: \texttt{gates.rpt}}]{synthesis_reports/accelerator_sauria_vgg16_float16/gates.rpt}
 
-\lstinputlisting[style=rpt,caption={\texttt{accelerator\_sauria\_vgg16\_float16}: \texttt{clocks.rpt}}]{resultados/synthesis_reports_table/artifacts_accelerator_sauria_vgg16_float16/raw/accelerator_sauria_vgg16_float16/clocks.rpt}
+\lstinputlisting[style=rpt,caption={\texttt{accelerator\_sauria\_vgg16\_float16}: \texttt{clocks.rpt}}]{synthesis_reports/accelerator_sauria_vgg16_float16/clocks.rpt}
 
-\lstinputlisting[style=rpt,caption={\texttt{accelerator\_sauria\_vgg16\_float16}: \texttt{check\_design.rpt}}]{resultados/synthesis_reports_table/artifacts_accelerator_sauria_vgg16_float16/raw/accelerator_sauria_vgg16_float16/check_design.rpt}
+\lstinputlisting[style=rpt,caption={\texttt{accelerator\_sauria\_vgg16\_float16}: \texttt{check\_design.rpt}}]{synthesis_reports/accelerator_sauria_vgg16_float16/check_design.rpt}
 
-\lstinputlisting[style=rptwide,caption={\texttt{accelerator\_sauria\_vgg16\_float16}: \texttt{timing.rpt} (critical path only)},lastline=134]{resultados/synthesis_reports_table/artifacts_accelerator_sauria_vgg16_float16/raw/accelerator_sauria_vgg16_float16/timing.rpt}
+\lstinputlisting[style=rptwide,caption={\texttt{accelerator\_sauria\_vgg16\_float16}: \texttt{timing.rpt} (critical path only)},lastline=134]{synthesis_reports/accelerator_sauria_vgg16_float16/timing.rpt}
 
-\lstinputlisting[style=rpt,caption={\texttt{accelerator\_sauria\_vgg16\_float16}: \texttt{power/idle\_activity.rpt}}]{resultados/synthesis_reports_table/artifacts_accelerator_sauria_vgg16_float16/raw/accelerator_sauria_vgg16_float16/power/idle_activity.rpt}
+\lstinputlisting[style=rpt,caption={\texttt{accelerator\_sauria\_vgg16\_float16}: \texttt{power/idle\_activity.rpt}}]{synthesis_reports/accelerator_sauria_vgg16_float16/power/idle_activity.rpt}
 
-\lstinputlisting[style=rpt,caption={\texttt{accelerator\_sauria\_vgg16\_float16}: \texttt{power/idle.rpt}}]{resultados/synthesis_reports_table/artifacts_accelerator_sauria_vgg16_float16/raw/accelerator_sauria_vgg16_float16/power/idle.rpt}
+\lstinputlisting[style=rpt,caption={\texttt{accelerator\_sauria\_vgg16\_float16}: \texttt{power/idle.rpt}}]{synthesis_reports/accelerator_sauria_vgg16_float16/power/idle.rpt}
 
-\lstinputlisting[style=rpt,caption={\texttt{accelerator\_sauria\_vgg16\_float16}: \texttt{power/active\_activity.rpt}}]{resultados/synthesis_reports_table/artifacts_accelerator_sauria_vgg16_float16/raw/accelerator_sauria_vgg16_float16/power/active_activity.rpt}
+\lstinputlisting[style=rpt,caption={\texttt{accelerator\_sauria\_vgg16\_float16}: \texttt{power/active\_activity.rpt}}]{synthesis_reports/accelerator_sauria_vgg16_float16/power/active_activity.rpt}
 
-\lstinputlisting[style=rpt,caption={\texttt{accelerator\_sauria\_vgg16\_float16}: \texttt{power/active.rpt}}]{resultados/synthesis_reports_table/artifacts_accelerator_sauria_vgg16_float16/raw/accelerator_sauria_vgg16_float16/power/active.rpt}
+\lstinputlisting[style=rpt,caption={\texttt{accelerator\_sauria\_vgg16\_float16}: \texttt{power/active.rpt}}]{synthesis_reports/accelerator_sauria_vgg16_float16/power/active.rpt}

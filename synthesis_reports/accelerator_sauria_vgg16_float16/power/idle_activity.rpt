@@ -1,0 +1,8 @@
+scenario: idle
+method: vectorless_explicit
+primary_inputs_expected: 15
+primary_inputs_annotated: 15
+primary_input_percent: 100.0
+random_toggle_rate_per_ns: 0.1
+alternating_toggle_rate_per_ns: 0.2
+clock_activity: derived_from_create_clock
