@@ -468,12 +468,16 @@ of Table~\ref{tab:alexnet_int16_talos}.
 Figure~\ref{fig:pareto_alexnet_int16} plots the same seven
 configurations in the latency--area--energy space: the single-objective
 points sit at the extremes of the curve, while the combined objectives
-fall in between. The energy-only configuration
-obtains the lowest on-chip and total energy, 39.757 and 112.869~mJ per
-inference, and a latency of 6332862 cycles, only improved by the
-performance-oriented points (3315424 cycles for the performance-only
-configuration and 3942051 cycles for the energy-performance one), but
-it requires 5.111~mm$^2$ and 1.256~W of on-chip power. The area-only
+fall in between. A+P and E+A+P almost coincide, since they share the
+same area and latency, 1.701~mm$^2$ and 22272482 cycles, and only
+differ in on-chip energy, 51.819 against 51.142~mJ, a 1.3\% difference
+that is not visible on a logarithmic axis. The energy-only
+configuration obtains the lowest on-chip and total energy, 39.757 and
+112.869~mJ per inference, and a latency of 6332862 cycles, only
+improved by the performance-oriented points (3315424 cycles for the
+performance-only configuration and 3942051 cycles for the
+energy-performance one), but it requires 5.111~mm$^2$ and 1.256~W of
+on-chip power. The area-only
 configuration is the opposite case: it reduces the accelerator to
 0.202~mm$^2$ and 0.045~W, but its latency grows to 248021034 cycles,
 39 times the energy-only value, its on-chip energy rises to 55.723~mJ
@@ -713,8 +717,13 @@ latency--area--energy space with logarithmic axes.}
 
 For this workload, the seven optimization objectives select different
 Talos implementations. Figure~\ref{fig:pareto_eyeriss_v1} shows their
-position in the latency--area--energy space. The balanced E+A+P design occupies
-3.217~mm$^2$, 73.7\% less than the 12.25~mm$^2$ reported for Eyeriss.
+position in the latency--area--energy space. In this case no two
+points coincide, but E, E+P and E+A+P appear close together because
+they differ by less than one decade in every axis, for example
+5.111 against 3.217~mm$^2$ and 5.000 against 8.876 million cycles for
+E and E+A+P, and the logarithmic scale compresses these differences.
+The balanced E+A+P design occupies 3.217~mm$^2$, 73.7\% less than the
+12.25~mm$^2$ reported for Eyeriss.
 This area reduction comes at the cost of energy and performance: Talos
 requires 32.521~mJ of on-chip energy per image and 8.876 million cycles,
 approximately 4.1 and 1.5 times the respective Eyeriss values.
@@ -919,9 +928,12 @@ latency--area--energy space with logarithmic axes.}
 \end{figure}
 
 Figure~\ref{fig:pareto_eyeriss_v2} shows the seven selected
-configurations in the latency--area--energy space. The energy-oriented 
-Talos point is the closest configuration to Eyeriss
-v2 in terms of performance. It completes the workload in 0.162 million
+configurations in the latency--area--energy space. As in the AlexNet
+experiment, A+P and E+A+P overlap: both have 1.536~mm$^2$ and 0.721
+million cycles, and including energy in the objective only reduces the
+on-chip energy from 1.399 to 1.388~mJ.
+The energy-oriented Talos point is the closest configuration to
+Eyeriss v2 in terms of performance. It completes the workload in 0.162 million
 cycles, which is very close to the approximately 0.156 million cycles
 derived for Eyeriss v2.
 Its on-chip energy, however, is 0.972~mJ per inference compared with
@@ -1149,8 +1161,21 @@ latency--area--energy space with logarithmic axes.}
 
 The VGG-16 exploration presents the same general trade-off observed in
 the integer workloads. Figure~\ref{fig:pareto_sauria} shows the seven
-selected configurations in the latency--area--energy space. 
-The area-only point is very small, at
+selected configurations in the latency--area--energy space. Here the
+overlapping pair is E and E+P, and in this case the two points are
+different Level~1 architectures that collapse into the same physical
+implementation. Both use a 32$\times$32 array, but E has a 128~kbit
+global buffer with 512~bit/cycle and 256~bit register files, whereas
+E+P has a 64~kbit global buffer with 1024~bit/cycle and 128~bit
+register files. Both select the \texttt{pe\_fpnew\_fp16\_fma} datapath
+and, for both sets of requirements, the smallest compatible memories
+in the FP16 pool are the same 128$\times$1024 global buffer and
+8$\times$32 register files, so Level~2 instantiates exactly the same
+IPs and the area is identical, 14.450~mm$^2$. The remaining
+differences come from the Level~1 mapping: 39.92 against 40.46 million
+cycles, and a higher DRAM energy for the smaller global buffer of E+P,
+530 against 438~mJ, which is why its total energy is higher despite
+its lower latency. The area-only point is very small, at
 0.226~mm$^2$, but only processes 0.038 inferences/s. The
 performance-only point reaches 6.18 inferences/s, which is close to the
 VGG-16 rate derived from the SAURIA execution time, but requires
@@ -1196,6 +1221,7 @@ the FP16 compute implementation as an important target for future
 improvement of the available IP pool.
 
 \subsection{Validation Against Synthesized Implementations}
+\label{sec:synthesis_validation}
 
 The comparisons above evaluate the quality of the final accelerator
 points against published designs. A different question is whether the
@@ -1207,7 +1233,11 @@ against the Talos Level~2 estimates.
 
 Table~\ref{tab:talos_estimation_validation} summarizes the available
 validation results. External DRAM is excluded, since the synthesized
-implementation only contains the on-chip accelerator.
+implementation only contains the on-chip accelerator. The Genus
+reports from which the synthesized values are taken (quality of
+results, area, gate distribution, critical path and idle and active
+power) are reproduced for each configuration in
+Appendix~\ref{app:synthesis_reports}.
 
 \begin{table*}[t]
 \centering
@@ -1296,7 +1326,10 @@ MobileNet design. Thus, all four power estimates are conservative and
 remain within 23.2\% of synthesis. The updated Eyeriss-compatible
 synthesis reports 0.642~W of idle power and 0.662~W of active power.
 Its 4.999~ns critical path corresponds to a maximum frequency of
-200.040~MHz, satisfying the 200~MHz target.
+200.040~MHz, satisfying the 200~MHz target. The other three designs
+also meet the 5~ns constraint, and the INT8 design closes timing with
+a 3.942~ns critical path, as shown in the timing reports of
+Appendix~\ref{app:synthesis_reports}.
 
 This validation is important for the role of Level~2. The purpose of
 the level is to introduce technology-dependent information early enough
