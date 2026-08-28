@@ -58,7 +58,7 @@ Table~\ref{tab:characterized_pes} summarizes the processing elements
 available to Level~2 for the three numerical formats considered in the
 final experiments.
 
-\begin{table*}[t]
+\begin{table*}[!htbp]
 \centering
 \caption{Characterized processing elements used by the Level~2
 exploration.}
@@ -68,139 +68,171 @@ exploration.}
 \renewcommand{\arraystretch}{1.15}
 
 \resizebox{0.98\textwidth}{!}{%
-\begin{tabular}{@{}llrrrrrr@{}}
+\begin{tabular}{@{}lrrrrrrc>{\raggedright\arraybackslash}p{6.2cm}@{}}
 \hline
-\textbf{Precision} &
 \textbf{Processing element} &
 \makecell{\textbf{Area}\\\textbf{[mm$^2$]}} &
-\makecell{\textbf{Idle power}\\\textbf{[mW]}} &
-\makecell{\textbf{Active power}\\\textbf{[mW]}} &
+\makecell{\textbf{Idle}\\\textbf{[mW]}} &
+\makecell{\textbf{Active}\\\textbf{[mW]}} &
 \makecell{\textbf{$f_{\max}$}\\\textbf{[MHz]}} &
-\makecell{\textbf{MACs /}\\\textbf{cycle}} &
-\makecell{\textbf{Dynamic energy}\\\textbf{[pJ/MAC]}} \\
+\makecell{\textbf{MACs/}\\\textbf{cycle}} &
+\makecell{\textbf{Energy}\\\textbf{[pJ/MAC]}} &
+\makecell{\textbf{Pipeline}\\\textbf{stages}} &
+\textbf{Features} \\
 \hline
 
-INT8 &
+\multicolumn{9}{@{}l}{\textbf{INT8}} \\[1pt]
 \texttt{pe\_tms4517\_simple} &
 0.001275 &
 0.106 &
 0.436 &
 322.27 &
 1 &
-1.649 \\
+1.649 &
+1 &
+Systolic PE with unsigned operands; registers its inputs for propagation \\
 
-INT8 &
 \texttt{pe\_gemmini\_like} &
 0.002025 &
 0.115 &
 0.404 &
 253.74 &
 1 &
-1.449 \\
+1.449 &
+1 &
+Gemmini-style; dual-context accumulator, selectable OS/WS dataflow, output saturation \\
 
-INT8 &
 \texttt{pe\_sauria} &
 0.002398 &
 0.345 &
 0.741 &
 287.60 &
 1 &
-1.978 \\
+1.978 &
+3 &
+Systolic PE with pipeline stall, context switch and propagation chains \\
 
-INT8 &
 \texttt{pe\_simple\_mac} &
 0.001166 &
 0.118 &
 0.467 &
 268.53 &
 1 &
-1.744 \\
+1.744 &
+1 &
+Minimal signed MAC; no weight storage, dataflow selection or systolic logic \\
 
-INT8 &
 \texttt{pe\_tiny\_xpu} &
 0.001293 &
 0.106 &
 0.463 &
 267.38 &
 1 &
-1.782 \\
+1.782 &
+1 &
+Weight-stationary; local weight register, propagates activations \\
 
-INT8 &
 \texttt{pe\_alibaba\_int8} &
 0.002676 &
 0.529 &
 1.153 &
 346.86 &
 1 &
-3.120 \\
+3.120 &
+4 &
+Ping-pong weight registers; deepest INT8 pipeline, highest $f_{\max}$ \\
 
-INT8 &
 \texttt{pe\_openeye\_composite\_int8} &
 0.070829 &
 13.893 &
 13.979 &
 278.55 &
 2 &
-0.216 \\
+0.216 &
+1$^{a}$ &
+Composite sparse PE: act./weight/psum scratchpads, zero-skipping, two MACs \\
 
 \hline
 
-INT16 &
+\multicolumn{9}{@{}l}{\textbf{INT16}} \\[1pt]
 \texttt{pe\_sauria\_int16} &
 0.005094 &
 0.593 &
 1.649 &
 208.20 &
 1 &
-5.281 \\
+5.281 &
+3 &
+\texttt{pe\_sauria} architecture with 16-bit operands \\
 
-INT16 &
 \texttt{pe\_gemmini\_like\_int16} &
 0.005190 &
 0.354 &
 1.598 &
 200.48 &
 1 &
-6.221 \\
+6.221 &
+1 &
+Output-stationary Gemmini variant \\
 
-INT16 &
 \texttt{pe\_tiny\_xpu\_int16} &
 0.003149 &
 0.187 &
 1.048 &
 200.12 &
 1 &
-4.305 \\
+4.305 &
+1 &
+Weight-stationary; single local weight register, smallest INT16 PE \\
 
 \hline
 
-FP16 &
+\multicolumn{9}{@{}l}{\textbf{FP16}} \\[1pt]
 \texttt{pe\_sauria\_fp16} &
 0.005479 &
 1.125 &
 1.778 &
 200.00 &
 1 &
-3.261 \\
+3.261 &
+2 &
+Systolic binary16 PE around a modified FPnew FMA; context switch, zero-gating \\
 
-FP16 &
 \texttt{pe\_fpnew\_fp16\_fma} &
 0.004672 &
 1.061 &
 1.605 &
 200.08 &
 1 &
-2.723 \\
+2.723 &
+2 &
+Bare FPnew FP16 FMA without the SAURIA systolic wrapper \\
 
 \hline
 \end{tabular}%
 }
+
+\vspace{1mm}
+\begin{minipage}{0.98\textwidth}
+\footnotesize
+$^{a}$ One nominal stage in the characterization, but the complete PE
+has a five-cycle fill sequence (scratchpad read, operand preparation,
+multiplication, accumulation and write-back); in serial mode it adds
+multiplier, adder and adder-tree registers.
+\end{minipage}
 \end{table*}
 
 The INT8 pool provides seven compute implementations,
 while the INT16 and FP16 pools contain three and two alternatives,
 respectively. Level~2 can therefore select between different physical
-PE implementations without changing the Level~1 architecture.
+PE implementations without changing the Level~1 architecture. The
+last two columns of Table~\ref{tab:characterized_pes} give the
+pipeline depth and the main architectural features of each PE, which
+explain part of the physical differences: the four-stage
+\texttt{pe\_alibaba\_int8} reaches the highest INT8 frequency at the
+cost of the largest area and idle power among the simple MACs, whereas
+in the integer pools the smallest implementations are single-stage
+MACs without additional control logic.
 
 \todo[inline]{Especificar que pe\_openeye\_composite\_int8 lleva los RFs
 dentro (included\_rfs / parent\_idle\_baseline, ver apéndice) y qué
