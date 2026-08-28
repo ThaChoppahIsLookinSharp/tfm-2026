@@ -37,13 +37,6 @@ established. Its main output is a functional specification that makes
 the rest of the development less ambiguous. At this level, the tool is
 required to:
 
-\todo[inline]{que implica el onnx, porque? precsion, layers, etc
-en general input output, el output está escueto, no está claro el output
-a lo mejor da pa una figura, inputs X e Y, output Z.
-la characterización hecha por síntesis es relevante.
-Que la tecnología está presente en el input es relevante.
-}
-
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=\linewidth]{img/input_output.png}
@@ -71,16 +64,17 @@ selected architecture, instead of hiding the trade-offs behind one
 design.
 \end{itemize}
 
-%improve writting.
-The inclusion of an ONNX workload is crucial in the process of the
-design an application. This allow the tool
-to infer the precision used for data representation, generate the
-mapping for a generated architecture and estimate the cicles and 
-memory accesses on said architecture on Level~1.
+The ONNX workload is a central input of the flow. From the ONNX graph
+and its tensor types, Talos infers the precision used for data
+representation, generates the mapping of the workload on each
+candidate architecture and estimates its cycles and memory accesses
+in Level~1. The same precision is later used to select compatible
+processing elements in Level~2.
 
-%improve writting.
-The IP pool exposes the data that the Level~2 requires in order
-to give an estimation of PPA.
+The IP pool exposes the data that Level~2 requires to estimate PPA:
+the area, timing, idle and active power of each block, together with
+the operating point at which they were characterized. It also declares
+the technology node, which is reused by the Level~1 calibration.
 
 %figura here
 The complete input and configuration requirements are specified in
@@ -365,13 +359,11 @@ were used to verify that a Level 1 architecture could be converted
 into an abstract accelerator and then evaluated in Level 2 using an
 example IP pool.
 
-% Therefore, validation in this thesis is centred on functional and
-% architectural consistency rather than on a complete end-to-end RTL
-% generation flow. Even so, this phase is relevant because it
-% connects the present work with future developments. Although the
-% tool is designed with design exploration in mind, future work may
-% extend it towards more detailed hardware generation and evaluation
-% flows.
+The validation of the physical estimates against synthesized designs
+is presented in the Results chapter
+(Table~\ref{tab:talos_estimation_validation}), once the hardware
+implementation flow of the next subsection has been introduced.
+
 \subsection{HW Implementation}
 \todo[inline]{Propuesta de fujo de diseño para generar la síntesis del código SystemVerilog generado mediante las herramientas EDA y en las tecnologies disponibles en la UAB}
 \todo[inline]{Lista IP pool
@@ -391,7 +383,10 @@ treated as opaque SRAM macros, while external DRAM and its PHY were
 excluded from the accelerator silicon boundary. Area, timing, and vectorless
 power estimates were then extracted from the mapped Genus netlists and reports.
 
-\subsection{Summary of the chapter.}
+\subsection{Summary of the chapter}
+\todo[inline]{Unificar refs a milestones en este summary: "third/fourth
+milestone" -> Milestone~\ref{milestone:m3} / Milestone~\ref{milestone:m4},
+y "The milestone M1" -> "Milestone M1", como en Project Development}
 The development milestones introduced in the Subsection~\ref{subsec:milestones} provide a
 direct way of assessing the resulting framework.
 
@@ -436,7 +431,3 @@ Therefore, the milestones established in the Introduction were
 covered within the scope of the thesis, from the definition of the
 hierarchical methodology to its experimental validation as a working
 software prototype.
-
-%The current result does not yet generate RTL, but it establishes the
-%structure needed to continue towards more detailed hardware
-%evaluation and generation flows.

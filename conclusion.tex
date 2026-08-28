@@ -38,15 +38,20 @@ remaining Level~2 space is small. Feasibility checks ensure that the
 selected IPs provide the required capacity, bandwidth, throughput and
 operating frequency.
 
-The milestones established at the beginning of the thesis were
-therefore fulfilled within the scope of the project. A hierarchical
-two-level exploration methodology was defined and implemented;
-candidate accelerator architectures can be automatically generated and
-evaluated through ZigZag; technology-dependent hardware is represented
-through characterized IP pools; the evaluation and optimization
-interfaces remain modular and extensible; and the complete flow was
-validated using representative workloads, published accelerator
-references and synthesized implementations.
+The milestones established in Subsection~\ref{subsec:milestones} were
+therefore fulfilled within the scope of the project.
+Milestones~\ref{milestone:m1} and~\ref{milestone:m2} are justified in
+the Methodology chapter: a hierarchical two-level exploration
+methodology was defined and implemented, and candidate accelerator
+architectures can be automatically generated and evaluated through
+ZigZag. Milestones~\ref{milestone:m3} and~\ref{milestone:m4} are
+justified in the Project Development chapter: technology-dependent
+hardware is represented through characterized IP pools, and the
+evaluation and optimization interfaces remain modular and extensible.
+Finally, Milestone~\ref{milestone:m5} is covered by the Results
+chapter, where the complete flow was validated using representative
+workloads, published accelerator references and synthesized
+implementations.
 
 The complete INT16 AlexNet experiment demonstrates the practical
 effect of the optimization objectives. Energy-only, area-only and
@@ -84,15 +89,23 @@ agreement supports using the model to reduce and rank the design space,
 but it does not replace synthesis or physical implementation of the
 final candidates.
 
-%Improve
-The output of the tool is generated in a span of hours or days depending
-on the usage, accelerating the already slow proccess of the architectural
-exploration, while remaining open source and modular. Depending on the needs
-of the user, the tool can be easily tweaked and tuned to fit different needs.
+From a practical point of view, a complete Talos exploration takes
+from a few hours to a few days, depending on the workload, the
+population size and the number of generations. This is short compared
+with the time required to implement and evaluate even a single
+accelerator candidate by hand, which is the process that the tool is
+meant to accelerate. The framework is open source and modular, so its
+workloads, IP pools, constraints and objectives can be changed without
+modifying the exploration flow, and new evaluation models can be
+added on top of the raw metrics.
+\todo[inline]{PENDIENTE: tiempo real y máquina, p.ej. "about X~h on
+Y workers for the AlexNet INT16 run".}
 
-%add references to milestones
-
-Within this scope, the objective of this thesis has been achieved and the results support the hypothesis of the thesis.
+Within this scope, the objective of this thesis has been achieved and
+the results support its hypothesis: separating technology-independent
+architectural exploration from technology-dependent IP instantiation
+makes the design of DNN accelerators more manageable, while the
+modular evaluation interfaces allow custom estimations at both levels.
 The hierarchical organization makes the exploration more manageable by
 restricting technology-dependent IP evaluation to architectures
 retained after Level~1, while conventional synthesis is required only
@@ -103,6 +116,36 @@ traceable feasible alternatives together with their generated
 mappings and exposes their trade-offs, after which a small set of
 candidates can be passed to a conventional hardware implementation
 flow.
+
+%\subsection{Limitations}
+%The current version of Talos should be understood as a working
+%prototype of an architectural exploration tool. Some parts are
+%intentionally simplified and define how its results should be
+%interpreted.
+%
+%First, the Level~1 area model is a pool-dependent lower bound. It is
+%built from the minimum-area compatible IPs of the pool, so it is
+%useful to rank architectures, but it is not a technology-accurate
+%area model, and it requires the pool to contain compatible
+%implementations for the whole architectural space.
+%
+%Second, the Level~1 design space is defined through a fixed catalogue
+%of discrete values. This keeps candidate generation valid and
+%manageable, but it also makes the exploration rigid and may leave
+%relevant architectural values outside the search.
+%
+%Third, the Level~2 evaluator does not model pipeline effects,
+%interconnect and clock-tree cost, memory arbitration, control logic,
+%DRAM idle power or the physical memory interface. The synthesis
+%validation shows that area is still well estimated for the evaluated
+%configurations, but active power is overestimated by 10--23\%, and
+%both figures are only valid within the components and operating
+%conditions covered by the characterization.
+%
+%Finally, the IP pool used in this thesis was built manually for a
+%single technology and operating point. Talos does not scale the
+%characterized values to other voltages or frequencies, so any other
+%target requires a new characterization.
 
 \subsection{Future Work}
 

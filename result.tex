@@ -7,14 +7,15 @@ find the minimum value of a single metric, but also to show the type of
 accelerator configurations that are obtained when energy, area and
 performance are considered together.
 
-%improve diff
 The section is organized in three parts. First, a complete INT16
 AlexNet exploration is used as an end-to-end proof of concept of the
-framework. Then, Talos configurations are compared three against published
-accelerators. Each comparison is using the same or similar workload as the
-one used to evaluate each accelerator to ensure a fair comparison.
-Finally, the architectural estimates produced by Talos are
-compared against synthesized implementations of the selected designs.
+framework. Then, the Talos configurations are compared against three
+published accelerators, Eyeriss v1, Eyeriss v2 and SAURIA. Each
+comparison uses the same workload, or the closest one available, as
+the one used to evaluate the corresponding accelerator, so that the
+differences come from the design and not from the network. Finally,
+the architectural estimates produced by Talos are compared against
+synthesized implementations of the selected designs.
 
 \subsection{Experimental Setup}
 
@@ -25,13 +26,12 @@ IPs and evaluates the resulting physical implementation.
 
 The final comparisons use four workload configurations:
 
-%improve second item.
 \begin{itemize}
-    \item a complete AlexNet network using INT16 operands is the
-    main proof-of-concept exploration; 
-    \item a different and modified AlexNet using INT16 operands, batch size 
-    four to match the Eyeriss v1 setup, will be used for comparison with
-    the mentioned accelerator;
+    \item a complete AlexNet network using INT16 operands, used as the
+    main proof-of-concept exploration;
+    \item the five convolutional layers of AlexNet using INT16
+    operands and a batch size of four, reproducing the setup reported
+    for Eyeriss v1, used for comparison with that accelerator;
     \item MobileNet V1 0.5/128 using INT8 operands, used for comparison
     with the dense Eyeriss v2 result;
     \item VGG-16 using FP16 operands, used for comparison with SAURIA.
@@ -202,7 +202,9 @@ while the INT16 and FP16 pools contain three and two alternatives,
 respectively. Level~2 can therefore select between different physical
 PE implementations without changing the Level~1 architecture.
 
-%especificar que este señor tiene rfs dentro y demás.
+\todo[inline]{Especificar que pe\_openeye\_composite\_int8 lleva los RFs
+dentro (included\_rfs / parent\_idle\_baseline, ver apéndice) y qué
+implica para Level~2 (no instancia RFs aparte, área y idle incluidos).}
 One particular case is
 \texttt{pe\_openeye\_composite\_int8}. Unlike the other INT8
 implementations, it provides two MAC operations per cycle and
@@ -224,7 +226,9 @@ VGG-16/SAURIA comparison. This keeps the workload numerical
 representation and the Level~2 compute implementation consistent
 throughout the final evaluation.
 
-%listarlos todos
+\todo[inline]{PENDIENTE (listarlos todos): rellenar las 12 RF y 3 GB
+desde el YAML del pool en la tabla comentada tras esta y sustituir la
+tabla de rangos.}
 \begin{table}[t]
 \centering
 \caption{Characterized memory design space shared by the INT8,
@@ -263,6 +267,34 @@ Global buffer &
 \end{tabular}%
 }
 \end{table}
+
+%\begin{table}[t]
+%\centering
+%\caption{Characterized memory IPs shared by the INT8, INT16, and FP16
+%Level~2 pools.}
+%\label{tab:characterized_memories}
+%\setlength{\tabcolsep}{4pt}
+%\renewcommand{\arraystretch}{1.15}
+%\resizebox{0.98\columnwidth}{!}{%
+%\begin{tabular}{@{}llcrrrrr@{}}
+%\hline
+%\textbf{Type} & \textbf{Memory IP} & \textbf{Ports} &
+%\makecell{\textbf{Capacity}\\\textbf{[bit]}} &
+%\makecell{\textbf{Bandwidth}\\\textbf{[bit/cycle]}} &
+%\makecell{\textbf{Area}\\\textbf{[mm$^2$]}} &
+%\makecell{\textbf{Idle / Active}\\\textbf{power [mW]}} &
+%\makecell{\textbf{$f_{\max}$}\\\textbf{[MHz]}} \\
+%\hline
+%Register file & \texttt{rf\_...} & 1RW  & 64   & 8   & 0.000719 & ... / ... & ... \\
+%...           & ...              & ...  & ...  & ... & ...      & ... / ... & ... \\
+%Register file & \texttt{rf\_...} & 1R1W & 2048 & 256 & 0.021068 & ... / ... & ... \\
+%\hline
+%Global buffer & \texttt{gb\_...} & ... & 8192   & 64   & 0.0856 & ... / ... & ... \\
+%Global buffer & \texttt{gb\_...} & ... & 32768  & 256  & ...    & ... / ... & ... \\
+%Global buffer & \texttt{gb\_...} & ... & 131072 & 1024 & 1.3902 & ... / ... & ... \\
+%\hline
+%\end{tabular}}
+%\end{table}
 
 The register-file pool ranges from 64 to 2048 bits and provides
 bandwidths between 8 and 256 bits per cycle. The three global-buffer
@@ -421,23 +453,30 @@ specification.
 \end{minipage}
 \end{table*}
 
-%estamos comparando energia con latencias, o una o la otra
-The results show the expected conflict between the three objectives.
-The energy-only configuration obtains the lowest total energy,
-112.869~mJ per inference, but requires 5.111~mm$^2$. At the opposite
-extreme, the area-only configuration reduces the accelerator to only
-0.202~mm$^2$, but its latency increases to 248021034 cycles and the
-large execution time also increases the total energy to
-450.138~mJ per inference.
+The results show the expected conflict between the three objectives,
+so the single-objective points are compared here on all the metrics
+of Table~\ref{tab:alexnet_int16_talos}. The energy-only configuration
+obtains the lowest on-chip and total energy, 39.757 and 112.869~mJ per
+inference, and a latency of 6332862 cycles, only improved by the
+performance-oriented points (3315424 cycles for the performance-only
+configuration and 3942051 cycles for the energy-performance one), but
+it requires 5.111~mm$^2$ and 1.256~W of on-chip power. The area-only
+configuration is the opposite case: it reduces the accelerator to
+0.202~mm$^2$ and 0.045~W, but its latency grows to 248021034 cycles,
+39 times the energy-only value, its on-chip energy rises to 55.723~mJ
+and its total energy to 450.138~mJ, four times more, because the idle
+energy on chip and, above all, the DRAM energy accumulate during the
+whole execution. The performance-only configuration reaches the lowest
+latency, 3315424 cycles, but at the cost of 1493.550~mm$^2$, 280.541~W
+and 4650.562~mJ of on-chip energy per inference.
 
 The performance-only result shows why a performance objective should
 not normally be used without an area or energy constraint. Talos keeps
 increasing the available parallel hardware until it obtains the lowest
-latency in the explored set. The resulting implementation reaches
-3315424 cycles, but requires 1493.550~mm$^2$ and more than 280~W of
-on-chip power. This point is not a realistic accelerator target, but it
-is useful to verify that the exploration is correctly exposing the
-trade-off instead of hiding it behind a fixed architecture template.
+latency in the explored set. This point is not a realistic accelerator
+target, but it is useful to verify that the exploration is correctly
+exposing the trade-off instead of hiding it behind a fixed
+architecture template.
 
 The combined objectives produce more useful designs. In particular,
 the E+A+P configuration uses 1.701~mm$^2$, consumes 51.142~mJ of
@@ -473,16 +512,26 @@ Voltage, memory system assumptions, physical design effort, and the
 exact definition of reported power can also differ between works.
 
 \subsubsection{Eyeriss v1: AlexNet INT16}
-%completar y reescribir frase de 1.0 y 1.2
 Eyeriss v1 provides the closest comparison for the INT16 flow because
 both designs use a 65~nm technology, 16-bit integer arithmetic and a
 200~MHz core frequency. For this experiment, the Talos workload is not
 the AlexNet model from the previous subsection. Instead, it
 reproduces the five AlexNet convolutional layers and the batch-size-four
 setup used by Eyeriss. Talos energy and latency are normalized per
-image. However, notice that, in terms of power, Talos characterized
-IPs were synthesized using ~1.2V technology node while Eyeriss uses
-~1.0V.
+image. However, the power and energy columns must be read with one
+caveat: the Talos IPs were characterized at the nominal 1.2~V supply
+of the TSMC 65~nm LP library, whereas the Eyeriss v1 figures were
+measured with the chip running at 1.0~V \cite{chen2017eyeriss}, so
+part of the gap between both designs comes from the operating point
+and not from the architecture.\footnote{Since dynamic power scales
+with the square of the supply voltage, the voltage difference alone
+accounts for a factor of up to $(1.2/1.0)^2\simeq1.44$ in favour of
+Eyeriss. Applied to the energy-oriented Talos point, the on-chip
+energy ratio would drop from 3.8 to roughly 2.6 and the power ratio
+from 4.4 to roughly 3.0. This is a first-order correction: leakage
+also changes with the voltage, and the characterized blocks were not
+verified to meet 200~MHz at 1.0~V, so the Talos values are reported as
+characterized.}
 
 \begin{table*}[t]
 \centering
@@ -654,9 +703,7 @@ its 1.215~W of on-chip power is approximately 4.4 times the measured
 Eyeriss chip power. The custom Eyeriss implementation remains clearly
 more energy-efficient for the specific row-stationary AlexNet workload
 for which it was designed, but the Talos exploration can identify a
-smaller implementation with competitive latency. The comparison is
-also not completely symmetric because Eyeriss power is measured at
-1~V, while the Talos IP characterization uses 1.2~V.
+smaller implementation with competitive latency.
 
 As in the complete AlexNet experiment, optimizing only performance
 produces an extreme design. The P configuration reduces latency to
@@ -667,7 +714,6 @@ implementation. This again shows the need to consider area together
 with performance during the physical selection stage.
 
 \subsubsection{Eyeriss v2: MobileNet V1 INT8}
-%confirmar si eyeriss v2 usa 1.2 o 1.0 y mencionarlo
 The Eyeriss v2 comparison uses the dense MobileNet V1 0.5/128 result.
 This is a particularly useful reference because both Talos and Eyeriss
 v2 use a 65~nm technology, INT8 arithmetic and a 200~MHz operating
@@ -817,10 +863,15 @@ workload, but does not provide the corresponding DRAM energy or total
 system power.
 
 $^{e}$ Eyeriss v2 reports 2695k NAND-2-equivalent gates for the
-logic and 246\,kB of on-chip SRAM. The reported gate count excludes the
-SRAM macros. Since the paper does not provide the complete post-layout
-silicon area in mm$^2$, the physical cost is shown in its published form
-rather than converted to an approximate area.
+logic and 246\,kB of on-chip SRAM; the gate count excludes the SRAM
+macros. Since the paper does not provide the complete post-layout
+silicon area in mm$^2$, the physical cost is shown in its published
+form. Using the NAND-2 area of the standard-cell library used for the
+Talos characterization (1.44\,$\mu$m$^2$), the logic alone corresponds
+to approximately 3.88\,mm$^2$, to which the SRAM area would have to be
+added. Conversely, the 1.536\,mm$^2$ of the balanced Talos point
+correspond to roughly 1.07\,M NAND-2 equivalents, memories included,
+since they are synthesized into standard cells.
 
 $^{f}$ Both Talos and Eyeriss v2 use a 200\,MHz operating frequency in
 this comparison. Eyeriss v2 equivalent latency is derived from its
@@ -856,7 +907,9 @@ mm$^2$ for this implementation. Instead, the paper reports 2695k
 NAND-2-equivalent logic gates, excluding SRAM, together with 246\,kB of
 on-chip SRAM. Consequently, the physical cost is retained in the
 published gate-and-memory form rather than converted to a potentially
-misleading silicon-area estimate.
+misleading silicon-area estimate; note~$^{e}$ of
+Table~\ref{tab:eyerissv2_mobilenet_comparison} gives an approximate
+conversion with the NAND-2 area of the Talos library.
 
 The MobileNet result also shows that the configuration preferred by a
 balanced objective does not need to be the configuration that most
@@ -865,14 +918,28 @@ both alternatives: a point with similar latency to Eyeriss v2 and a
 smaller balanced point when area is also considered.
 
 \subsubsection{SAURIA: VGG-16 FP16}
-%si no está añadido, añadir que una gate de mi pdk es 1.44 um²
-%hacer escalado.
 SAURIA is used as the floating-point comparison. Both experiments use
-VGG-16 with FP16 arithmetic, but the physical technologies are
-different: Talos uses the characterized 65~nm pool, while SAURIA is a
-post-layout GF22FDX 22~nm implementation. For the VGG-16 exploration,
-the final E+A+P solution was selected from the larger exploration pool,
-which produced the best balanced point over the complete set of runs.
+VGG-16 with FP16 arithmetic, but the operating conditions are further
+apart than in the two Eyeriss comparisons. Talos uses the characterized
+65~nm pool at 1.2~V and 200~MHz, while SAURIA is a post-layout GF22FDX
+22~nm implementation with a 0.8~V supply and a maximum frequency of
+555~MHz \cite{sauria2023}. As in the Eyeriss v1 comparison, part of the
+gap therefore comes from the operating point and not from the
+architecture: the supply voltage difference alone accounts for a
+factor of up to $(1.2/0.8)^2\simeq2.25$ in dynamic power in favour of
+SAURIA, on top of the 65~nm to 22~nm technology gap; both effects are
+quantified at the end of this subsection. The SAURIA reference point
+is its reported VGG-16 execution time of approximately 164~ms,
+obtained with the on-the-fly data feeder and assuming 6.4~GB/s of
+external DRAM bandwidth; at 555~MHz this corresponds to approximately
+91.02 million cycles and 6.10 inferences/s. The SAURIA benchmark covers
+the convolutional and fully-connected layers and excludes pooling and
+activation layers, and its energy per inference is not measured
+directly but derived from the reported 258~mW and the execution time
+(note~$^{c}$ of Table~\ref{tab:vgg16_fp16_sauria_comparison}). For
+the VGG-16 exploration, the final E+A+P solution was selected from the
+larger exploration pool, which produced the best balanced point over
+the complete set of runs.
 
 \begin{table*}[t]
 \centering
@@ -1019,8 +1086,10 @@ energy-per-inference result.
 $^{d}$ A directly comparable SAURIA total energy or system power
 including external DRAM is not reported.
 
-$^{e}$ SAURIA reports a VGG-16 execution time of approximately
-164\,ms using the on-the-fly data feeder and assuming 6.4\,GB/s of
+$^{e}$ SAURIA is implemented in GF22FDX with a 0.8\,V supply and a
+maximum frequency of 555\,MHz. It reports a VGG-16 execution time of
+approximately 164\,ms using the on-the-fly data feeder and assuming
+6.4\,GB/s of
 external DRAM bandwidth. Using the reported maximum frequency of
 555\,MHz gives approximately
 $0.164\times555\times10^6 \simeq 91.02$ million cycles per inference,
@@ -1031,7 +1100,6 @@ pooling and activation layers.
 \end{minipage}
 \end{table*}
 
-%mencionar que aunque nuestro area sea muy chiquito, pues eso, node.
 The VGG-16 exploration presents the same general trade-off observed in
 the integer workloads. The area-only point is very small, at
 0.226~mm$^2$, but only processes 0.038 inferences/s. The
@@ -1044,11 +1112,31 @@ workload-level throughput.
 The balanced E+A+P point is more representative of what Talos is
 intended to generate. It occupies 3.641~mm$^2$, consumes 0.947~W of
 on-chip power and reaches 1.24 inferences/s. SAURIA is still clearly
-better in area, power and performance, with 0.897~mm$^2$, 0.258~W and
-approximately 6.10 inferences/s. However, this is also the least direct
-of the three published-accelerator comparisons because SAURIA uses a
-much newer 22~nm technology and a heavily optimized custom FP16
-implementation.
+better in area, power and performance in absolute terms, with
+0.897~mm$^2$, 0.258~W and approximately 6.10 inferences/s. However,
+this is also the least direct of the three published-accelerator
+comparisons because SAURIA uses a much newer 22~nm technology and a
+heavily optimized custom FP16 implementation.
+
+When reading these numbers, the technology gap must be taken into
+account. The very small area of the Talos points is obtained in a
+65~nm process, whereas SAURIA is implemented in 22~nm. Under ideal
+scaling, area grows with the square of the feature size, so the
+0.897~mm$^2$ of SAURIA would correspond to approximately
+$0.897\times(65/22)^2\simeq7.8$~mm$^2$ in the Talos technology, about
+twice the area of the balanced E+A+P point and half the area of the
+energy-oriented point. In the same way, the dynamic energy of SAURIA
+at 0.8~V and 22~nm would grow by a factor of roughly
+$(65/22)\times(1.2/0.8)^2\simeq6.7$ when moved to 65~nm and 1.2~V,
+which would place its VGG-16 energy near 280~mJ per inference, still
+2.7 times lower than the balanced Talos point. These first-order
+estimates do not replace a real port of the design, and the SAURIA
+authors themselves resort to scaling equations to compare
+accelerators across nodes \cite{sauria2023}. They are given only to
+show that the area advantage of SAURIA disappears once the node is
+accounted for, while its energy and throughput advantage remains,
+mainly because of its 555~MHz operating frequency and its custom FP16
+datapath.
 
 The energy-only Talos point reaches 4.94 inferences/s and the E+P point
 reaches 5.01 inferences/s, but both require 14.450~mm$^2$ and several
@@ -1170,7 +1258,6 @@ still leaving enough error that the final selected accelerator should be
 validated by a conventional implementation flow.
 
 \subsection{Results Summary}
-%mencionar milestones si no se han mencionado ya
 The final experiments show several consistent behaviors across the
 three workloads.
 
@@ -1197,7 +1284,9 @@ uses less than half the area and reaches 40.00 inferences/s instead of
 dense MobileNet/Eyeriss v2 case, the energy-oriented configuration
 reaches a very similar latency, although with higher on-chip energy and
 power. The SAURIA comparison shows that the current FP16 pool is still
-far from the physical efficiency of a custom 22~nm implementation.
+far from the physical efficiency of a custom 22~nm implementation
+operating at 0.8~V and 555~MHz, although part of that gap comes from
+the operating point rather than from the architecture.
 
 Finally, the synthesis validation supports the use of characterized IPs
 as a second exploration level. Across the four synthesized
@@ -1207,3 +1296,10 @@ framework is best understood as a design-space reduction and selection
 tool: it can identify meaningful accelerator candidates using physical
 IP information, after which the final few designs can be passed to
 synthesis for accurate implementation results.
+
+These experiments complete Milestone~\ref{milestone:m5}. The
+methodology and its implementation were validated with four workload
+configurations and three characterized hardware pools, the selected
+designs were compared with published accelerators and, above all, the
+Level~2 estimates were checked against synthesized implementations,
+which is the evidence that closes this milestone.
