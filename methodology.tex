@@ -242,13 +242,17 @@ inside the overall flow.
 
 The Level 1 representation was defined as a discrete genome. Each
 gene selects one value from a predefined set of architectural
-options. In the current version, this genome contains seven genes: PE
-array dimensions, register file size and bandwidth, global buffer
-size and bandwidth, and the dimensions served by the global buffer.
-The external DRAM bandwidth was intentionally left out of the genome
-and treated as a fixed platform parameter, because the current model
-does not yet account for the physical cost of the external memory
-interface.
+options. In the current version, this genome contains seven genes: the
+PE array dimensions, register-file size and bandwidth, global-buffer
+size and bandwidth, and the PE-array dimensions served by the global
+buffer. The latter parameter defines how the global buffer is shared
+across the PE array, that is, along which spatial dimensions a single
+global-buffer instance is accessible by multiple PEs. Depending on
+this choice, the buffer may be shared by the entire array or replicated
+across one of its dimensions. The external DRAM bandwidth was
+intentionally left out of the genome and treated as a fixed platform
+parameter, because the current model does not yet account for the
+physical cost of the external memory interface.
 
 The connection between Level 1 and Level 2 was defined through an
 abstract accelerator representation. This representation contains
