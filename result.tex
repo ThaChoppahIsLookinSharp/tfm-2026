@@ -7,11 +7,13 @@ find the minimum value of a single metric, but also to show the type of
 accelerator configurations that are obtained when energy, area and
 performance are considered together.
 
+%improve diff
 The section is organized in three parts. First, a complete INT16
 AlexNet exploration is used as an end-to-end proof of concept of the
-framework. Then, Talos configurations are compared against published
-accelerators using workloads selected to make each comparison as close
-as possible. Finally, the architectural estimates produced by Talos are
+framework. Then, Talos configurations are compared three against published
+accelerators. Each comparison is using the same or similar workload as the
+one used to evaluate each accelerator to ensure a fair comparison.
+Finally, the architectural estimates produced by Talos are
 compared against synthesized implementations of the selected designs.
 
 \subsection{Experimental Setup}
@@ -23,10 +25,13 @@ IPs and evaluates the resulting physical implementation.
 
 The final comparisons use four workload configurations:
 
+%improve second item.
 \begin{itemize}
-    \item a complete AlexNet network is the
-    main proof-of-concept exploration; the five convolutional layers of AlexNet using INT16 operands and the
-    Eyeriss batch-size-four setup, will be used for comparison with Eyeriss v1;
+    \item a complete AlexNet network using INT16 operands is the
+    main proof-of-concept exploration; 
+    \item a different and modified AlexNet using INT16 operands, batch size 
+    four to match the Eyeriss v1 setup, will be used for comparison with
+    the mentioned accelerator;
     \item MobileNet V1 0.5/128 using INT8 operands, used for comparison
     with the dense Eyeriss v2 result;
     \item VGG-16 using FP16 operands, used for comparison with SAURIA.
@@ -192,12 +197,12 @@ FP16 &
 }
 \end{table*}
 
-The number of alternatives is intentionally different between
-precisions. The INT8 pool provides seven compute implementations,
+The INT8 pool provides seven compute implementations,
 while the INT16 and FP16 pools contain three and two alternatives,
 respectively. Level~2 can therefore select between different physical
 PE implementations without changing the Level~1 architecture.
 
+%especificar que este señor tiene rfs dentro y demás.
 One particular case is
 \texttt{pe\_openeye\_composite\_int8}. Unlike the other INT8
 implementations, it provides two MAC operations per cycle and
@@ -219,6 +224,7 @@ VGG-16/SAURIA comparison. This keeps the workload numerical
 representation and the Level~2 compute implementation consistent
 throughout the final evaluation.
 
+%listarlos todos
 \begin{table}[t]
 \centering
 \caption{Characterized memory design space shared by the INT8,
@@ -415,6 +421,7 @@ specification.
 \end{minipage}
 \end{table*}
 
+%estamos comparando energia con latencias, o una o la otra
 The results show the expected conflict between the three objectives.
 The energy-only configuration obtains the lowest total energy,
 112.869~mJ per inference, but requires 5.111~mm$^2$. At the opposite
@@ -466,14 +473,16 @@ Voltage, memory system assumptions, physical design effort, and the
 exact definition of reported power can also differ between works.
 
 \subsubsection{Eyeriss v1: AlexNet INT16}
-
+%completar y reescribir frase de 1.0 y 1.2
 Eyeriss v1 provides the closest comparison for the INT16 flow because
 both designs use a 65~nm technology, 16-bit integer arithmetic and a
 200~MHz core frequency. For this experiment, the Talos workload is not
-the complete AlexNet model from the previous subsection. Instead, it
+the AlexNet model from the previous subsection. Instead, it
 reproduces the five AlexNet convolutional layers and the batch-size-four
 setup used by Eyeriss. Talos energy and latency are normalized per
-image.
+image. However, notice that, in terms of power, Talos characterized
+IPs were synthesized using ~1.2V technology node while Eyeriss uses
+~1.0V.
 
 \begin{table*}[t]
 \centering
@@ -658,7 +667,7 @@ implementation. This again shows the need to consider area together
 with performance during the physical selection stage.
 
 \subsubsection{Eyeriss v2: MobileNet V1 INT8}
-
+%confirmar si eyeriss v2 usa 1.2 o 1.0 y mencionarlo
 The Eyeriss v2 comparison uses the dense MobileNet V1 0.5/128 result.
 This is a particularly useful reference because both Talos and Eyeriss
 v2 use a 65~nm technology, INT8 arithmetic and a 200~MHz operating
@@ -856,7 +865,8 @@ both alternatives: a point with similar latency to Eyeriss v2 and a
 smaller balanced point when area is also considered.
 
 \subsubsection{SAURIA: VGG-16 FP16}
-
+%si no está añadido, añadir que una gate de mi pdk es 1.44 um²
+%hacer escalado.
 SAURIA is used as the floating-point comparison. Both experiments use
 VGG-16 with FP16 arithmetic, but the physical technologies are
 different: Talos uses the characterized 65~nm pool, while SAURIA is a
@@ -1021,6 +1031,7 @@ pooling and activation layers.
 \end{minipage}
 \end{table*}
 
+%mencionar que aunque nuestro area sea muy chiquito, pues eso, node.
 The VGG-16 exploration presents the same general trade-off observed in
 the integer workloads. The area-only point is very small, at
 0.226~mm$^2$, but only processes 0.038 inferences/s. The
@@ -1082,22 +1093,6 @@ estimates and synthesized E+A+P accelerator configurations.}
 \makecell{\textbf{Power}\\\textbf{Deviation}} \\
 \hline
 
-Eyeriss/AlexNet INT16 &
-3.217 &
-3.338 &
-$-3.63\%$ &
-0.733 &
-0.662 &
-$+10.73\%$ \\
-
-SAURIA/VGG-16 FP16 &
-3.641 &
-3.706 &
-$-1.76\%$ &
-0.947 &
-0.846 &
-$+11.92\%$ \\
-
 AlexNet INT16 &
 1.701 &
 1.729 &
@@ -1106,6 +1101,14 @@ $-1.64\%$ &
 0.373 &
 $+23.12\%$ \\
 
+Eyeriss/AlexNet INT16 &
+3.217 &
+3.338 &
+$-3.63\%$ &
+0.733 &
+0.662 &
+$+10.73\%$ \\
+
 Eyeriss v2/MobileNet INT8 &
 1.536 &
 1.554 &
@@ -1113,6 +1116,14 @@ $-1.18\%$ &
 0.385 &
 0.333 &
 $+15.61\%$ \\
+
+SAURIA/VGG-16 FP16 &
+3.641 &
+3.706 &
+$-1.76\%$ &
+0.947 &
+0.846 &
+$+11.92\%$ \\
 
 \hline
 \end{tabular}%
@@ -1159,7 +1170,7 @@ still leaving enough error that the final selected accelerator should be
 validated by a conventional implementation flow.
 
 \subsection{Results Summary}
-
+%mencionar milestones si no se han mencionado ya
 The final experiments show several consistent behaviors across the
 three workloads.
 

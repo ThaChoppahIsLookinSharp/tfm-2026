@@ -3,8 +3,10 @@
 
 \subsection{Conclusions}
 
-This thesis addresses the implementation of a flexible open.source EDA tool forexploring the large and
-strongly coupled design space for implementing application specific DNN accelerators. Architectural
+This thesis addresses the implementation of a flexible open source EDA 
+tool forexploring the large and
+strongly coupled design space for implementing application specific
+DNN accelerators. Architectural
 parameters such as the processing-element array, memory hierarchy and
 mapping determine the behavior of a design, but its final power,
 performance and area also depend on the physical blocks available in a
@@ -82,6 +84,14 @@ agreement supports using the model to reduce and rank the design space,
 but it does not replace synthesis or physical implementation of the
 final candidates.
 
+%Improve
+The output of the tool is generated in a span of hours or days depending
+on the usage, accelerating the already slow proccess of the architectural
+exploration, while remaining open source and modular. Depending on the needs
+of the user, the tool can be easily tweaked and tuned to fit different needs.
+
+%add references to milestones
+
 Within this scope, the objective of this thesis has been achieved and the results support the hypothesis of the thesis.
 The hierarchical organization makes the exploration more manageable by
 restricting technology-dependent IP evaluation to architectures
@@ -96,9 +106,10 @@ flow.
 
 \subsection{Future Work}
 
-The most immediate continuation of this work is to improve the
-fidelity and calibration of the Level~2 model. Interconnect, control 
-and clock-tree overheads could be added using synthesis data
+The most immediate continuation of this work is to address the 
+limitations of the tool. The
+fidelity and calibration of the Level~2 model. Interconnect, control,
+pipelining and clock-tree overheads could be added using synthesis data
 from a larger set of generated configurations. 
 
 A second direction is to expand and automate hardware

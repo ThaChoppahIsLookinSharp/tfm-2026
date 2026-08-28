@@ -71,6 +71,17 @@ selected architecture, instead of hiding the trade-offs behind one
 design.
 \end{itemize}
 
+%improve writting.
+The inclusion of an ONNX workload is crucial in the process of the
+design an application. This allow the tool
+to infer the precision used for data representation, generate the
+mapping for a generated architecture and estimate the cicles and 
+memory accesses on said architecture on Level~1.
+
+%improve writting.
+The IP pool exposes the data that the Level~2 requires in order
+to give an estimation of PPA.
+
 %figura here
 The complete input and configuration requirements are specified in
 Appendix~\ref{app:talos_requirements}.
@@ -363,7 +374,9 @@ example IP pool.
 % flows.
 \subsection{HW Implementation}
 \todo[inline]{Propuesta de fujo de diseño para generar la síntesis del código SystemVerilog generado mediante las herramientas EDA y en las tecnologies disponibles en la UAB}
-\todo[inline]{Lista IP pool}
+\todo[inline]{Lista IP pool
+ma o menos, tengo que decir  como he compilado las cosas y demas.
+Decir que se podría automatizar también.}
 Once the final architecture is selected, an accelerator RTL designs can
 be assembled in SystemVerilog by composing previously characterized processing and memory blocks. The main components included tiny-XPU INT16
 PEs, FPnew FP16 FMA units, simple INT8 MACs, BaseJump register files, 
