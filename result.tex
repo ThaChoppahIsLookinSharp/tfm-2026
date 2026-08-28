@@ -453,9 +453,22 @@ specification.
 \end{minipage}
 \end{table*}
 
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.8\linewidth]{img/pareto_talos.pdf}
+  \caption{Talos INT16 AlexNet configurations selected under the seven
+optimization objectives, plotted in the latency--area--energy space of
+Table~\ref{tab:alexnet_int16_talos} (logarithmic axes).}
+  \label{fig:pareto_alexnet_int16}
+\end{figure}
+
 The results show the expected conflict between the three objectives,
 so the single-objective points are compared here on all the metrics
-of Table~\ref{tab:alexnet_int16_talos}. The energy-only configuration
+of Table~\ref{tab:alexnet_int16_talos}.
+Figure~\ref{fig:pareto_alexnet_int16} plots the same seven
+configurations in the latency--area--energy space: the single-objective
+points sit at the extremes of the curve, while the combined objectives
+fall in between. The energy-only configuration
 obtains the lowest on-chip and total energy, 39.757 and 112.869~mJ per
 inference, and a latency of 6332862 cycles, only improved by the
 performance-oriented points (3315424 cycles for the performance-only
@@ -687,8 +700,20 @@ from batch throughput to image throughput by multiplying by four.
 
 \end{minipage}
 \end{table*}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.8\linewidth]{img/pareto_vs_eyerissv1.pdf}
+  \caption{Talos INT16 AlexNet convolutional configurations selected under the
+seven optimization objectives for the Eyeriss v1 workload
+(Table~\ref{tab:eyeriss_v1_comparison}), plotted in the
+latency--area--energy space with logarithmic axes.}
+  \label{fig:pareto_eyeriss_v1}
+\end{figure}
+
 For this workload, the seven optimization objectives select different
-Talos implementations. The balanced E+A+P design occupies
+Talos implementations. Figure~\ref{fig:pareto_eyeriss_v1} shows their
+position in the latency--area--energy space. The balanced E+A+P design occupies
 3.217~mm$^2$, 73.7\% less than the 12.25~mm$^2$ reported for Eyeriss.
 This area reduction comes at the cost of energy and performance: Talos
 requires 32.521~mJ of on-chip energy per image and 8.876 million cycles,
@@ -883,7 +908,19 @@ multiplier 0.5, and a $128\times128$ input.
 \end{minipage}
 \end{table*}
 
-The energy-oriented Talos point is the closest configuration to Eyeriss
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.8\linewidth]{img/pareto_vs_eyerissv2.pdf}
+  \caption{Talos INT8 MobileNet V1 0.5/128 configurations selected under the
+seven optimization objectives for the Eyeriss v2 workload
+(Table~\ref{tab:eyerissv2_mobilenet_comparison}), plotted in the
+latency--area--energy space with logarithmic axes.}
+  \label{fig:pareto_eyeriss_v2}
+\end{figure}
+
+Figure~\ref{fig:pareto_eyeriss_v2} shows the seven selected
+configurations in the latency--area--energy space. The energy-oriented 
+Talos point is the closest configuration to Eyeriss
 v2 in terms of performance. It completes the workload in 0.162 million
 cycles, which is very close to the approximately 0.156 million cycles
 derived for Eyeriss v2.
@@ -1100,8 +1137,20 @@ pooling and activation layers.
 \end{minipage}
 \end{table*}
 
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.8\linewidth]{img/pareto_vs_sauria.pdf}
+  \caption{Talos FP16 VGG-16 configurations selected under the seven
+optimization objectives for the SAURIA workload
+(Table~\ref{tab:vgg16_fp16_sauria_comparison}), plotted in the
+latency--area--energy space with logarithmic axes.}
+  \label{fig:pareto_sauria}
+\end{figure}
+
 The VGG-16 exploration presents the same general trade-off observed in
-the integer workloads. The area-only point is very small, at
+the integer workloads. Figure~\ref{fig:pareto_sauria} shows the seven
+selected configurations in the latency--area--energy space. 
+The area-only point is very small, at
 0.226~mm$^2$, but only processes 0.038 inferences/s. The
 performance-only point reaches 6.18 inferences/s, which is close to the
 VGG-16 rate derived from the SAURIA execution time, but requires

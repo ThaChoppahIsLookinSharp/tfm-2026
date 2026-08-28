@@ -73,3 +73,6 @@ _minted*
 *.synctex.gz(busy)
 
 *.pdf
+
+# Figure PDFs converted from the SVG sources are tracked
+!img/*.pdf
