@@ -265,7 +265,19 @@ Section~\ref{subsec:abstract_representation}, and the form of the IP
 characterization that Level~2 matches against it, in
 Section~\ref{subsec:ip_pool}; Appendix~\ref{app:ip_pools} reproduces
 the pools used in the evaluation together with an annotated example
-of one characterized IP.
+of one characterized IP. Figure~\ref{fig:abstract-arch} shows the
+structure of this representation: a memory hierarchy feeding an array
+of operational units, each with its local register files, in the same
+terms used by ZigZag to describe an accelerator.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.85\linewidth]{img/abstract_arch.png}
+  \caption{Abstract accelerator representation used to connect Level~1
+  and Level~2. Adapted from the ZigZag hardware architecture
+  documentation~\cite{zigzag_hardware_docs}.}
+  \label{fig:abstract-arch}
+\end{figure}
 
 The Level 2 representation was therefore designed differently from
 the first one. Instead of having a fixed genome, the Level 2 genome
@@ -396,37 +408,22 @@ the reports of the four synthesized configurations are reproduced in
 Appendix~\ref{app:synthesis_reports}.
 
 \subsection{Summary of the chapter}
-\todo[inline]{Unificar refs a milestones en este summary: "third/fourth
-milestone" -> Milestone~\ref{milestone:m3} / Milestone~\ref{milestone:m4},
-y "The milestone M1" -> "Milestone M1", como en Project Development}
 The development milestones introduced in the Subsection~\ref{subsec:milestones} provide a
 direct way of assessing the resulting framework.
 
-The milestone \ref{milestone:m1} was fulfilled through the definition of the
+Milestone~\ref{milestone:m1} was fulfilled through the definition of the
 two-level methodology. Architectural exploration is performed in
 Level~1 without selecting physical IPs, while Level~2 introduces the
 technology-dependent implementations. The abstract accelerator
 representation connects both levels without removing this separation.
 
-The milestone \ref{milestone:m2} was fulfilled through the Level~1 genome,
+Milestone~\ref{milestone:m2} was fulfilled through the Level~1 genome,
 NSGA-II exploration, using ZigZag which generates mappings for the
 candidate architectures and evaluates them according to the selected
 objectives. Together, these elements
 automatically generate candidate architectures, evaluate their
 mapping, energy, latency, and area-related cost, and preserve the
 selected alternatives for the second level.
-
-The third milestone was addressed through the characterized IP pool.
-Each IP stores the physical and operating information required by the
-PPA model, while compatibility is expressed through abstract
-component requirements. This allows the physical implementation to be
-evaluated without introducing RTL details into the architectural
-representation.
-
-The fourth milestone was fulfilled by separating the evaluators from the optimization objectives and by keeping the main parts of the flow as independent components. Workloads,
-IP pools, constraints, and objective combinations can be changed without modifying the
-complete exploration flow, and new objective functions can be added on top of the raw
-evaluation metrics.
 
 Finally, the methodology and its implementation were validated with
 four workload configurations and characterized INT8, INT16, and FP16
