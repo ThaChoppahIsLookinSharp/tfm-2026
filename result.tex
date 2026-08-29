@@ -147,7 +147,8 @@ to a TSMC 65~nm standard-cell library. The common characterization
 conditions were a reference frequency of 200~MHz, a supply voltage of
 1.2~V, a temperature of 25~$^\circ$C, and the NCCOM process corner.
 Power was obtained using the vectorless characterization flow
-described in the previous chapter. For every component, Talos stores
+described in Section~\ref{subsec:hw_implementation}. For every
+component, Talos stores
 its area, timing information, idle and active power, and, when
 applicable, the corresponding operation or memory-access energy.
 
@@ -1215,9 +1216,14 @@ mm$^2$ for this implementation. Instead, the paper reports 2695k
 NAND-2-equivalent logic gates, excluding SRAM, together with 246\,kB of
 on-chip SRAM. Consequently, the physical cost is retained in the
 published gate-and-memory form rather than converted to a potentially
-misleading silicon-area estimate; note~$^{e}$ of
-Table~\ref{tab:eyerissv2_mobilenet_comparison} gives an approximate
-conversion with the NAND-2 area of the Talos library.
+misleading silicon-area estimate. As a first-order reference only,
+the NAND-2 area of the Talos standard-cell library (1.44\,$\mu$m$^2$)
+puts the Eyeriss v2 logic alone at approximately 3.88\,mm$^2$, to
+which the SRAM area would have to be added; conversely, the
+1.536\,mm$^2$ of the balanced E+A+P point corresponds to roughly
+1.07\,M NAND-2 equivalents, memories included, since they are
+synthesized into standard cells (note~$^{e}$ of
+Table~\ref{tab:eyerissv2_mobilenet_comparison}).
 
 The MobileNet result also shows that the configuration preferred by a
 balanced objective does not need to be the configuration that most
@@ -1403,7 +1409,10 @@ external DRAM bandwidth. Using the reported maximum frequency of
 $0.164\times555\times10^6 \simeq 91.02$ million cycles per inference,
 corresponding to approximately 6.10 inferences/s. The benchmark
 considers convolutional and fully-connected layers and excludes
-pooling and activation layers.
+pooling and activation layers. Under ideal $(65/22)^2$ scaling, the
+reported 0.897\,mm$^2$ would correspond to approximately 7.8\,mm$^2$
+in the 65\,nm Talos technology; see the discussion following the
+table.
 
 \end{minipage}
 \end{table*}

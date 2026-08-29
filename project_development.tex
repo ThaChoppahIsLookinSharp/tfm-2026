@@ -404,82 +404,13 @@ required for the workload-aware evaluation. This keeps the DRAM fixed
 across the IP exploration while still accounting for the off-chip
 traffic produced by the mapping.
 
-There are two Level 2 runners: the exhaustive runner and the genetic runner. Since Level 1 reduces greatly the exploration space, a genetic approach to explore the rest of the solutions may not be the most suitable option it this remaining space is to small. For this case in particular, an exhaustive runner was added.
-
-\subsubsection{Exhaustive runner}
-The exhaustive runner was added for cases where the remaining Level 2
-design space is small enough to evaluate all the possible IP
-combinations. In these cases, using a genetic algorithm can add
-unnecessary complexity and does not guarantee that every feasible
-implementation is evaluated.
-
-The runner uses the Level 2 genome generated from the abstract
-accelerator and the compatible IPs available in the pool. It first
-calculates the number of possible combinations and checks it against a
-configurable maximum. This prevents exhaustive exploration from being
-used when the remaining IP design space becomes too large.
-
-If the number of combinations is acceptable, every possible Level 2
-genome is evaluated. Each genome is decoded into an implemented
-accelerator and evaluated using the same Level 2 evaluator used by the
-genetic runner. Therefore, area, workload energy, power, performance,
-and physical timing have the same meaning independently of the
-exploration strategy.
-
-Candidates that cannot implement the architecture, cannot sustain the
-mapping obtained in Level 1, or violate the user constraints are
-discarded. The remaining candidates form the feasible Level 2 design
-space.
-
-When only one optimization objective is selected, the exhaustive
-runner simply orders the feasible implementations by that objective.
-When several objectives are used, Talos computes the logarithmic
-deviation of each minimization objective from its ideal value:
-
-\[
-r_i(x) = \ln\left(\frac{f_i(x)}{f_i^{\min}}\right).
-\]
-
-Talos then calculates the balanced score using an augmented
-Tchebycheff formulation:
-
-\[
-S(x) = 100 \left[\max_i r_i(x) + 0.05 \sum_i r_i(x)\right].
-\]
-
-This score gives priority to the worst relative deviation from the
-ideal value, while the sum is a secondary term that distinguishes
-solutions with the same worst deviation. The ideal computed inside the
-exhaustive exploration of one architecture is local to that
-architecture, so this local score must not be compared directly with
-the score of another architecture. In the full flow, Talos
-recalculates the score using one common ideal over all feasible
-solutions of the architectures being compared. This global score is
-used to compare architectures.
-
-The balanced score is only used to rank the feasible implementations
-after the exhaustive exploration has finished. It does not remove
-candidates during the exploration and it does not replace the
-individual objective values, which are also preserved in the output.
-
-The exhaustive runner also takes into account dependencies between
-components. In particular, when a selected PE already contains one or
-more register files, the corresponding register-file choices are
-fixed by that PE instead of being explored as independent physical
-combinations.
-
-This strategy is useful after the architectural exploration has
-already reduced the design space to a small number of candidates. It
-provides complete coverage of the remaining IP combinations, while
-the genetic runner is kept as an alternative for cases where the
-number of possible implementations makes exhaustive evaluation
-impractical.
-
-\subsubsection{Genetic runner}
+\subsubsection{Level 2 genome and decoding}
 The Level 2 genome is generated dynamically from the abstract
 accelerator and the IP pool. Instead of having a fixed number of
 genes, each gene corresponds to one abstract component. The value of
-each gene selects one compatible IP implementation for that component.
+each gene selects one compatible IP implementation for that component,
+that is, an IP of the matching type that satisfies the capacity and
+bandwidth requirements defined by the component.
 
 This design allows the second level to adapt to different accelerator
 candidates. If the abstract accelerator changes, the Level 2 genome
@@ -487,11 +418,25 @@ changes with it. This is useful because the number and type of
 components may evolve as the architectural representation becomes
 richer.
 
+The genome also takes into account dependencies between components.
+When a selected PE already contains one or more register files, the
+corresponding register-file genes are fixed by that PE instead of
+being explored as independent physical choices. Both runners respect
+this dependency, although each one enforces it in a different way, as
+described later.
+
 Once a Level 2 genome is decoded, Talos builds an implemented
 accelerator. This implemented accelerator contains the selected IP
-block for each abstract component. The evaluator then computes the
-physical metrics and checks whether the candidate satisfies the user
-constraints.
+block for each abstract component and is the input to the Level 2
+evaluator.
+
+\subsubsection{Workload-aware evaluation}
+Every implemented accelerator is evaluated with the same Level 2
+evaluator, independently of the runner that generated it. Therefore,
+area, workload energy, power, performance, and physical timing have
+the same meaning independently of the exploration strategy. The
+evaluator computes the physical metrics and checks whether the
+candidate satisfies the user constraints.
 
 Area is accumulated across the selected components, taking into
 account the number of instances. Delay is approximated using the
@@ -610,6 +555,111 @@ in Level 1. Instead, it uses the mapping produced there as the
 workload requirement and evaluates whether different physical IP
 combinations can implement it, and what their resulting area, energy,
 power, and timing characteristics are.
+
+\subsubsection{Feasibility and ranking}
+Candidates that cannot implement the architecture, cannot sustain the
+mapping obtained in Level 1, or violate the user constraints are
+discarded. The remaining candidates form the feasible Level 2 design
+space, and both runners report only feasible implementations.
+
+When only one optimization objective is selected, the feasible
+implementations are simply ordered by that objective. When several
+objectives are used, Talos computes the logarithmic deviation of each
+minimization objective from its ideal value:
+
+\[
+r_i(x) = \ln\left(\frac{f_i(x)}{f_i^{\min}}\right).
+\]
+
+Talos then calculates the balanced score using an augmented
+Tchebycheff formulation:
+
+\[
+S(x) = 100 \left[\max_i r_i(x) + 0.05 \sum_i r_i(x)\right].
+\]
+
+This score gives priority to the worst relative deviation from the
+ideal value, while the sum is a secondary term that distinguishes
+solutions with the same worst deviation. The balanced score is only
+used to rank feasible implementations after the exploration has
+finished. It does not remove candidates during the exploration and it
+does not replace the individual objective values, which are also
+preserved in the output.
+
+The ideal value $f_i^{\min}$ depends on the set of solutions over
+which it is computed. In the full flow, Talos recalculates the score
+using one common ideal over all feasible solutions of the
+architectures being compared, whichever runner produced them. This
+global score is used to compare architectures.
+
+\subsubsection{Level 2 runners}
+There are two Level 2 runners: the exhaustive runner and the genetic
+runner. Both share the genome, the evaluator, and the feasibility
+criteria described above; they differ in how the Level 2 design space
+is explored and how the resulting alternatives are ranked. Since Level
+1 greatly reduces the exploration space, a genetic approach to explore
+the remaining solutions may not be the most suitable option if this
+remaining space is too small. For this case in particular, an
+exhaustive runner was added.
+
+\paragraph{Exhaustive runner}
+The exhaustive runner was added for cases where the remaining Level 2
+design space is small enough to evaluate all the possible IP
+combinations. In these cases, using a genetic algorithm can add
+unnecessary complexity and does not guarantee that every feasible
+implementation is evaluated.
+
+The runner works on the same Level 2 genome described above. Each IP
+combination corresponds to one genome, so the number of possible
+combinations is the number of distinct genomes. The runner first
+calculates this number and checks it against a configurable maximum.
+This prevents exhaustive exploration from being used when the
+remaining IP design space becomes too large. If the number of
+combinations is acceptable, every possible genome is decoded and
+evaluated sequentially. Component dependencies are handled during the
+enumeration, for each PE candidate, only the register-file values
+consistent with that PE are generated, so combinations that would
+count an included register file twice are never produced.
+
+After the evaluation, the feasible implementations are ranked as
+described above, by the selected objective when there is only one and
+by the balanced score otherwise. The ideal used for this score is
+local to the architecture being explored, so this local score must
+not be compared directly with the score of another architecture; the
+full flow recomputes the global score for that purpose.
+
+This strategy provides complete coverage of the remaining IP
+combinations and does not introduce stochastic sampling into the
+physical selection. The genetic runner is kept as an alternative for
+cases where the number of possible implementations makes exhaustive
+evaluation impractical.
+
+\paragraph{Genetic runner}
+The genetic runner explores the same Level 2 genome with NSGA-II,
+delegated to Pymoo as in Level 1. The population size and the number
+of generations are configurable. The genome is kept integer during the
+search: the initial population is sampled as random integers, and the
+crossover and mutation operators are followed by a repair step that
+rounds each gene to a valid IP index and applies the component
+dependencies, fixing the register-file genes covered by the selected
+PE. Duplicated individuals are eliminated from the population.
+
+The selected objectives are used directly as the NSGA-II objectives,
+and the user constraints are passed to the algorithm as constraint
+values, so infeasible candidates are penalized during the search
+instead of being filtered only at the end. Candidates that cannot be
+decoded or evaluated receive infinite objective values. The evaluation
+of the individuals of each generation is parallelized over the worker
+pool, as described in the parallel execution model.
+
+The output of the genetic runner is the final non-dominated set.
+Solutions that are infeasible or that select the same set of IPs are
+removed, and the remaining implementations are ordered by their
+objective values. The genetic runner does not compute a local balanced
+score; its solutions only receive the global score computed by the
+full flow. Unlike the exhaustive runner, it explores only part of the
+design space, so it is intended for cases where the number of
+compatible IP combinations exceeds the exhaustive limit.
 
 \subsection{Optimization Objective Interface}
 The original objective of this part of the tool was to provide a

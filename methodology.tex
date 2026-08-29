@@ -387,25 +387,155 @@ is presented in the Results chapter
 implementation flow of the next subsection has been introduced.
 
 \subsection{HW Implementation}
-\todo[inline]{Propuesta de fujo de diseño para generar la síntesis del código SystemVerilog generado mediante las herramientas EDA y en las tecnologies disponibles en la UAB}
-\todo[inline]{Lista IP pool
-ma o menos, tengo que decir  como he compilado las cosas y demas.
-Decir que se podría automatizar también.}
-Once the final architecture is selected, an accelerator RTL designs can
-be assembled in SystemVerilog by composing previously characterized processing and memory blocks. The main components included tiny-XPU INT16
-PEs, FPnew FP16 FMA units, simple INT8 MACs, BaseJump register files, 
-and OpenEye-compatible global buffers; the required number of instances, 
-array dimensions, interfaces, and precisions were fixed through parameterized 
-top-level wrappers. 
+\label{subsec:hw_implementation}
+The last phase of the methodology takes the configuration selected by
+Talos to a hardware implementation with standard EDA tools. The
+proposed design flow has three steps. First, the selected
+implementation is assembled in SystemVerilog by composing the same RTL
+blocks that were characterized for the IP pool: the number of
+instances, the array dimensions, the interfaces and the precisions are
+fixed through parameterized top-level wrappers, so no new datapath RTL
+is written for a given candidate. Second, the design is elaborated and
+synthesized with Cadence Genus against the standard-cell library of the
+target technology, and area, timing and power are extracted from the
+mapped netlist. Third, when a physical result is required, the netlist
+can be taken through placement and routing with Cadence Innovus and,
+if a test chip is intended, through the sign-off steps of the
+corresponding PDK. The technologies available at the UAB through its
+EDA and foundry-access agreements are the natural targets of this
+flow; in this thesis it was applied up to the synthesis step, using
+the TSMC 65~nm low-power library, which is also the step used to
+build the IP pool.
+\todo[inline]{PENDIENTE: confirmar y listar las tecnologías/PDKs y
+herramientas disponibles en la UAB que se quieren nombrar aquí (p.ej.
+TSMC 65~nm LP vía Europractice, otros nodos, Innovus para P\&R).}
 
-The designs used in the results chapter were synthesized with Cadence Genus 23.15 using the TSMC 65 nm low-power 9-track standard-cell library 
-(tcbn65lptc.lib) at the nominal NCCOM/TT corner (1.2 V and 25 °C), targeting 200 MHz. 
-Memories were synthesized from RTL into standard cells rather than 
-treated as opaque SRAM macros, while external DRAM and its PHY were 
-excluded from the accelerator silicon boundary. Area, timing, and vectorless
-power estimates were then extracted from the mapped Genus netlists and reports;
-the reports of the four synthesized configurations are reproduced in
-Appendix~\ref{app:synthesis_reports}.
+Table~\ref{tab:ip_pool_sources} lists the origin of the RTL blocks
+behind the pool entries reproduced in Appendix~\ref{app:ip_pools}. The
+processing elements were taken from open-source accelerator designs or
+written as simple MACs, the register files are BaseJump STL memories
+and the global buffers are OpenEye single-port RAMs. The requirements
+that a pool entry must satisfy (fields, units and operating point) are
+given in Appendix~\ref{app:talos_requirements}; the characterization
+described next produces exactly those fields.
+\todo[inline]{PENDIENTE: añadir referencias o URLs de los repositorios
+de origen del RTL de terceros (tiny-XPU, Gemmini, OpenEye, BaseJump
+STL, FPnew, PE de Alibaba, PE TMS4517) en la
+Tabla~\ref{tab:ip_pool_sources} y en la bibliografía.}
+
+\begin{table}[htbp]
+\centering
+\caption{Origin of the RTL blocks characterized for the IP pools.}
+\label{tab:ip_pool_sources}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{4.4cm}>{\raggedright\arraybackslash}p{3.3cm}>{\raggedright\arraybackslash}p{6.0cm}@{}}
+\hline
+\textbf{Pool entries} & \textbf{Source RTL} & \textbf{Notes} \\
+\hline
+\texttt{pe\_sauria}, \texttt{pe\_sauria\_int16},
+\texttt{pe\_sauria\_fp16} &
+SAURIA systolic PE~\cite{sauria2023} &
+INT8, INT16 and FP16 variants; the FP16 one wraps a modified FPnew
+FMA \\
+\texttt{pe\_fpnew\_fp16\_fma} &
+FPnew FMA unit &
+Bare FP16 FMA without the systolic wrapper; used by the synthesized
+FP16 accelerator \\
+\texttt{pe\_gemmini\_like},
+\texttt{pe\_gemmini\_like\_int16} &
+Gemmini-inspired PE &
+INT8 with selectable OS/WS dataflow; the INT16 variant is fixed to OS \\
+\texttt{pe\_tiny\_xpu}, \texttt{pe\_tiny\_xpu\_int16} &
+tiny-XPU PE &
+Weight-stationary MAC; used by the synthesized INT16 accelerators \\
+\texttt{pe\_alibaba\_int8} &
+Alibaba systolic PE &
+Ping-pong weight registers, four pipeline stages \\
+\texttt{pe\_tms4517\_simple} &
+TMS4517 systolic PE &
+Unsigned operands, single stage \\
+\texttt{pe\_simple\_mac} &
+Own reference MAC &
+Signed INT8 MAC without systolic logic; used by the synthesized INT8
+accelerator \\
+\texttt{pe\_openeye\_\allowbreak composite\_int8} &
+OpenEye PE &
+Composite sparse PE with local scratchpads (declared through
+\texttt{included\_rfs}) \\
+\texttt{mem\_bsg\_1rw\_*}, \texttt{mem\_bsg\_1r1w\_*} (12) &
+BaseJump STL \texttt{bsg\_mem} &
+1RW and 1R1W register files, 8 words of 8 to 256 bits, synthesizable
+(non-macro) variants \\
+\texttt{mem\_openeye\_sp\_*} (3) &
+OpenEye \texttt{RAM\_SP} &
+Single-port global buffers, 128 words of 64, 256 and 1024 bits \\
+\hline
+\end{tabular}
+\end{table}
+
+The pools used in this work are an example. Talos does not
+include a characterized library, before running Level~2, the user has
+to provide a pool for the target technology. The rest of this
+subsection describes how the pools of this work were built, so that
+the process can serve as a guide.
+
+The blocks were taken from open-source accelerator designs. Some were
+used as they are. Others were modified to obtain a variant that was
+not available, such as the INT16 versions of some PEs, or written as
+simple reference blocks, such as \texttt{pe\_simple\_mac}. Each block
+was wrapped in a small SystemVerilog top level with a single clock, an
+active-low reset and the parameters of the variant (precision, depth
+or width). Each variant was then synthesized separately, and its
+characterization was taken directly from the Genus reports.
+
+All blocks were synthesized with Cadence Genus 23.15 using the TSMC
+65~nm low-power 9-track standard-cell library (\texttt{tcbn65lptc})
+at the nominal NCCOM/TT corner (1.2~V, 25~$^\circ$C), with a 5~ns
+clock (200~MHz), input and output delays of a tenth of the period and
+a fixed output load. Memories were synthesized from RTL into standard
+cells rather than treated as opaque SRAM macros, and the external DRAM
+and its PHY were excluded from the accelerator silicon boundary. Area
+was read from the area report as mapped cell area, without wires or
+placement effects. The critical path was read from the timing report,
+and the maximum frequency was derived from its
+slack\footnote{$f_{\max} = 1000 / (T_{\mathrm{clk}} - \mathrm{slack})$
+in MHz, with $T_{\mathrm{clk}}$ and the slack in ns. Since the designs
+were constrained at 5~ns, blocks with positive slack report an
+$f_{\max}$ above 200~MHz.}.
+
+Idle and active power were obtained with two vectorless power
+estimations of Genus on the same mapped netlist. In the idle scenario
+the reset is deasserted, the clock runs and all data and control
+inputs are held constant: the block is clocked but performs no
+operation or access. In the active scenario the data inputs toggle
+randomly and the control inputs are set so that the block performs
+one operation or access per cycle\footnote{Random data assume a
+toggle probability of 0.5 and 0.5 transitions per cycle per bit, that
+is, 0.1 toggles/ns at 200~MHz; control inputs that alternate every
+cycle toggle at 0.2 toggles/ns; constant controls do not toggle. For
+memories, the active value stored in the pool corresponds to a mixed
+read/write scenario.}. Vectorless estimates have no temporal
+correlation between signals and no activity from a real stimulus, so
+they are less accurate than SAIF- or VCD-based analysis. They were
+chosen because they apply the same assumptions to every block, which
+is what Level~2 needs to compare implementations. The same script was
+used, with the accelerator top level as the target, for the four
+synthesized configurations validated in
+Section~\ref{sec:synthesis_validation}, whose reports are reproduced
+in Appendix~\ref{app:synthesis_reports}.
+
+Finally, the values of the reports were transcribed by hand into the
+pool files described in Appendix~\ref{app:talos_requirements}: area in
+mm$^2$, delay and maximum frequency, idle and active power with their
+operating point, and the metadata that synthesis does not produce,
+such as MACs per cycle, pipeline latency, the register files included
+in a composite PE or the numerical format. This process is manual but
+repetitive. Since the wrappers, the synthesis script and the YAML
+format are fixed, it can be automated with a script that iterates over
+the variants, runs the synthesis and emits the pool entries. This is
+left as future work.
 
 \subsection{Summary of the chapter}
 The development milestones introduced in the Subsection~\ref{subsec:milestones} provide a
