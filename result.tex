@@ -142,15 +142,15 @@ Weight-stationary; local weight register, propagates activations \\
 4 &
 Ping-pong weight registers; deepest INT8 pipeline, highest $f_{\max}$ \\
 
-\texttt{pe\_openeye\_composite\_int8} &
-0.070829 &
-13.893 &
-13.979 &
-278.55 &
-2 &
-0.216 &
-1$^{a}$ &
-Composite sparse PE: act./weight/psum scratchpads, zero-skipping, two MACs \\
+%\texttt{pe\_openeye\_composite\_int8} &
+%0.070829 &
+%13.893 &
+%13.979 &
+%278.55 &
+%2 &
+%0.216 &
+%1$^{a}$ &
+%Composite sparse PE: act./weight/psum scratchpads, two MACs \\
 
 \hline
 
@@ -234,9 +234,9 @@ cost of the largest area and idle power among the simple MACs, whereas
 in the integer pools the smallest implementations are single-stage
 MACs without additional control logic.
 
-\todo[inline]{Especificar que pe\_openeye\_composite\_int8 lleva los RFs
-dentro (included\_rfs / parent\_idle\_baseline, ver apéndice) y qué
-implica para Level~2 (no instancia RFs aparte, área y idle incluidos).}
+%\todo[inline]{Especificar que pe\_openeye\_composite\_int8 lleva los RFs
+%dentro (included\_rfs / parent\_idle\_baseline, ver apéndice) y qué
+%implica para Level~2 (no instancia RFs aparte, área y idle incluidos), o borrarlo que se yo}
 One particular case is
 \texttt{pe\_openeye\_composite\_int8}. Unlike the other INT8
 implementations, it provides two MAC operations per cycle and
