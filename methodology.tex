@@ -259,7 +259,13 @@ abstract accelerator representation. This representation contains
 abstract components such as the PE array, register files, and global
 buffer. These components express the requirements of the
 architecture, while the second level is responsible for selecting
-compatible IP blocks from the available IP pool.
+compatible IP blocks from the available IP pool. The abstract
+representation is described in
+Section~\ref{subsec:abstract_representation}, and the form of the IP
+characterization that Level~2 matches against it, in
+Section~\ref{subsec:ip_pool}; Appendix~\ref{app:ip_pools} reproduces
+the pools used in the evaluation together with an annotated example
+of one characterized IP.
 
 The Level 2 representation was therefore designed differently from
 the first one. Instead of having a fixed genome, the Level 2 genome

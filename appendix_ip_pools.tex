@@ -1,0 +1,145 @@
+\section{Characterized IP Pools Used in the Evaluation}
+\label{app:ip_pools}
+
+This appendix reproduces the three IP pools used by the Level~2
+exploration in the experiments of Chapter~\ref{sec:results}: the INT8
+pool (\path{ip_pool_characterized_65nm.yaml}), the INT16 pool
+(\path{ip_pool_int16_65nm.yaml}) and the FP16 pool
+(\path{ip_pool_fp16_65nm.yaml}). The INT16 pool is used for the two
+AlexNet experiments, the INT8 pool for the MobileNet/Eyeriss~v2
+comparison and the FP16 pool for the VGG-16/SAURIA comparison. The
+processing elements and memories they contain are summarized in
+Tables~\ref{tab:characterized_pes}
+and~\ref{tab:characterized_memories}; the meaning of every field is
+described in Section~\ref{subsec:ip_pool} and
+Appendix~\ref{app:talos_requirements}.
+
+The files are included exactly as consumed by Talos. All IPs were
+characterized with Cadence Genus after mapping to the TSMC 65~nm
+standard-cell library at 200~MHz, 1.2~V, 25~$^\circ$C and the NCCOM
+corner (Section~\ref{subsec:ip_pool}). Areas are expressed in mm$^2$,
+power in W and delays in ns. The three pools share the same twelve
+register files and three global buffers; only the compute entries
+change. The \texttt{dram\_platform\_512b} entry of the INT8 and INT16
+pools is the shared synthetic platform proxy described in
+Appendix~\ref{app:talos_requirements}; the FP16 pool omits it and lets
+the full flow inject the same proxy. The pools are stored in the
+thesis repository under \path{ip_pools/} and correspond to the
+\path{configs/} directory of the Talos repository.
+
+\lstdefinestyle{yamlpool}{
+    language={},
+    basicstyle=\scriptsize\ttfamily,
+    columns=fixed,
+    basewidth=0.5em,
+    keepspaces=true,
+    breaklines=true,
+    breakindent=0pt,
+    showstringspaces=false,
+    frame=single,
+    rulecolor=\color{black!40},
+    backgroundcolor=\color{background},
+    numbers=none,
+    captionpos=t,
+    nolol=true,
+    upquote=true,
+    sensitive=true,
+    morecomment=[l]{\#},
+    commentstyle=\color{black!60}\itshape,
+    morestring=[b]",
+    stringstyle=\color{black},
+    literate={\$}{{\$}}1
+}
+
+\subsection{Annotated Example of an IP Entry}
+\label{app:ip_pool_example}
+
+Listing~\ref{lst:ip_pool_annotated} shows one processing element and
+one register file of the INT16 pool with a comment on every field.
+The same structure is repeated for every entry of the pools
+reproduced in the following sections. Fields under
+\texttt{metadata} are not interpreted by the generic IP model; Level~2
+reads from them only the values it needs (\texttt{macs\_per\_cycle},
+\texttt{accesses\_per\_cycle}, and the numerical format of the PE),
+while the remaining values are kept as documentation of the
+characterization.
+
+\begin{lstlisting}[style=yamlpool,nolol=false,label={lst:ip_pool_annotated},caption={Annotated INT16 pool entries: one PE and one register file.}]
+technology_nm: 65                # technology node shared by the pool;
+                                 # also used by the Level 1 CACTI calibration
+ips:
+  - id: pe_sauria_int16          # unique identifier of the IP
+    type: pe                     # pe | register_file | global_buffer | dram
+    area: 0.00509364             # area of one instance [mm2]
+    throughput: 1.0              # operations per cycle of the generic model
+    delay: 4.803                 # critical path [ns]
+    fmax_mhz: 208.20320632937748 # maximum frequency derived from the delay
+    metadata:
+      precision_bits: 16         # compared with the ONNX workload operands
+      activation_bits: 16
+      weight_bits: 16
+      accumulator_bits: 48
+      output_bits: 48
+      signed: true
+      data_type: integer
+      numeric_format: int16
+      macs_per_cycle: 1          # used to check the Level 1 mapping
+      pipeline_latency_cycles: 3
+      dynamic_energy_per_mac_pj: 5.281205   # (active - idle) / f_ref
+    power_model:                 # idle/active characterization
+      source: Cadence Genus mapped standard-cell characterization
+      activity_method: vectorless_explicit
+      reference_frequency_mhz: 200.0        # operating point of the
+      p_idle_w: 0.000593089                 # characterization; all IPs
+      p_active_w: 0.00164933                # of one implementation must
+      voltage_v: 1.2                        # share it
+      temperature_c: 25.0
+      corner: NCCOM
+
+  - id: mem_bsg_1rw_8x64
+    type: register_file
+    area: 0.00531648
+    throughput: 1.0
+    delay: 1.143
+    fmax_mhz: 874.8906386701664
+    capacity_bits: 512           # must cover the abstract memory capacity
+    bandwidth_bits: 64           # must cover the abstract memory bandwidth
+    metadata:
+      accesses_per_cycle: 1      # compared with the ZigZag memory traffic
+      ports: 1RW
+      read_energy_pj: 0.7066
+      write_energy_pj: 3.6565
+    power_model:                 # same operating point as the PE
+      source: Cadence Genus mapped standard-cell characterization
+      activity_method: vectorless_explicit
+      reference_frequency_mhz: 200.0
+      p_idle_w: 0.00111907
+      p_active_w: 0.00174303
+      voltage_v: 1.2
+      temperature_c: 25.0
+      corner: NCCOM
+\end{lstlisting}
+
+In the INT16 and FP16 files the operating-point fields are written
+once with a YAML anchor (\texttt{\&characterization}) and reused by
+the remaining entries with a merge key (\texttt{<{}<: *characterization}); only the idle and active powers are overridden.
+The INT8 file lists every field explicitly. Both forms are equivalent
+after parsing.
+
+\clearpage
+\subsection{INT8 Pool}
+\label{app:ip_pool_int8}
+
+\lstinputlisting[style=yamlpool,caption={\path{ip_pool_characterized_65nm.yaml}: INT8 processing elements, shared memories and platform DRAM proxy.}]{ip_pools/ip_pool_characterized_65nm.yaml}
+
+\clearpage
+\subsection{INT16 Pool}
+\label{app:ip_pool_int16}
+
+\lstinputlisting[style=yamlpool,caption={\path{ip_pool_int16_65nm.yaml}: INT16 processing elements, shared memories and platform DRAM proxy.}]{ip_pools/ip_pool_int16_65nm.yaml}
+
+\clearpage
+\subsection{FP16 Pool}
+\label{app:ip_pool_fp16}
+
+\lstinputlisting[style=yamlpool,caption={\path{ip_pool_fp16_65nm.yaml}: FP16 processing elements and shared memories.}]{ip_pools/ip_pool_fp16_65nm.yaml}

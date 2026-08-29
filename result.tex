@@ -1,5 +1,6 @@
 \clearpage
 \section{Results}
+\label{sec:results}
 
 This section evaluates the implemented Talos flow using the final
 exploration results. The objective of these experiments is not only to
@@ -36,6 +37,102 @@ The final comparisons use four workload configurations:
     with the dense Eyeriss v2 result;
     \item VGG-16 using FP16 operands, used for comparison with SAURIA.
 \end{itemize}
+
+\subsubsection{Execution Platform and Runtime}
+
+All runtime measurements were obtained on a workstation equipped with
+an AMD Ryzen~5 7600 processor (6 physical cores and 12 hardware
+threads), 16~GB of DDR5 memory, and SSD storage. Every run was launched
+with 10 worker processes. In Level~1, Talos passes these workers to
+Pymoo's element-wise parallel evaluator, so the individuals in a
+generation are evaluated concurrently. The same worker count
+is also used when Talos regenerates the detailed ZigZag activity
+profiles for the architectures selected for the Level~1--Level~2
+handoff.
+
+Table~\ref{tab:talos_runtime_comparison} reports the execution cost for
+the Level~1 search effort used in the experiments. Each workload uses
+seven runs and five generations. The three main searches use 114
+individuals per generation (3,990 candidate attempts in total), while
+the Eyeriss/AlexNet INT16 search uses 57 individuals (1,995 attempts).
+The number of valid evaluations is slightly lower because duplicate,
+invalid, or otherwise rejected candidates do not all result in a new
+completed ZigZag evaluation.
+
+\begin{table*}[!htbp]
+\centering
+\caption{Talos execution cost for the Level~1 search effort used in the
+experiments and the corresponding Level~2 exploration.}
+\label{tab:talos_runtime_comparison}
+\setlength{\tabcolsep}{3.2pt}
+\renewcommand{\arraystretch}{1.13}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+\textbf{Metric} &
+\makecell{\textbf{Eyeriss v2/}\\\textbf{MobileNet INT8}} &
+\makecell{\textbf{AlexNet}\\\textbf{INT16}} &
+\makecell{\textbf{Eyeriss/}\\\textbf{AlexNet INT16}} &
+\makecell{\textbf{SAURIA/}\\\textbf{VGG-16 FP16}} \\
+\midrule
+Level~1 time
+  & 4 h 34 min 24.9 s & 32 h 17 min 47.2 s
+  & 98 h 15 min 40.6 s & 22 h 15 min 01.1 s \\
+Level~1 configuration per run
+  & 114 ind. $\times$ 5 gen. & 114 ind. $\times$ 5 gen.
+  & 57 ind. $\times$ 5 gen. & 114 ind. $\times$ 5 gen. \\
+Number of runs & 7 & 7 & 7 & 7 \\
+Level~1 candidate attempts & 3,990 & 3,990 & 1,995 & 3,990 \\
+Valid Level~1 evaluations & 3,633 & 3,644 & 1,897 & 3,693 \\
+Discarded candidates
+  & 357 (8.95\%) & 346 (8.67\%) & 98 (4.91\%) & 297 (7.44\%) \\
+Architectures passed to Level~2 & 312 & 240 & 24 & 312 \\
+Level~1 time/final architecture
+  & 52.77 s & 8 min 04.4 s & 4 h 05 min 39.2 s & 4 min 16.7 s \\
+Level~2 time
+  & 1 h 37 min 56.2 s & 20 min 07.6 s & 1 min 59.2 s & 8 min 50.8 s \\
+Architecture--objective evaluations
+  & 2,184 & 1,680 & 168 & 2,184 \\
+Level~2 time/architecture--objective
+  & 2.69 s & 0.72 s & 0.71 s & 0.24 s \\
+Physical implementations/objective
+  & 2,320,241 & 768,048 & 80,400 & 476,720 \\
+Total physical implementations
+  & 16,241,687 & 5,376,336 & 562,800 & 3,337,040 \\
+\textbf{Total execution time}
+  & \textbf{6 h 12 min 21.1 s} & \textbf{32 h 37 min 54.8 s}
+  & \textbf{98 h 17 min 39.8 s} & \textbf{22 h 23 min 51.9 s} \\
+\textbf{Total time/final architecture}
+  & \textbf{1 min 11.6 s} & \textbf{8 min 09.5 s}
+  & \textbf{4 h 05 min 44.2 s} & \textbf{4 min 18.4 s} \\
+\bottomrule
+\end{tabular}%
+}
+\end{table*}
+
+The principal Level~1 bottleneck is the ZigZag workload evaluation,
+rather than the NSGA-II operators themselves. Its cost depends strongly
+on the workload: a larger or more structurally demanding network gives
+ZigZag more layers and mapping decisions to process, and the estimation
+and mapping-generation stages can therefore take substantially longer
+for one architecture. This explains why similar Level~1 population
+budgets produce very different runtimes across the four experiments.
+
+Level~2 has a different scaling factor. Its runtime depends on both the
+number and structure of the architectures received from Level~1 and on
+the selected characterized IP pool. Each architecture defines a set of
+abstract components, while the pool determines how many compatible IP
+choices exist for each component; their Cartesian product determines
+the number of physical implementations explored. The pools used in
+these experiments keep this product tractable, so the exhaustive runner
+was selected instead of Level~2 NSGA-II. It evaluates every compatible
+combination and avoids introducing stochastic sampling into the final
+physical selection. In the current implementation, this exhaustive loop
+is sequential within each architecture, and the full-flow driver also
+processes the selected Level~1 architectures one after another. Thus,
+the 10-worker setting primarily reduces the Level~1 ZigZag cost, whereas
+Level~2 runtime is governed mainly by the handed-off architectures and
+the pool cardinalities.
 
 \subsubsection{Characterized Hardware IP Pools}
 
@@ -256,7 +353,8 @@ The INT16 pool is used for both AlexNet experiments, the INT8 pool
 for the MobileNet/Eyeriss v2 comparison, and the FP16 pool for the
 VGG-16/SAURIA comparison. This keeps the workload numerical
 representation and the Level~2 compute implementation consistent
-throughout the final evaluation.
+throughout the final evaluation. The three pool files are reproduced
+in Appendix~\ref{app:ip_pools}.
 
 \begin{table*}[t]
 \centering

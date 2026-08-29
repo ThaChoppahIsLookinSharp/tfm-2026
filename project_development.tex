@@ -72,6 +72,7 @@ architectural exploration separated from hardware IP instantiation
 while maintaining a path between both stages.
 
 \subsection{Abstract Architecture Representation}
+\label{subsec:abstract_representation}
 In order to evaluate the different architectures, an abstract
 representation that does not contain specific IPs is needed. Since
 ZigZag is used in the first level, the decision was to keep this
@@ -313,6 +314,7 @@ be interpreted as a pool-dependent lower bound for the architecture,
 while the concrete IP combinations are explored later in Level 2.
 
 \subsection{IP representation and hardware pool}
+\label{subsec:ip_pool}
 The second level of Talos requires a representation of the available
 hardware blocks. For that reason, an IP pool was implemented.
 
@@ -372,7 +374,9 @@ activity, but avoids counting their physical implementation twice.
 During the early stages of development, synthetic characterization
 values were used only to implement and validate the exploration flow.
 Once the flow was stable, the IP pool used for the final evaluation
-was populated with real characterization values.
+was populated with real characterization values. The resulting pools
+are reproduced in Appendix~\ref{app:ip_pools}, which also includes an
+annotated example of one IP entry.
 
 \subsection{Level 2: IP-Based Hardware Evaluation}
 The second level evaluates an architectural candidate using the
@@ -647,6 +651,37 @@ A cache mechanism is also included so that the same candidate does
 not need to be evaluated multiple times when several objectives are
 requested from the same result. This is especially useful when the
 evaluation step is expensive in memory and time.
+
+\subsection{Parallel Execution Model}
+
+Talos parallelizes with processes rather than threads, because the
+expensive work is the ZigZag evaluation. The number of processes is
+set with the \texttt{--workers} option. Each worker has its own
+evaluator and working directory, so the temporary files of different
+candidates do not collide.
+
+In Level~1, the population is passed to Pymoo and Pymoo evaluates each
+individual in parallel on the worker pool: the genome is decoded,
+ZigZag is run, and latency, energy, area, and constraint values are
+returned. The genetic operators run in the main process, so each
+generation is a synchronization point and the concurrency is bounded
+by the population size. The energy and area calibrations are computed
+once before the search and shared with the workers. The activity
+profiles of the architectures selected for Level~2 are computed the
+same way, one architecture per worker.
+
+Level~2 processes the architectures received from Level~1 one at a
+time. For each of them, the NSGA-II search is also delegated to Pymoo,
+which evaluates the individuals, in this case physical IP combinations,
+in parallel with the same number of workers. The exhaustive strategy
+evaluates the combinations sequentially, since its evaluation is
+analytical and cheap.
+
+Scaling is not linear with the worker count: process start-up, data
+serialization, the per-generation barrier, and the variance in
+evaluation time between candidates introduce overhead and load
+imbalance, and each worker keeps its own copy of the workload and
+evaluator in memory.
 
 \subsection{Design Flow}
 The current Talos flow starts with the Level 1 architectural genome.
