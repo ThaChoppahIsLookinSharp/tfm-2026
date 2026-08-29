@@ -735,8 +735,9 @@ evaluator in memory.
 
 \subsection{Design Flow}
 The current Talos flow starts with the Level 1 architectural genome.
-This genome is decoded into an architecture configuration and
-exported to ZigZag using the NSGA-II, a standard genetic algorithm.
+NSGA-II proposes a candidate, then this genome is decoded into an 
+architecture configuration and
+exported to ZigZag.
 
 ZigZag, plus the estimated values calculated for the idle
 energy and the area, are used as fitness function.
