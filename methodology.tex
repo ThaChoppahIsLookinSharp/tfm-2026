@@ -395,7 +395,9 @@ implementation is assembled in SystemVerilog by composing the same RTL
 blocks that were characterized for the IP pool: the number of
 instances, the array dimensions, the interfaces and the precisions are
 fixed through parameterized top-level wrappers, so no new datapath RTL
-is written for a given candidate. Second, the design is elaborated and
+is written for a given candidate (Figure~\ref{fig:alexnet_v2_arch} in
+Section~\ref{sec:synthesis_validation} shows the composition obtained
+for the INT16 AlexNet configuration). Second, the design is elaborated and
 synthesized with Cadence Genus against the standard-cell library of the
 target technology, and area, timing and power are extracted from the
 mapped netlist. Third, when a physical result is required, the netlist

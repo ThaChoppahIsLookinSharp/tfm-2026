@@ -101,7 +101,7 @@ Total physical implementations
   & 16,241,687 & 5,376,336 & 562,800 & 3,337,040 \\
 \textbf{Total execution time}
   & \textbf{6 h 12 min 21.1 s} & \textbf{32 h 37 min 54.8 s}
-  & \textbf{98 h 17 min 39.8 s} & \textbf{22 h 23 min 51.9 s} \\<
+  & \textbf{98 h 17 min 39.8 s} & \textbf{22 h 23 min 51.9 s} \\
 \bottomrule
 \end{tabular}%
 }
@@ -1495,6 +1495,31 @@ that is obtained when the selected configuration is actually built.
 For this purpose, the E+A+P configurations were instantiated and
 synthesized, and their resulting area and active power were compared
 against the Talos Level~2 estimates.
+
+Each configuration was assembled with the parameterized wrappers of
+Section~\ref{subsec:hw_implementation} from the RTL blocks
+characterized for the pool. Figure~\ref{fig:alexnet_v2_arch} shows the
+INT16 AlexNet composition: an $8\times32$ array of
+\texttt{pe\_tiny\_xpu\_int16}, three $8\times8$~bit 1R1W register
+files per processing element (768 in total), a $128\times256$~bit
+single-port global buffer and a 512-bit link to the external DRAM.
+Activations enter the array by rows and partial sums by columns; the
+register files are accessed through a shared maintenance port and the
+global buffer through the DRAM link. These are the same components as
+in the abstract architecture of Figure~\ref{fig:abstract-arch}.
+\todo[inline]{PENDIENTE: contrastar en keli si esto ta bien}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\linewidth]{img/alexnet_v2_arch.pdf}
+  \caption{Synthesized composition of the INT16 AlexNet configuration
+(\texttt{accelerator\_alexnet\_v2\_int16}, \texttt{ROWS}=8,
+\texttt{COLS}=32). Only three of the 32 columns are drawn. Thin arrows
+show the activation (horizontal) and partial-sum (vertical) flow
+between processing elements. External DRAM and PHY are excluded from
+the synthesized boundary.}
+  \label{fig:alexnet_v2_arch}
+\end{figure}
 
 Table~\ref{tab:talos_estimation_validation} summarizes the available
 validation results. External DRAM is excluded, since the synthesized
