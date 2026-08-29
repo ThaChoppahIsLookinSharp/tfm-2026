@@ -8,13 +8,12 @@ models efficiently. Although CPUs and GPUs can execute a wide range of
 workloads, their general-purpose nature may not provide the required
 energy efficiency for every application. This is especially relevant
 in edge and embedded systems, where power consumption, area, and
-memory are limited and often tailored to application specific domains and applications(automotive, medical, industrials, etc.).
+memory are limited and often tailored to application specific domains and applications (automotive, medical, industrials, etc.).
 
-DNN Hardware Accelerators
 As a result, many domain-specific DNN accelerators have been proposed.
 These accelerators target different environments, from large data
-centres to small always-on sensing devices, but they usually exploit a
-similar set of ideas. These include and/or temporalparallelism, data magagement and reuse,
+centers to small always-on sensing devices, but they usually exploit a
+similar set of ideas. These include spatial and/or temporal parallelism, data management and reuse,
 sparsity, and reduced numerical representation/precision. The way in which these
 techniques are combined has a direct effect on performance, power,
 energy, and area \cite{sze2017efficient}.
@@ -41,19 +40,19 @@ hierarchy and data movement, since the cost of moving data can be as
 relevant as the cost of the arithmetic operations themselves.
 
 Systolic arrays are a more regular form of computing array. Data moves
-between neighbouring processing elements in a pipelined manner, while
+between neighboring processing elements in a pipelined manner, while
 each element performs part of a matrix multiplication. Google's first
 Tensor Processing Unit is a well-known example of this approach
 \cite{tpuv1}. It was designed for neural network inference in data
-centres and uses a large matrix multiplication unit supported by
+centers and uses a large matrix multiplication unit supported by
 software-managed on-chip memory. The TPU shows how a specialized
 architecture can provide high throughput when it is designed around
 the dominant operations of a workload.
 
 \subsubsection{Precision-Scalable and Reconfigurable Accelerators}
 
-Different accelerators use diverse and even mixed data representation (integer, fixed, floating   point) and support several 
-types of workloads, according to the DNN solutions that can me mapped on them. Some architectures introduce reconfigurability to
+Different accelerators use diverse and even mixed data representation (integer, fixed, floating point) and support several 
+types of workloads, according to the DNN solutions that can be mapped on them. Some architectures introduce reconfigurability to
 adapt their precision, dataflow, topology, parallelism level, or power consumption.
 
 Envision explores another part of the accelerator design space

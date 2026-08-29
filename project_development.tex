@@ -2,7 +2,7 @@
 \section{Project development}
 
 This section describes the decisions taken during the development of
-the project, according to the .defined methodology. In this
+the project, according to the defined methodology. In this
 chapter, the focus is how the requirements were translated into the
 structure of the tool: how the exploration was divided into two
 levels, how the different parts are connected, and the scope that
@@ -636,7 +636,7 @@ evaluation impractical.
 
 \paragraph{Genetic runner}
 The genetic runner explores the same Level 2 genome with NSGA-II,
-delegated to Pymoo as in Level 1. The population size and the number
+delegated to pymoo as in Level 1. The population size and the number
 of generations are configurable. The genome is kept integer during the
 search: the initial population is sampled as random integers, and the
 crossover and mutation operators are followed by a repair step that
@@ -710,7 +710,7 @@ set with the \texttt{--workers} option. Each worker has its own
 evaluator and working directory, so the temporary files of different
 candidates do not collide.
 
-In Level~1, the population is passed to Pymoo and Pymoo evaluates each
+In Level~1, the population is passed to pymoo and pymoo evaluates each
 individual in parallel on the worker pool: the genome is decoded,
 ZigZag is run, and latency, energy, area, and constraint values are
 returned. The genetic operators run in the main process, so each
@@ -721,7 +721,7 @@ profiles of the architectures selected for Level~2 are computed the
 same way, one architecture per worker.
 
 Level~2 processes the architectures received from Level~1 one at a
-time. For each of them, the NSGA-II search is also delegated to Pymoo,
+time. For each of them, the NSGA-II search is also delegated to pymoo,
 which evaluates the individuals, in this case physical IP combinations,
 in parallel with the same number of workers. The exhaustive strategy
 evaluates the combinations sequentially, since its evaluation is
@@ -769,7 +769,7 @@ the others.
 In both cases, the workload activity profile obtained from ZigZag in
 Level 1 is passed together with the abstract architecture. Therefore,
 Level 2 explores different physical implementations while preserving
-the mapping and workload behaviour selected during the architectural
+the mapping and workload behavior selected during the architectural
 exploration.
 
 The Level 2 genome is created from those compatibility lists. Each
@@ -781,7 +781,7 @@ The complete flow can therefore be seen as a hierarchical exploration:
 
 \begin{enumerate}
 \item Level 1 explores architectural candidates.
-\item ZigZag evaluates the mapping and memory behaviour of those
+\item ZigZag evaluates the mapping and memory behavior of those
 candidates.
 \item Selected candidates are converted into abstract accelerator
 components.
@@ -811,7 +811,7 @@ architecture with ZigZag, while Level 2 evaluates concrete IP choices.
 When the available IP combinations are introduced, an architecture
 that appears less promising at the abstract level may produce a better
 physical implementation, while a well-ranked abstract architecture
-may offer less favourable IP combinations. For this reason, the
+may offer less favorable IP combinations. For this reason, the
 connection between levels was designed to preserve several candidate
 architectures instead of passing only one apparent optimum.
 
@@ -833,13 +833,13 @@ energy estimations. Talos therefore evaluates workload time at
 the common reference frequency of the selected IP characterizations
 and uses maximum frequency as a feasibility condition.
 
-The treatment of DRAM exposed a similar modelling issue.
+The treatment of DRAM exposed a similar modeling issue.
 Allowing the optimizer to change external bandwidth without
 assigning a physical cost created an unrealistic path to lower
 latency. Fixing DRAM bandwidth as a platform parameter avoided this
 problem. Later, the dynamic energy associated with off-chip accesses
 also had to be propagated from the ZigZag mapping, because ignoring
-it favoured small on-chip architectures with high external traffic.
+it favored small on-chip architectures with high external traffic.
 
 The optimization algorithms introduced practical problems
 as well. Although the Level 1 genome is discrete, generic
@@ -896,8 +896,8 @@ implementation.
 
 These tests check that Talos can represent, transform, and evaluate
 accelerator candidates through both levels. They also check an
-important modelling decision: the DRAM is preserved in the ZigZag
-architecture for off-chip traffic modelling, but it is not imported
+important modeling decision: the DRAM is preserved in the ZigZag
+architecture for off-chip traffic modeling, but it is not imported
 as an IP block in Level 2.
 
 \subsection{Summary of the Chapter}
@@ -950,7 +950,7 @@ The main decisions taken during the project were:
 
 \begin{itemize}
 \item to use Python for the development.
-\item to use Pymoo for the NSGA-II.
+\item to use pymoo for the NSGA-II.
 \item to divide the exploration into an architectural level and an
 IP-based level;
 \item to reuse ZigZag for workload mapping and architectural
@@ -963,7 +963,7 @@ representation;
 pool and a dynamic Level 2 genome;
 \item to keep evaluation metrics separate from optimization
 objectives;
-\item to evaluate perfomance, energy and power from workload activity and
+\item to evaluate performance, energy and power from workload activity and
 coherent IP characterization;
 \item to use NSGA-II for large spaces and exhaustive Level 2
 exploration when the space is not large;

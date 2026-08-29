@@ -44,7 +44,7 @@ All runtime measurements were obtained on a workstation equipped with
 an AMD Ryzen~5 7600 processor (6 physical cores and 12 hardware
 threads), 16~GB of DDR5 memory, and SSD storage. Every run was launched
 with 10 worker processes. In Level~1, Talos passes these workers to
-Pymoo's element-wise parallel evaluator, so the individuals in a
+pymoo's element-wise parallel evaluator, so the individuals in a
 generation are evaluated concurrently. The same worker count
 is also used when Talos regenerates the detailed ZigZag activity
 profiles for the architectures selected for the Level~1--Level~2
@@ -799,7 +799,7 @@ measured with the chip running at 1.0~V \cite{chen2017eyeriss}, so
 part of the gap between both designs comes from the operating point
 and not from the architecture.\footnote{Since dynamic power scales
 with the square of the supply voltage, the voltage difference alone
-accounts for a factor of up to $(1.2/1.0)^2\simeq1.44$ in favour of
+accounts for a factor of up to $(1.2/1.0)^2\simeq1.44$ in favor of
 Eyeriss. Applied to the energy-oriented Talos point, the on-chip
 energy ratio would drop from 3.8 to roughly 2.6 and the power ratio
 from 4.4 to roughly 3.0. This is a first-order correction: leakage
@@ -1237,7 +1237,7 @@ apart than in the two Eyeriss comparisons. Talos uses the characterized
 555~MHz \cite{sauria2023}. As in the Eyeriss v1 comparison, part of the
 gap therefore comes from the operating point and not from the
 architecture: the supply voltage difference alone accounts for a
-factor of up to $(1.2/0.8)^2\simeq2.25$ in dynamic power in favour of
+factor of up to $(1.2/0.8)^2\simeq2.25$ in dynamic power in favor of
 SAURIA, on top of the 65~nm to 22~nm technology gap; both effects are
 quantified at the end of this subsection. The SAURIA reference point
 is its reported VGG-16 execution time of approximately 164~ms,
