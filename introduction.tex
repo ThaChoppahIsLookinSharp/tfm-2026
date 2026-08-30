@@ -14,7 +14,7 @@ throughput. These improvements have made AI a reality in everyday
 life. Deep Neural
 Networks have become a very common solution to complex tasks such as
 computer vision, speech recognition or natural language processing.
-The recent breakthroughs of AI results in a rising demand of
+Recent breakthroughs in AI have led to a growing demand for hardware
 accelerators. However, the increasing accuracy of latest DNN models
 comes at the cost of higher computational and memory requirements.
 
@@ -74,8 +74,8 @@ configurations.
 
 \subsection{Automatic Accelerator Generation}
  Other solutions aim at directly automating the complete
- generation of DNN accelerators. Works such as AutoDNNChip
- \cite{autodnnchip} and AutoAI2C\cite{autoai2c}. AutoDNNChip
+ generation of DNN accelerators. Representative examples are
+ AutoDNNChip~\cite{autodnnchip} and AutoAI2C~\cite{autoai2c}. The former
  introduces a framework composed of a Chip Predictor and a Chip
  Builder, capable of exploring accelerator configurations and
  generating synthesizable hardware implementations based on a given
@@ -171,15 +171,14 @@ architecture.
 
 %{It separates the exploration of accelerator architectures from the
 %instantiation of specific hardware IPs.}
-In the first phase, Talos identifies a set of promising
-abstract architectures, cutting down a large part of the design
-space. The second level,
-the selected architectures are re-evaluated using a high-level
-characterization
-model of hardware IP blocks to estimate PPA.
-Talos is inherently designed modular and open source, so anyone that
-is free to add their own evaluation
-expressions to support their specific optimization goals.
+At the first level, Talos identifies a set of promising
+abstract architectures, pruning a large part of the design
+space. At the second level, the selected architectures are
+re-evaluated using a high-level characterization model of hardware IP
+blocks to estimate their PPA.
+Talos is designed as a modular, open source tool, so users can add
+their own evaluation expressions to support their specific
+optimization goals.
 
 \subsection{Document Organization}
 The rest of this document is organized as follows. The State of the
