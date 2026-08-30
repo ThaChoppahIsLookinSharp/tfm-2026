@@ -7,9 +7,6 @@ analysis to design, implementation, and validation, while keeping an
 iterative structure.
 
 \subsection{Development process}
-Since the expected outcome of the project is a software tool, the
-development followed a conventional, iterative software engineering
-process.
 
 A simple and iterative development process was followed, allowing the
 design to be refined as the project evolved.
@@ -490,7 +487,9 @@ simple reference blocks, such as \texttt{pe\_simple\_mac}. Each block
 was wrapped in a small SystemVerilog top level with a single clock, an
 active-low reset and the parameters of the variant (precision, depth
 or width). Each variant was then synthesized separately, and its
-characterization was taken directly from the Genus reports.
+characterization was taken directly from the Genus reports. Each
+variant is also a separate pool entry, since the pool does not
+support parameterized entries.
 
 All blocks were synthesized with Cadence Genus 23.15 using the TSMC
 65~nm low-power 9-track standard-cell library (\texttt{tcbn65lptc})

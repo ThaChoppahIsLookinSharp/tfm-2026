@@ -42,7 +42,12 @@ mapped again for every physical IP combination.
 
 The hardware components available to Talos are provided using an IP
 pool in YAML format. A pool contains the technology node and a list of
-characterized IP blocks.
+characterized IP blocks. Each entry describes one fixed configuration.
+Parameterizable IPs are not stored as a single entry with free
+parameters. Each configuration that has to be available to Level~2,
+such as the INT8 and INT16 versions of a PE or the different depths of
+a register file, is characterized and stored as a separate entry with
+its own ID.
 
 A simplified structure is shown below; the complete pools used in the
 final evaluation, together with an annotated example of one entry, are
