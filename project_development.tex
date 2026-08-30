@@ -941,35 +941,5 @@ The remaining milestone, Milestone~\ref{milestone:m5}, concerns the
 experimental validation of this methodology using representative DNN
 workloads and characterized hardware implementations, and is addressed
 in the following evaluation chapter.
-\subsection{Summary of Project Decisions}
-
-The development of Talos was guided by the decision to build a
-modular architectural exploration tool rather than a generator of one
-final accelerator.
-
-The main decisions taken during the project were:
-
-\begin{itemize}
-\item to use Python for the development.
-\item to use pymoo for the NSGA-II.
-\item to divide the exploration into an architectural level and an
-IP-based level;
-\item to reuse ZigZag for workload mapping and architectural
-evaluation;
-\item to encode Level 1 as a discrete genome and keep DRAM as a fixed
-external platform resource;
-\item to connect both levels through an abstract accelerator
-representation;
-\item to describe physical alternatives through a characterized IP
-pool and a dynamic Level 2 genome;
-\item to keep evaluation metrics separate from optimization
-objectives;
-\item to evaluate performance, energy and power from workload activity and
-coherent IP characterization;
-\item to use NSGA-II for large spaces and exhaustive Level 2
-exploration when the space is not large;
-\item to preserve several feasible alternatives and report their
-trade-offs and constraint status.
-\end{itemize}
 
 %\include{codi_tempdistrib}
