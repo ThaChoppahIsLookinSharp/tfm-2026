@@ -332,13 +332,13 @@ MACs without additional control logic.
 %\todo[inline]{Especificar que pe\_openeye\_composite\_int8 lleva los RFs
 %dentro (included\_rfs / parent\_idle\_baseline, ver apéndice) y qué
 %implica para Level~2 (no instancia RFs aparte, área y idle incluidos), o borrarlo que se yo}
-One particular case is
-\texttt{pe\_openeye\_composite\_int8}. Unlike the other INT8
-implementations, it provides two MAC operations per cycle and
-represents a larger composite processing element. This explains its
-considerably larger area and static power and gives Level~2 a
-different area--performance trade-off from the remaining INT8
-implementations.
+%One particular case is
+%\texttt{pe\_openeye\_composite\_int8}. Unlike the other INT8
+%implementations, it provides two MAC operations per cycle and
+%represents a larger composite processing element. This explains its
+%considerably larger area and static power and gives Level~2 a
+%different area--performance trade-off from the remaining INT8
+%implementations.
 
 The memory design space is shared by the three pools. It contains
 twelve small register-file implementations and three larger
@@ -1507,7 +1507,6 @@ Activations enter the array by rows and partial sums by columns; the
 register files are accessed through a shared maintenance port and the
 global buffer through the DRAM link. These are the same components as
 in the abstract architecture of Figure~\ref{fig:abstract-arch}.
-\todo[inline]{PENDIENTE: contrastar en keli si esto ta bien}
 
 \begin{figure}[htbp]
   \centering

@@ -109,6 +109,7 @@ implementation.
 \end{enumerate}
 
 \subsection{Requirements analysis}
+\label{subsec:requirements}
 The first phase of the project consisted of defining the requirements
 of the tool. At this stage, the objective was not yet to design
 specific hardware instances, but to determine what kind of problem
@@ -117,16 +118,12 @@ should address.
 
 From the beginning, one of the main requirements was not only to
 provide a valid design space exploration flow for DNN accelerators,
-but also to build the solution on top of a software architecture of
-sufficient quality. Since this project is intended as a tool and not
-just as a one-off prototype, the codebase had to be understandable,
-maintainable, and easy to modify by a third party.
-
-This was especially important in the context of a research project,
-where requirements may evolve as new ideas appear. For that reason,
-the solution had to avoid a monolithic structure and instead be
-organized in a way that made future modifications possible without
-having to redesign the whole system.
+but also to build it on a software architecture of sufficient
+quality. Since this project is intended as a tool and not as a
+one-off prototype, and since the requirements of a research project
+evolve as new ideas appear, the codebase had to be understandable and
+easy to modify by a third party, without a monolithic structure that
+would force a redesign of the whole system on every change.
 
 Another concern was to find a way to explore the vast solution space
 in a reasonable time frame. DNN accelerator design involves many
@@ -179,16 +176,10 @@ Between the high-level design and the detailed design of each module,
 several technical decisions were taken. These decisions were
 necessary to make the proposed architecture implementable in practice.
 
-At the software level, the tool was designed with special attention
-to maintainability. The intention was not only to obtain a working
-prototype, but to define an internal architecture that could be
-understood and extended by another developer. This led to
-prioritizing clear module boundaries, simple interfaces between
-components, and a structure in which future modifications could be
-introduced with limited impact on the rest of the system. In order to
-keep access to the tool easy, Python was selected as the main
-language of the tool.
-However, there are some drawbacks, such as the execution speed.
+At the software level, Python was selected as the main language of
+the tool, following the maintainability requirement of
+Subsection~\ref{subsec:requirements}: it keeps the tool easy to read
+and modify by other developers. Its main drawback is execution speed.
 
 A key decision was to use existing state-of-the-art tools as
 conceptual and practical references for each level of the solution.
@@ -229,13 +220,9 @@ between stages: which parameters are explored in the first level,
 which are preserved for the second one, and how candidate designs are
 passed from one stage to the next.
 
-A major concern during this stage was keeping the software
-architecture understandable. Rather than optimizing only for
-short-term implementation speed, the design aimed to make the system
-easier to extend and modify by third parties. This required defining
-the responsibilities of each module carefully, limiting hidden
-dependencies, and ensuring that each component had a clear role
-inside the overall flow.
+The maintainability requirement translated here into two concrete
+rules: each module has one responsibility and a clear role in the
+flow, and hidden dependencies between modules were avoided.
 
 The Level 1 representation was defined as a discrete genome. Each
 gene selects one value from a predefined set of architectural
@@ -397,17 +384,8 @@ Section~\ref{sec:synthesis_validation} shows the composition obtained
 for the INT16 AlexNet configuration). Second, the design is elaborated and
 synthesized with Cadence Genus against the standard-cell library of the
 target technology, and area, timing and power are extracted from the
-mapped netlist. Third, when a physical result is required, the netlist
-can be taken through placement and routing with Cadence Innovus and,
-if a test chip is intended, through the sign-off steps of the
-corresponding PDK. The technologies available at the UAB through its
-EDA and foundry-access agreements are the natural targets of this
-flow; in this thesis it was applied up to the synthesis step, using
-the TSMC 65~nm low-power library, which is also the step used to
-build the IP pool.
-\todo[inline]{PENDIENTE: confirmar y listar las tecnologías/PDKs y
-herramientas disponibles en la UAB que se quieren nombrar aquí (p.ej.
-TSMC 65~nm LP vía Europractice, otros nodos, Innovus para P\&R).}
+mapped netlist. During this investigation, the TSMC 65~nm low-power 
+library was selected to build the IP pool.
 
 Table~\ref{tab:ip_pool_sources} lists the origin of the RTL blocks
 behind the pool entries reproduced in Appendix~\ref{app:ip_pools}. The
@@ -417,10 +395,6 @@ and the global buffers are OpenEye single-port RAMs. The requirements
 that a pool entry must satisfy (fields, units and operating point) are
 given in Appendix~\ref{app:talos_requirements}; the characterization
 described next produces exactly those fields.
-\todo[inline]{PENDIENTE: añadir referencias o URLs de los repositorios
-de origen del RTL de terceros (tiny-XPU, Gemmini, OpenEye, BaseJump
-STL, FPnew, PE de Alibaba, PE TMS4517) en la
-Tabla~\ref{tab:ip_pool_sources} y en la bibliografía.}
 
 \begin{table}[htbp]
 \centering
@@ -439,36 +413,36 @@ SAURIA systolic PE~\cite{sauria2023} &
 INT8, INT16 and FP16 variants; the FP16 one wraps a modified FPnew
 FMA \\
 \texttt{pe\_fpnew\_fp16\_fma} &
-FPnew FMA unit &
+FPnew FMA unit~\cite{fpnew,fpnew_repo} &
 Bare FP16 FMA without the systolic wrapper; used by the synthesized
 FP16 accelerator \\
 \texttt{pe\_gemmini\_like},
 \texttt{pe\_gemmini\_like\_int16} &
-Gemmini-inspired PE &
+Gemmini-inspired PE~\cite{gemmini,gemmini_repo} &
 INT8 with selectable OS/WS dataflow; the INT16 variant is fixed to OS \\
 \texttt{pe\_tiny\_xpu}, \texttt{pe\_tiny\_xpu\_int16} &
-tiny-XPU PE &
+tiny-XPU PE~\cite{tinyxpu} &
 Weight-stationary MAC; used by the synthesized INT16 accelerators \\
 \texttt{pe\_alibaba\_int8} &
-Alibaba systolic PE &
+Alibaba DAMO-NPU systolic PE~\cite{damo_npu} &
 Ping-pong weight registers, four pipeline stages \\
 \texttt{pe\_tms4517\_simple} &
-TMS4517 systolic PE &
+TMS4517 systolic PE~\cite{tms4517_systolic} &
 Unsigned operands, single stage \\
 \texttt{pe\_simple\_mac} &
 Own reference MAC &
 Signed INT8 MAC without systolic logic; used by the synthesized INT8
 accelerator \\
 \texttt{pe\_openeye\_\allowbreak composite\_int8} &
-OpenEye PE &
+OpenEye PE~\cite{openeye,openeye_repo} &
 Composite sparse PE with local scratchpads (declared through
 \texttt{included\_rfs}) \\
 \texttt{mem\_bsg\_1rw\_*}, \texttt{mem\_bsg\_1r1w\_*} (12) &
-BaseJump STL \texttt{bsg\_mem} &
+BaseJump STL \texttt{bsg\_mem}~\cite{basejump_stl,basejump_stl_repo} &
 1RW and 1R1W register files, 8 words of 8 to 256 bits, synthesizable
 (non-macro) variants \\
 \texttt{mem\_openeye\_sp\_*} (3) &
-OpenEye \texttt{RAM\_SP} &
+OpenEye \texttt{RAM\_SP}~\cite{openeye,openeye_repo} &
 Single-port global buffers, 128 words of 64, 256 and 1024 bits \\
 \hline
 \end{tabular}
