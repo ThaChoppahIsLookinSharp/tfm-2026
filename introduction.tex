@@ -37,7 +37,7 @@ digital acceleration with analog in-memory computing \cite{diana}.
 These examples show that there is no single accelerator architecture
 that fits every workload or target platform.
 
-\subsection{Challenges in Accelerator Design}
+\subsection{Background and Limitations}
 Designing an accelerator is no easy feat. These devices can be
 defined by numerous design parameters: size, topology of the
 processing elements, memory hierarchy, algorithm to hardware mapping,
@@ -45,7 +45,6 @@ pipeline structure, etc.
 The vast number of variables results in a vast design space, making
 manual exploration impractical.
 
-\subsection{Design Space Exploration Frameworks}
 To address this challenge, several Design Space Exploration (DSE)
 frameworks have been
 proposed. Tools such as DNN-Chip Predictor \cite{chippredictor} and
@@ -72,16 +71,14 @@ the problem is not only how to evaluate an accelerator configuration,
 but also how to efficiently navigate the large number of possible
 configurations.
 
-\subsection{Automatic Accelerator Generation}
- Other solutions aim at directly automating the complete
- generation of DNN accelerators. Representative examples are
- AutoDNNChip~\cite{autodnnchip} and AutoAI2C~\cite{autoai2c}. The former
- introduces a framework composed of a Chip Predictor and a Chip
- Builder, capable of exploring accelerator configurations and
- generating synthesizable hardware implementations based on a given
- DNN model and platform constraints.
+Other solutions aim at directly automating the complete
+generation of DNN accelerators. Representative examples are
+AutoDNNChip~\cite{autodnnchip} and AutoAI2C~\cite{autoai2c}. The former
+introduces a framework composed of a Chip Predictor and a Chip
+Builder, capable of exploring accelerator configurations and
+generating synthesizable hardware implementations based on a given
+DNN model and platform constraints.
 
-\subsection{Limitations of Existing Approaches}
 Despite these advances, exploring the full design space of DNN
 accelerators remains challenging due to the tight coupling between
 architectural decisions and low-level hardware implementation details
@@ -178,7 +175,10 @@ re-evaluated using a high-level characterization model of hardware IP
 blocks to estimate their PPA.
 Talos is designed as a modular, open source tool, so users can add
 their own evaluation expressions to support their specific
-optimization goals.
+optimization goals. The source code is publicly
+available~\cite{talos_repo}\footnote{\url{https://github.com/ThaChoppahIsLookinSharp/talos}.
+The README of the repository includes a quick guide on how to install
+and use the tool.}.
 
 \subsection{Document Organization}
 The rest of this document is organized as follows. The State of the

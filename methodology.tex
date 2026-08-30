@@ -349,13 +349,11 @@ The final part of the work integrated the different parts of the tool
 and validated that the proposed approach was coherent with the
 original objectives.
 
-At the current stage of the project, this validation has focused
-mainly on confirming that the methodology is viable: the hierarchical
-structure has been defined, the modular architecture of the tool has
-been established, ZigZag has been integrated as the exploration
-engine for the first level, and the hardware IP characterization
-approach for the second level has been implemented in a preliminary
-form.
+This validation covered the complete flow: the two-level structure and
+the modular architecture of the tool, the integration of ZigZag as the
+exploration engine of the first level, and the IP characterization
+approach of the second level, exercised with the characterized pools of
+Appendix~\ref{app:ip_pools} rather than with synthetic values.
 
 The validation was carried out through unit tests and smoke tests.
 Unit tests were used to check individual modules, such as IP
@@ -384,8 +382,11 @@ Section~\ref{sec:synthesis_validation} shows the composition obtained
 for the INT16 AlexNet configuration). Second, the design is elaborated and
 synthesized with Cadence Genus against the standard-cell library of the
 target technology, and area, timing and power are extracted from the
-mapped netlist. During this investigation, the TSMC 65~nm low-power 
-library was selected to build the IP pool.
+mapped netlist. Third, the synthesized area, timing and power are
+compared against the Level~2 estimates of the same configuration; this
+comparison is the validation reported in
+Section~\ref{sec:synthesis_validation}. During this investigation, the
+TSMC 65~nm low-power library was selected to build the IP pool.
 
 Table~\ref{tab:ip_pool_sources} lists the origin of the RTL blocks
 behind the pool entries reproduced in Appendix~\ref{app:ip_pools}. The
