@@ -100,17 +100,25 @@ workloads, IP pools, constraints and objectives can be changed without
 modifying the exploration flow, and new evaluation models can be
 added on top of the raw metrics.
 
-Within this scope, the objective of this thesis has been achieved and
-the results support its hypothesis: separating technology-independent
-architectural exploration from technology-dependent IP instantiation
-makes the design of DNN accelerators more manageable, while the
-modular evaluation interfaces allow custom estimations at both levels.
-The hierarchical organization makes the exploration more manageable by
-restricting technology-dependent IP evaluation to architectures
-retained after Level~1, while conventional synthesis is required only
-for the final candidate set rather than for the complete architectural
-design space. Talos should therefore be understood as a
-decision-support and design-space reduction tool: it produces
+Within this scope, the results are consistent with the hypothesis of
+this thesis: separating technology-independent architectural
+exploration from technology-dependent IP instantiation makes the
+design of DNN accelerators more manageable, while the modular
+evaluation interfaces allow custom estimations at both levels. Each
+part of this claim rests on a different set of results. The synthesis
+validation shows that the Level~2 estimates obtained after this
+separation remain close to implementation values; the AlexNet
+objective study shows that the modular objectives expose real
+trade-offs instead of hiding them; and the reference comparisons show
+that the selected designs are meaningful architectural alternatives
+rather than artifacts of the model. The hierarchical organization
+itself provides the manageability: technology-dependent IP evaluation
+is restricted to architectures retained after Level~1, and
+conventional synthesis is required only for the final candidate set
+rather than for the complete architectural design space.
+
+Talos should therefore be understood as a decision-support and 
+design-space reduction tool: it produces
 traceable feasible alternatives together with their generated
 mappings and exposes their trade-offs, after which a small set of
 candidates can be passed to a conventional hardware implementation
@@ -152,7 +160,11 @@ The most immediate continuation of this work is to address the
 limitations of the tool, starting with the fidelity and calibration
 of the Level~2 model. Interconnect, control,
 pipelining and clock-tree overheads could be added using synthesis data
-from a larger set of generated configurations. 
+from a larger set of generated configurations. In addition, defining a
+benchmarking protocol against existing exploration frameworks, covering
+exploration runtime, memory usage and the quality of the resulting
+solution sets over a shared portion of the design space, would allow
+the efficiency of the tool itself to be assessed quantitatively.
 
 A second direction is to expand and automate hardware
 characterization. Larger IP pools covering more precisions,
