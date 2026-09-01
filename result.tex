@@ -1620,6 +1620,17 @@ also meet the 5~ns constraint, and the INT8 design closes timing with
 a 3.942~ns critical path, as shown in the timing reports of
 Appendix~\ref{app:synthesis_reports}.
 
+The power deviations must also be read considering the accuracy of
+the reference itself. Power estimation at the synthesis stage carries
+a considerable error of its own. The Genus values used here are
+vectorless estimates on the mapped netlist, as described in
+Section~\ref{subsec:hw_implementation}: they assume generic switching
+activities instead of activity extracted from a simulation trace, and
+they do not include placement or routing information. The synthesized
+power is therefore an approximate reference rather than a silicon
+measurement, and part of the reported deviation may come from the
+reference itself.
+
 This validation is important for the role of Level~2. The purpose of
 the level is to introduce technology-dependent information early enough
 to make better architectural decisions, without paying the cost of
