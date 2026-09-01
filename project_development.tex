@@ -350,10 +350,11 @@ accelerator components. For example, a register file component must
 be matched with a compatible memory IP, and a PE array component must
 be matched with a compatible compute IP.
 
-Capacity and bandwidth are optional fields because not all IP types
+Memory size and bandwidth are fields specific to memories
+because not all IP types
 require them in the same way. When an abstract component defines one
-of these requirements, Talos only considers IPs that provide at least
-the required capacity and bandwidth.
+of these requirements and it shouldn't (for example a PE), 
+Talos ignores it.
 
 The IP pool is loaded from a structured description file (YAML format). This makes
 it possible to modify the set of available IPs without changing the
@@ -403,7 +404,7 @@ required for the workload-aware evaluation. This keeps the DRAM fixed
 across the IP exploration while still accounting for the off-chip
 traffic produced by the mapping.
 
-\subsubsection{Level 2 genome and decoding}
+\subsubsection{Decode Level 1 output to Level 2 input}
 The Level 2 genome is generated dynamically from the abstract
 accelerator and the IP pool. Instead of having a fixed number of
 genes, each gene corresponds to one abstract component. The value of
@@ -428,6 +429,76 @@ Once a Level 2 genome is decoded, Talos builds an implemented
 accelerator. This implemented accelerator contains the selected IP
 block for each abstract component and is the input to the Level 2
 evaluator.
+
+
+\subsubsection{Level 2 runners}
+There are two Level 2 runners: the exhaustive runner and the genetic
+runner. Both share the genome, the evaluator, and the feasibility
+criteria described above; they differ in how the Level 2 design space
+is explored and how the resulting alternatives are ranked. Since Level
+1 greatly reduces the exploration space, a genetic approach to explore
+the remaining solutions may not be the most suitable option if this
+remaining space is too small. For this case in particular, an
+exhaustive runner was added.
+
+\paragraph{Exhaustive runner}
+The exhaustive runner was added for cases where the remaining Level 2
+design space is small enough to evaluate all the possible IP
+combinations. In these cases, using a genetic algorithm can add
+unnecessary complexity and does not guarantee that every feasible
+implementation is evaluated.
+
+The runner works on the same Level 2 genome described above. Each IP
+combination corresponds to one genome, so the number of possible
+combinations is the number of distinct genomes. The runner first
+calculates this number and checks it against a configurable maximum.
+This prevents exhaustive exploration from being used when the
+remaining IP design space becomes too large. If the number of
+combinations is acceptable, every possible genome is decoded and
+evaluated sequentially. Component dependencies are handled during the
+enumeration, for each PE candidate, only the register-file values
+consistent with that PE are generated, so combinations that would
+count an included register file twice are never produced.
+
+After the evaluation, the feasible implementations are ranked as
+described above, by the selected objective when there is only one and
+by the balanced score otherwise. The ideal used for this score is
+local to the architecture being explored, so this local score must
+not be compared directly with the score of another architecture; the
+full flow recomputes the global score for that purpose.
+
+This strategy provides complete coverage of the remaining IP
+combinations and does not introduce stochastic sampling into the
+physical selection. The genetic runner is kept as an alternative for
+cases where the number of possible implementations makes exhaustive
+evaluation impractical.
+
+\paragraph{Genetic runner}
+The genetic runner explores the same Level 2 genome with NSGA-II,
+delegated to pymoo as in Level 1. The population size and the number
+of generations are configurable. The genome is kept integer during the
+search: the initial population is sampled as random integers, and the
+crossover and mutation operators are followed by a repair step that
+rounds each gene to a valid IP index and applies the component
+dependencies, fixing the register-file genes covered by the selected
+PE. Duplicated individuals are eliminated from the population.
+
+The selected objectives are used directly as the NSGA-II objectives,
+and the user constraints are passed to the algorithm as constraint
+values, so infeasible candidates are penalized during the search
+instead of being filtered only at the end. Candidates that cannot be
+decoded or evaluated receive infinite objective values. The evaluation
+of the individuals of each generation is parallelized over the worker
+pool, as described in the parallel execution model.
+
+The output of the genetic runner is the final non-dominated set.
+Solutions that are infeasible or that select the same set of IPs are
+removed, and the remaining implementations are ordered by their
+objective values. The genetic runner does not compute a local balanced
+score; its solutions only receive the global score computed by the
+full flow. Unlike the exhaustive runner, it explores only part of the
+design space, so it is intended for cases where the number of
+compatible IP combinations exceeds the exhaustive limit.
 
 \subsubsection{Workload-aware evaluation}
 Every implemented accelerator is evaluated with the same Level 2
@@ -590,75 +661,6 @@ which it is computed. In the full flow, Talos recalculates the score
 using one common ideal over all feasible solutions of the
 architectures being compared, whichever runner produced them. This
 global score is used to compare architectures.
-
-\subsubsection{Level 2 runners}
-There are two Level 2 runners: the exhaustive runner and the genetic
-runner. Both share the genome, the evaluator, and the feasibility
-criteria described above; they differ in how the Level 2 design space
-is explored and how the resulting alternatives are ranked. Since Level
-1 greatly reduces the exploration space, a genetic approach to explore
-the remaining solutions may not be the most suitable option if this
-remaining space is too small. For this case in particular, an
-exhaustive runner was added.
-
-\paragraph{Exhaustive runner}
-The exhaustive runner was added for cases where the remaining Level 2
-design space is small enough to evaluate all the possible IP
-combinations. In these cases, using a genetic algorithm can add
-unnecessary complexity and does not guarantee that every feasible
-implementation is evaluated.
-
-The runner works on the same Level 2 genome described above. Each IP
-combination corresponds to one genome, so the number of possible
-combinations is the number of distinct genomes. The runner first
-calculates this number and checks it against a configurable maximum.
-This prevents exhaustive exploration from being used when the
-remaining IP design space becomes too large. If the number of
-combinations is acceptable, every possible genome is decoded and
-evaluated sequentially. Component dependencies are handled during the
-enumeration, for each PE candidate, only the register-file values
-consistent with that PE are generated, so combinations that would
-count an included register file twice are never produced.
-
-After the evaluation, the feasible implementations are ranked as
-described above, by the selected objective when there is only one and
-by the balanced score otherwise. The ideal used for this score is
-local to the architecture being explored, so this local score must
-not be compared directly with the score of another architecture; the
-full flow recomputes the global score for that purpose.
-
-This strategy provides complete coverage of the remaining IP
-combinations and does not introduce stochastic sampling into the
-physical selection. The genetic runner is kept as an alternative for
-cases where the number of possible implementations makes exhaustive
-evaluation impractical.
-
-\paragraph{Genetic runner}
-The genetic runner explores the same Level 2 genome with NSGA-II,
-delegated to pymoo as in Level 1. The population size and the number
-of generations are configurable. The genome is kept integer during the
-search: the initial population is sampled as random integers, and the
-crossover and mutation operators are followed by a repair step that
-rounds each gene to a valid IP index and applies the component
-dependencies, fixing the register-file genes covered by the selected
-PE. Duplicated individuals are eliminated from the population.
-
-The selected objectives are used directly as the NSGA-II objectives,
-and the user constraints are passed to the algorithm as constraint
-values, so infeasible candidates are penalized during the search
-instead of being filtered only at the end. Candidates that cannot be
-decoded or evaluated receive infinite objective values. The evaluation
-of the individuals of each generation is parallelized over the worker
-pool, as described in the parallel execution model.
-
-The output of the genetic runner is the final non-dominated set.
-Solutions that are infeasible or that select the same set of IPs are
-removed, and the remaining implementations are ordered by their
-objective values. The genetic runner does not compute a local balanced
-score; its solutions only receive the global score computed by the
-full flow. Unlike the exhaustive runner, it explores only part of the
-design space, so it is intended for cases where the number of
-compatible IP combinations exceeds the exhaustive limit.
 
 \subsection{Interface for Setting the Optimization Objective}
 The original objective of this part of the tool was to provide a
@@ -875,7 +877,7 @@ The implemented tests cover several parts of the flow:
 \item compatibility checks between abstract components and IP blocks;
 \item rejection of invalid candidates when no compatible IP is
 available;
-\item (optional) generation and decoding of Level 2 genomes;
+\item generation and decoding of Level 2 genomes;
 \item construction of implemented accelerators;
 \item computation of area, delay, throughput, workload energy, and
 average power;
