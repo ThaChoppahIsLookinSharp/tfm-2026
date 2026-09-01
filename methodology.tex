@@ -72,7 +72,8 @@ selected architecture, exported as JSON, instead of hiding the
 trade-offs behind one design.
 \end{itemize}
 
-The ONNX workload is a central input of the flow as seen in Figure~\ref{fig:talos-input-output}. Talos reads the operand precision directly
+The ONNX workload is a central input of the flow as seen in Figure~\ref{fig:talos-input-output}. 
+Talos reads the operand precision directly
 from the element data type (\texttt{elem\_type}) declared for each
 tensor in the ONNX graph, while the graph structure and the tensor
 shapes define the layers to be mapped. With this information, Level~1
