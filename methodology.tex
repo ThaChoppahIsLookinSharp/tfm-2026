@@ -45,20 +45,23 @@ required to:
 \item accept a DNN workload in ONNX format;
 \item load and validate a YAML pool of characterized processing
 elements and memory IPs using a certain technology node;
-\item generate and evaluate abstract accelerator architectures and
-preserve the workload activity obtained for the selected candidates;
-\item convert those candidates into Level~2 abstract components and
+\item in Level~1, generate and evaluate abstract accelerator
+architectures and preserve the workload activity obtained for the
+selected candidates;
+\item in Level~2, convert those candidates into abstract components and
 match them with compatible physical IP implementations;
-\item reject implementations that cannot satisfy the required
-capacity, bandwidth, throughput, frequency, or user constraints;
-\item estimate workload latency, energy, average power, area, and
-timing, while reporting the external DRAM contribution separately;
-\item support configurable optimization objectives and both genetic
-and exhaustive exploration; and
+\item in Level~2, reject implementations that cannot satisfy the
+required capacity, bandwidth, throughput, frequency, or user
+constraints;
+\item in Level~2, estimate workload latency, energy, average power,
+area, and timing, while reporting the external DRAM contribution
+separately;
+\item support configurable optimization objectives, genetic exploration
+in both levels, and exhaustive exploration in Level~2; and
 \item return feasible alternatives together with their metrics,
 constraint status, and the mapping generated for each
-selected architecture, instead of hiding the trade-offs behind one
-design.
+selected architecture, exported as JSON, instead of hiding the
+trade-offs behind one design.
 \end{itemize}
 
 The ONNX workload is a central input of the flow. From the ONNX graph
@@ -72,6 +75,15 @@ The IP pool exposes the data that Level~2 requires to estimate PPA:
 the area, timing, idle and active power of each block, together with
 the operating point at which they were characterized. It also declares
 the technology node, which is reused by the Level~1 calibration.
+
+The output is the last element of
+Figure~\ref{fig:talos-input-output}. Talos returns a list of
+implemented architectures, not a single design: each entry pairs a
+Level~1 architecture with the IPs selected for its components,
+together with its estimated metrics, its constraint status, and the
+mapping of the workload on it. Preserving the list instead of only
+the best candidate is what exposes the trade-offs between
+alternatives.
 
 %figura here
 The complete input and configuration requirements are specified in
@@ -252,7 +264,17 @@ the pools used in the evaluation together with an annotated example
 of one characterized IP. Figure~\ref{fig:abstract-arch} shows the
 structure of this representation: a memory hierarchy feeding an array
 of operational units, each with its local register files, in the same
-terms used by ZigZag to describe an accelerator.
+terms used by ZigZag to describe an accelerator. In this scheme, each
+memory declares which operands it stores. The three large memories are
+the upper levels of the hierarchy: in the example of the figure,
+Memory~1 is the highest level and holds the three operands (inputs,
+weights, and outputs), while Memory~2 and Memory~3 are intermediate
+buffers that keep only the operands assigned to them, closer to the
+array. The small input and output memories are the lowest level: each
+input memory stores the input operands consumed by the operational
+units of its row, each output memory stores the outputs and partial
+sums they produce, and the register file attached to each unit (RF~W
+in the figure) holds its weights.
 
 \begin{figure}[htbp]
   \centering
@@ -328,11 +350,13 @@ ZigZag memory hierarchy to model off-chip accesses, but it is not
 considered part of the on-chip accelerator area or Level 2 IP
 instantiation.
 
-Another example was the introduction of the objective adapter.
-Instead of hard-coding a single objective into the evaluator, this
-component separates raw evaluation results from the objectives used
-by the optimizer. This makes it easier to test different optimization
-criteria without modifying the evaluator itself.
+Another example was the introduction of the objective adapter. At
+first, ZigZag was embedded directly into the evaluation logic, so the
+rest of the tool depended on its output format. The objective adapter
+encapsulates ZigZag behind a fixed interface and translates its raw
+evaluation results into the objectives used by the optimizer. If a
+user wants to evaluate candidates with a different tool, only this
+component has to be replaced, instead of the main exploration logic.
 
 These iterations were not treated as deviations from the process, but
 as a natural part of it. This was especially important in a
