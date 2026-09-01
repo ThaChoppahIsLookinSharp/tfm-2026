@@ -9,8 +9,8 @@ is shown in Figure~\ref{fig:talos-input-output}. Talos takes the
 file describing the DNN (in ONNX format), an processes it in two
 levels (1st technology independent + 2nd technology dependent) in
 which the user must add their PPA constraints (1st \& 2nd), provided a
-characterized IP pool (2nd phase), to finally generate the winning
-architecture and mapping candidate of the DNN implementation (in
+characterized IP pool (2nd phase), to finally generate the ranking of 
+architectures and mapping candidates of the DNN implementation (in
 JSON format).
 
 \subsection{Development process}
@@ -85,13 +85,18 @@ the operating point at which they were characterized. It also declares
 the technology node, which is reused by the Level~1 calibration.
 
 The output is the last element of
-Figure~\ref{fig:talos-input-output}. Talos returns a list of
-implemented architectures, not a single design: each entry pairs a
+Figure~\ref{fig:talos-input-output}. Talos returns a ranked list of architectures, not a single design: each entry pairs a
 Level~1 architecture with the IPs selected for its components,
 together with its estimated metrics, its constraint status, and the
-mapping of the workload on it. Preserving the list instead of only
-the best candidate is what exposes the trade-offs between
-alternatives.
+mapping of the workload on it. The list is ordered from best to worst
+according to the user-selected objectives: by the objective itself
+when only one is active, and by the global balanced score
+(Section~\ref{subsec:feasibility_ranking}) when several are combined.
+Throughout this document, the \emph{winning architecture} refers to
+the top-ranked entry of this list; the term therefore reflects the
+objectives chosen by the user, not a decision made by the tool.
+Preserving the list instead of only the winner is what exposes the
+trade-offs between alternatives.
 
 %figura here
 The complete input and configuration requirements are specified in
