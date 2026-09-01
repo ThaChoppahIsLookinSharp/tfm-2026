@@ -72,12 +72,13 @@ selected architecture, exported as JSON, instead of hiding the
 trade-offs behind one design.
 \end{itemize}
 
-The ONNX workload is a central input of the flow as seen in Figure~\ref{fig:talos-input-output}. From the ONNX graph
-and its tensor types, Talos infers the precision used for data
-representation, generates the mapping of the workload on each
-candidate architecture and estimates its cycles and memory accesses
-in Level~1. The same precision is later used to select compatible
-processing elements in Level~2.
+The ONNX workload is a central input of the flow as seen in Figure~\ref{fig:talos-input-output}. Talos reads the operand precision directly
+from the element data type (\texttt{elem\_type}) declared for each
+tensor in the ONNX graph, while the graph structure and the tensor
+shapes define the layers to be mapped. With this information, Level~1
+generates the mapping of the workload on each candidate architecture
+and estimates its cycles and memory accesses. The same precision is
+later used to select compatible processing elements in Level~2.
 
 The IP pool exposes the data that Level~2 requires to estimate PPA:
 the area, timing, idle and active power of each block, together with

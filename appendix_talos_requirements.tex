@@ -15,7 +15,8 @@ ZigZag during Level 1 to evaluate the different accelerator
 architectures and find a suitable mapping.
 
 Talos obtains the numerical representation of the workload from the
-tensor types in the ONNX model. The activation, weight, and output bit
+element data type (\texttt{elem\_type}) declared for each tensor in
+the ONNX model. The activation, weight, and output bit
 widths are used to configure the workload evaluated by ZigZag and are
 preserved in the activity profile passed to Level~2.
 
