@@ -1,0 +1,84 @@
+% Talos input/output overview, drawn in the style of classic two-step
+% synthesis flow diagrams (documents, library cylinders, step boxes).
+\begin{tikzpicture}[
+  font=\sffamily,
+  line width=0.9pt,
+  flow/.style={line width=1.1pt, -{Triangle[length=3.2mm, width=2.6mm]}},
+  wire/.style={line width=1.1pt},
+  stepouter/.style={draw=black, fill=black!18, rounded corners=10pt,
+    minimum width=3.6cm, minimum height=3.8cm},
+  stepinner/.style={draw=black, fill=white, rounded corners=7pt,
+    minimum width=3.1cm, minimum height=2.7cm, align=center},
+  db/.style={draw=black, fill=white, cylinder, shape border rotate=90,
+    aspect=0.18, minimum width=2.3cm, minimum height=1.5cm, align=center},
+  lbl/.style={align=center, font=\sffamily\small},
+]
+
+  % ------------------------------------------------------------------
+  % Document icon (folded top-right corner, grey text lines)
+  % ------------------------------------------------------------------
+  \tikzset{
+    doc/.pic={
+      \draw[fill=white, line width=0.9pt]
+        (-0.45,-0.62) -- (0.45,-0.62) -- (0.45,0.34) -- (0.17,0.62)
+        -- (-0.45,0.62) -- cycle;
+      \draw[line width=0.9pt] (0.17,0.62) -- (0.17,0.34) -- (0.45,0.34);
+      \foreach \y in {-0.46,-0.28,-0.10,0.08}
+        \draw[black!35, line width=1.5pt] (-0.28,\y) -- (0.28,\y);
+      \draw[black!35, line width=1.5pt] (-0.28,0.26) -- (0.02,0.26);
+    },
+  }
+
+  % ==================================================================
+  % Bottom row: workload -> Level 1 -> candidates -> Level 2 -> output
+  % ==================================================================
+
+  % --- Workload (stack of documents) ---
+  \pic at (0.26,0.26) {doc};
+  \pic at (0.13,0.13) {doc};
+  \pic at (0,0) {doc};
+  \node[lbl] at (0.1,-1.15) {DNN Workload\\(ONNX)};
+
+  % --- Level 1 box ---
+  \node[stepouter] (l1) at (3.9,0) {};
+  \node[font=\sffamily] at (3.9,1.5) {Level 1};
+  \node[stepinner] at (3.9,-0.25)
+    {Architecture\\Exploration\\[2pt]
+     {\footnotesize NSGA-II + ZigZag}};
+
+  % --- Intermediate document: candidates + mapping handoff ---
+  \pic at (8.05,0.1) {doc};
+  \node[lbl] at (8.05,-1.15) {Architecture Candidates\\+ Mapping Information};
+
+  % --- Level 2 box ---
+  \node[stepouter] (l2) at (12.2,0) {};
+  \node[font=\sffamily] at (12.2,1.5) {Level 2};
+  \node[stepinner] at (12.2,-0.25)
+    {Hardware IP\\Evaluation\\[2pt]
+     {\footnotesize exhaustive / genetic}};
+
+  % --- Output document ---
+  \pic at (15.9,0.1) {doc};
+  \node[lbl] at (15.9,-1.15) {Winning designs\\and mappings};
+
+  % --- Horizontal flow arrows ---
+  \draw[flow] (1.05,0.1) -- (2.05,0.1);
+  \draw[flow] (5.75,0.1) -- (7.35,0.1);
+  \draw[flow] (8.75,0.1) -- (10.35,0.1);
+  \draw[flow] (14.05,0.1) -- (15.25,0.1);
+
+  % ==================================================================
+  % Top row: constraints (both levels) and characterized IP pool (L2)
+  % ==================================================================
+
+  % --- Constraints + IP pool, shared by both levels ---
+  \pic at (6.7,3.3) {doc};
+  \node[lbl] at (6.7,4.4) {Set of\\Constraints};
+  \node[db] (pool) at (9.3,3.3) {Characterized\\IP Pool};
+  \draw[wire] (3.9,3.3) -- (6.25,3.3);
+  \draw[wire] (7.15,3.3) -- (pool.west);
+  \draw[wire] (pool.east) -- (12.2,3.3);
+  \draw[flow] (3.9,3.3) -- (3.9,1.95);
+  \draw[flow] (12.2,3.3) -- (12.2,1.95);
+
+\end{tikzpicture}
