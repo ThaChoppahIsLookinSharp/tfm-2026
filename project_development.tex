@@ -62,9 +62,9 @@ configuration.
 accelerator description.
 \item ZigZag is used to evaluate the candidate in terms of energy,
 latency, and area-related cost.
-\item The architectural candidate is converted into an abstract
-accelerator representation.
-\item The second level selects compatible hardware IP blocks for the
+\item The architectural candidates are converted into abstract
+accelerator representations for level 2.
+\item The second level selects compatible hardware IP blocks (from the IP Pool) for the
 abstract components.
 \item The implemented accelerator is evaluated with a workload-aware
 PPA model and checked against the user constraints.
@@ -210,7 +210,7 @@ model with CACTI. The technology node is not fixed in the tool. It is
 read from the \texttt{technology\_nm} field of the selected IP pool,
 so the calibration uses the same technology as the hardware blocks
 used later in the flow. CACTI is executed once before the optimization
-workers and characterizes every register-file and global-buffer
+works and characterizes every register-file and global-buffer
 capacity and bandwidth combination available in the Level 1 genome.
 The obtained read and write costs are then included in the accelerator
 description evaluated by ZigZag.
@@ -290,7 +290,7 @@ E_{\mathrm{ZigZag}} +
 E_{\mathrm{PE,idle}} +
 E_{\mathrm{memory,standby}} +
 E_{\mathrm{memory,clock-idle}} +
-E_{\mathrm{DRAM,idle}}.
+E_{\mathrm{DRAM,idle}}
 \]
 
 This remains an architectural estimation. Its purpose is to provide a
@@ -664,7 +664,7 @@ full flow. Unlike the exhaustive runner, it explores only part of the
 design space, so it is intended for cases where the number of
 compatible IP combinations exceeds the exhaustive limit.
 
-\subsection{Optimization Objective Interface}
+\subsection{Interface for Setting the Optimization Objective}
 The original objective of this part of the tool was to provide a
 modular fitness framework. In the current version, this idea is
 implemented as an objective interface that separates evaluation from
