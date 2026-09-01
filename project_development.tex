@@ -118,7 +118,9 @@ properties and the connectivity between memory levels and the
 operational array. A relevant concept in this representation is that
 of \textit{memory operands}, which decouples the hardware memory
 organization from the algorithmic tensors and later links them
-through the mapping specification.
+through the mapping specification~\cite{zigzag_mapping_docs}. Talos
+binds input activations, weights, and outputs to ZigZag's \texttt{I1},
+\texttt{I2}, and \texttt{O} memory operands, respectively.
 
 ZigZag also models how memories are spatially distributed with
 respect to the compute array by means of the
@@ -142,14 +144,6 @@ structure. It contains a PE array, one register file for input
 activations, one register file for weights, one register file for
 outputs and partial sums, a shared global buffer, and an external
 DRAM level.
-
-The operand links used by Talos are:
-
-\begin{itemize}
-\item input activations are mapped to \texttt{I1};
-\item weights are mapped to \texttt{I2};
-\item outputs are mapped to \texttt{O}.
-\end{itemize}
 
 The external DRAM is kept in the ZigZag description because it is
 needed to model off-chip traffic. However, it is not treated as part
