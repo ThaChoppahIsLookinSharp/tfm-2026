@@ -11,7 +11,7 @@ levels (1st technology independent + 2nd technology dependent) in
 which the user must add their PPA constraints (1st \& 2nd), provided a
 characterized IP pool (2nd phase), to finally generate the winning
 architecture and mapping candidate of the DNN implementation (in
-SystemVerilog format).
+JSON format).
 
 \subsection{Development process}
 
@@ -72,7 +72,7 @@ selected architecture, exported as JSON, instead of hiding the
 trade-offs behind one design.
 \end{itemize}
 
-The ONNX workload is a central input of the flow. From the ONNX graph
+The ONNX workload is a central input of the flow as seen in Figure~\ref{fig:talos-input-output}. From the ONNX graph
 and its tensor types, Talos infers the precision used for data
 representation, generates the mapping of the workload on each
 candidate architecture and estimates its cycles and memory accesses
