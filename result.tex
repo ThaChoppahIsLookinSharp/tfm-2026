@@ -42,7 +42,8 @@ The final comparisons use four workload configurations:
 
 All runtime measurements were obtained on a workstation equipped with
 an AMD Ryzen~5 7600 processor (6 physical cores and 12 hardware
-threads), 16~GB of DDR5 memory, and SSD storage. Every run was launched
+threads), 16~GB of DDR5 memory, and SSD storage. No GPU is specified
+because no part of the flow is GPU-accelerated. Every run was launched
 with 10 worker processes. In Level~1, Talos passes these workers to
 pymoo's element-wise parallel evaluator, so the individuals in a
 generation are evaluated concurrently. The same worker count
