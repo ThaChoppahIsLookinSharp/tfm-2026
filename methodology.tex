@@ -543,7 +543,12 @@ pool files described in Appendix~\ref{app:talos_requirements}: area in
 mm$^2$, delay and maximum frequency, idle and active power with their
 operating point, and the metadata that synthesis does not produce,
 such as MACs per cycle, pipeline latency, the register files included
-in a composite PE or the numerical format. This process is manual but
+in a composite PE or the numerical format. MACs per cycle is the
+sustained throughput of the PE and is unrelated to pipelining: a
+pipelined PE still accepts one MAC per cycle, and its pipeline depth
+only adds latency, which is stored separately. A value greater than
+one appears only in composite PEs that physically contain more than
+one MAC unit, such as the PE of OpenEye~\cite{openeye_repo}. This process is manual but
 repetitive. Since the wrappers, the synthesis script and the YAML
 format are fixed, it can be automated with a script that iterates over
 the variants, runs the synthesis and emits the pool entries. This is

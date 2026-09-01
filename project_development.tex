@@ -543,11 +543,17 @@ profile contains its latency in cycles, number of MAC operations,
 number of spatially used PEs, and accesses to the different memory
 levels.
 
+%uncomm si se incluye openeye
+%Level 2 uses this information to determine whether a concrete
+%implementation can sustain the mapping selected in Level 1. For the
+%PE array, the required MAC operations per cycle are compared with the
+%number of active PE instances and the characterized
+%\texttt{macs\_per\_cycle} of the selected PE.
 Level 2 uses this information to determine whether a concrete
 implementation can sustain the mapping selected in Level 1. For the
 PE array, the required MAC operations per cycle are compared with the
-number of active PE instances and the characterized
-\texttt{macs\_per\_cycle} of the selected PE. For memories, the
+number of active PE instances.
+For memories, the
 accesses reported by ZigZag are converted into an average access rate
 and compared with the bandwidth and access capability of the selected
 memory IP. If an implementation cannot sustain the original mapping,
