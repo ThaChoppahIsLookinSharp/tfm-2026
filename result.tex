@@ -612,7 +612,17 @@ runtime table counts every combination processed by the exhaustive
 sweep, whereas Level~2 also discriminates designs using the imposed
 constraints, so the implementations that do not satisfy them are
 discarded and never enter the final design space, and the points
-repeated across runs are counted only once. The figure also shows why
+repeated across runs are counted only once. The dominated points are
+not scattered freely. They form vertical stripes, and the merged
+design space contains only 149 distinct latency values. This is a
+direct consequence of the two-level flow. The latency in cycles is
+calculated by the Level~1 architecture and its mapping, while Level~2 only
+changes the physical IP implementing each abstract block, which
+alters the area and energy of the design.
+Each stripe therefore corresponds to one Level~1 architecture, and the
+vertical spread inside it, easily an order of magnitude in energy,
+is the margin introduced by the physical IP selection alone. The
+figure also shows why
 the two-dimensional projection must be read together with the color
 scale: the selected A and E+A points appear dominated in the
 latency--energy plane, but they are Pareto-optimal once their very
