@@ -587,6 +587,37 @@ objective here is therefore not to reproduce a published accelerator,
 but to show the different physical designs obtained by the complete
 Talos exploration flow.
 
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.9\linewidth]{img/pareto_lvl2_alexnet_int16.pdf}
+  \caption{Level~2 design space explored for the complete INT16 AlexNet
+workload, merging the seven runs of the experiment. Each point is a
+unique physical implementation, plotted as on-chip energy against
+latency on logarithmic axes, with the color scale indicating the
+accelerator area. The 38 area--latency--energy Pareto-optimal
+implementations are highlighted, together with the seven points
+selected by the objective combinations of
+Table~\ref{tab:alexnet_int16_talos}.}
+  \label{fig:pareto_lvl2_alexnet_int16}
+\end{figure}
+
+Figure~\ref{fig:pareto_lvl2_alexnet_int16} shows the Level~2 design
+space from which the final implementations are selected. The plot
+merges the seven runs of the experiment into a single view and
+contains 462,083 unique design points, of which only 38 are
+Pareto-optimal in the joint area--latency--energy sense. This count is
+lower than the number of physical implementations reported in
+Table~\ref{tab:talos_runtime_comparison} for this experiment: the
+runtime table counts every combination processed by the exhaustive
+sweep, whereas Level~2 also discriminates designs using the imposed
+constraints, so the implementations that do not satisfy them are
+discarded and never enter the final design space, and the points
+repeated across runs are counted only once. The figure also shows why
+the two-dimensional projection must be read together with the color
+scale: the selected A and E+A points appear dominated in the
+latency--energy plane, but they are Pareto-optimal once their very
+small area is taken into account.
+
 Table~\ref{tab:alexnet_int16_talos} shows the selected implementation
 for each Level~2 objective combination.
 
@@ -713,10 +744,11 @@ specification.
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=0.8\linewidth]{img/pareto_talos.pdf}
+  \includegraphics[width=0.9\linewidth]{img/talos_alexnet_int16.pdf}
   \caption{Talos INT16 AlexNet configurations selected under the seven
-optimization objectives, plotted in the latency--area--energy space of
-Table~\ref{tab:alexnet_int16_talos} (logarithmic axes).}
+optimization objectives (Table~\ref{tab:alexnet_int16_talos}), plotted
+as on-chip energy against latency on logarithmic axes, with the marker
+size indicating the accelerator area.}
   \label{fig:pareto_alexnet_int16}
 \end{figure}
 
@@ -724,12 +756,13 @@ The results show the expected conflict between the three objectives,
 so the single-objective points are compared here on all the metrics
 of Table~\ref{tab:alexnet_int16_talos}.
 Figure~\ref{fig:pareto_alexnet_int16} plots the same seven
-configurations in the latency--area--energy space: the single-objective
-points sit at the extremes of the curve, while the combined objectives
-fall in between. A+P and E+A+P almost coincide, since they share the
-same area and latency, 1.701~mm$^2$ and 22272482 cycles, and only
-differ in on-chip energy, 51.819 against 51.142~mJ, a 1.3\% difference
-that is not visible on a logarithmic axis. The energy-only
+configurations as on-chip energy against latency, with the marker size
+indicating the accelerator area: the single-objective points sit at
+the extremes of the explored space, while the combined objectives fall
+in between. A+P and E+A+P collapse into a single marker, since they
+share the same area and latency, 1.701~mm$^2$ and 22272482 cycles, and
+only differ in on-chip energy, 51.819 against 51.142~mJ, a 1.3\%
+difference that is not visible on a logarithmic axis. The energy-only
 configuration obtains the lowest on-chip and total energy, 39.757 and
 112.869~mJ per inference, and a latency of 6332862 cycles, only
 improved by the performance-oriented points (3315424 cycles for the
@@ -965,21 +998,24 @@ from batch throughput to image throughput by multiplying by four.
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=0.8\linewidth]{img/pareto_vs_eyerissv1.pdf}
+  \includegraphics[width=0.9\linewidth]{img/eyeriss_v1_alexnet_int16.pdf}
   \caption{Talos INT16 AlexNet convolutional configurations selected under the
 seven optimization objectives for the Eyeriss v1 workload
-(Table~\ref{tab:eyeriss_v1_comparison}), plotted in the
-latency--area--energy space with logarithmic axes.}
+(Table~\ref{tab:eyeriss_v1_comparison}), plotted as on-chip energy
+against latency on logarithmic axes, with the marker size indicating
+the accelerator area.}
   \label{fig:pareto_eyeriss_v1}
 \end{figure}
 
 For this workload, the seven optimization objectives select different
 Talos implementations. Figure~\ref{fig:pareto_eyeriss_v1} shows their
-position in the latency--area--energy space. In this case no two
-points coincide, but E, E+P and E+A+P appear close together because
-they differ by less than one decade in every axis, for example
-5.111 against 3.217~mm$^2$ and 5.000 against 8.876 million cycles for
-E and E+A+P, and the logarithmic scale compresses these differences.
+position in the latency--energy plane, with the marker size indicating
+area. In this case no two markers coincide, but E and E+A+P appear
+close together because they differ by less than one decade in both
+axes, 5.000 against 8.876 million cycles and 30.364 against
+32.521~mJ, and the logarithmic scale compresses these differences;
+their areas, 5.111 against 3.217~mm$^2$, remain distinguishable
+through the marker size.
 The balanced E+A+P design occupies 3.217~mm$^2$, 73.7\% less than the
 12.25~mm$^2$ reported for Eyeriss.
 This area reduction comes at the cost of energy and performance: Talos
@@ -1177,19 +1213,21 @@ multiplier 0.5, and a $128\times128$ input.
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=0.8\linewidth]{img/pareto_vs_eyerissv2.pdf}
+  \includegraphics[width=0.9\linewidth]{img/eyeriss_v2_mobilenetv1_int8.pdf}
   \caption{Talos INT8 MobileNet V1 0.5/128 configurations selected under the
 seven optimization objectives for the Eyeriss v2 workload
-(Table~\ref{tab:eyerissv2_mobilenet_comparison}), plotted in the
-latency--area--energy space with logarithmic axes.}
+(Table~\ref{tab:eyerissv2_mobilenet_comparison}), plotted as on-chip
+energy against latency on logarithmic axes, with the marker size
+indicating the accelerator area.}
   \label{fig:pareto_eyeriss_v2}
 \end{figure}
 
 Figure~\ref{fig:pareto_eyeriss_v2} shows the seven selected
-configurations in the latency--area--energy space. As in the AlexNet
-experiment, A+P and E+A+P overlap: both have 1.536~mm$^2$ and 0.721
-million cycles, and including energy in the objective only reduces the
-on-chip energy from 1.399 to 1.388~mJ.
+configurations in the latency--energy plane, with the marker size
+indicating area. As in the AlexNet experiment, A+P and E+A+P collapse
+into a single marker: both have 1.536~mm$^2$ and 0.721 million cycles,
+and including energy in the objective only reduces the on-chip energy
+from 1.399 to 1.388~mJ.
 The energy-oriented Talos point is the closest configuration to
 Eyeriss v2 in terms of performance. It completes the workload in 0.162 million
 cycles, which is very close to the approximately 0.156 million cycles
@@ -1417,20 +1455,21 @@ table.
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=0.8\linewidth]{img/pareto_vs_sauria.pdf}
+  \includegraphics[width=0.9\linewidth]{img/sauria_vgg16_fp16.pdf}
   \caption{Talos FP16 VGG-16 configurations selected under the seven
 optimization objectives for the SAURIA workload
-(Table~\ref{tab:vgg16_fp16_sauria_comparison}), plotted in the
-latency--area--energy space with logarithmic axes.}
+(Table~\ref{tab:vgg16_fp16_sauria_comparison}), plotted as on-chip
+energy against latency on logarithmic axes, with the marker size
+indicating the accelerator area.}
   \label{fig:pareto_sauria}
 \end{figure}
 
 The VGG-16 exploration presents the same general trade-off observed in
 the integer workloads. Figure~\ref{fig:pareto_sauria} shows the seven
-selected configurations in the latency--area--energy space. Here the
-overlapping pair is E and E+P, and in this case the two points are
-different Level~1 architectures that collapse into the same physical
-implementation. Both use a 32$\times$32 array, but E has a 128~kbit
+selected configurations in the latency--energy plane, with the marker
+size indicating area. Here the overlapping markers are E and E+P, and
+in this case the two points are different Level~1 architectures that
+collapse into the same physical implementation. Both use a 32$\times$32 array, but E has a 128~kbit
 global buffer with 512~bit/cycle and 256~bit register files, whereas
 E+P has a 64~kbit global buffer with 1024~bit/cycle and 128~bit
 register files. Both select the \texttt{pe\_fpnew\_fp16\_fma} datapath
