@@ -36,7 +36,10 @@ several thousand lines per configuration; only the first path (the
 critical path, from which the maximum frequency is derived) is
 reproduced here. Similarly, the SAURIA area report enumerates the
 $256$ FP16 processing elements individually, so only the top-level
-line is included, in landscape orientation because of its width. The
+line is included; the column padding introduced by the long module
+names of the omitted per-PE entries is condensed so that the excerpt
+fits the page width. This trimming is purely cosmetic: only
+whitespace is removed, and no reported value is modified. The
 reports reproduced here are stored in the thesis repository under
 \path{synthesis_reports/}, one directory per configuration; the
 complete synthesis artifacts, including scripts and logs, are kept
@@ -168,10 +171,7 @@ with the raw results.
 
 \lstinputlisting[style=rpt,caption={\texttt{accelerator\_sauria\_vgg16\_float16}: \texttt{qor.rpt}}]{synthesis_reports/accelerator_sauria_vgg16_float16/qor.rpt}
 
-\begin{landscape}
-\lstinputlisting[style=rptwide,caption={\texttt{accelerator\_sauria\_vgg16\_float16}: \texttt{area.rpt} (top-level module only)},lastline=12]{synthesis_reports/accelerator_sauria_vgg16_float16/area.rpt}
-\end{landscape}
-
+\lstinputlisting[style=rptwide,caption={\texttt{accelerator\_sauria\_vgg16\_float16}: \texttt{area.rpt} (top-level module only; whitespace condensed for layout, values unchanged)}]{synthesis_reports/accelerator_sauria_vgg16_float16/area_top.rpt}
 
 \lstinputlisting[style=rpt,caption={\texttt{accelerator\_sauria\_vgg16\_float16}: \texttt{gates.rpt}}]{synthesis_reports/accelerator_sauria_vgg16_float16/gates.rpt}
 
