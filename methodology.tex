@@ -4,7 +4,14 @@
 This section defines the methodological plan followed in the thesis.
 The process is organized into phases that move from requirements
 analysis to design, implementation, and validation, while keeping an
-iterative structure.
+iterative structure. The global view of the Talos EDA tool developed 
+is shown in Figure~\ref{fig:talos-input-output}. Talos takes the 
+file describing the DNN (in ONNX format), an processes it in two
+levels (1st technology independent + 2nd technology dependent) in
+which the user must add their PPA constraints (1st \& 2nd), provided a
+characterized IP pool (2nd phase), to finally generate the winning
+architecture and mapping candidate of the DNN implementation (in
+SystemVerilog format).
 
 \subsection{Development process}
 
@@ -198,7 +205,7 @@ conceptual and practical references for each level of the solution.
 ZigZag was selected as the main reference for the first level because
 it already provides architectural and mapping design space
 exploration capabilities, including the study of memory hierarchies,
-PE arrays, and dataflows. For the second level, the design was
+PE arrays, and dataflows, together with its performance evaluation. For the second level, the design was
 influenced by the idea of using characterized hardware IP blocks,
 similarly to generator-oriented approaches such as AutoDNNChip, but
 without attempting to implement a complete RTL generation flow.
@@ -279,7 +286,7 @@ in the figure) holds its weights.
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=0.85\linewidth]{img/abstract_arch.png}
-  \caption{Abstract accelerator representation used to connect Level~1
+  \caption{Abstract accelerator representation of a 4x4 Pe array used to connect Level~1
   and Level~2. Adapted from the ZigZag hardware architecture
   documentation~\cite{zigzag_hardware_docs}.}
   \label{fig:abstract-arch}
@@ -474,7 +481,7 @@ Single-port global buffers, 128 words of 64, 256 and 1024 bits \\
 \end{table}
 
 The pools used in this work are an example. Talos does not
-include a characterized library, before running Level~2, the user has
+include a characterized library, before running Level~2, the user (or a future tool development) has
 to provide a pool for the target technology. The rest of this
 subsection describes how the pools of this work were built, so that
 the process can serve as a guide.
