@@ -4,10 +4,10 @@
 This section defines the methodological plan followed in the thesis.
 The process is organized into phases that move from requirements
 analysis to design, implementation, and validation, while keeping an
-iterative structure. The global view of the Talos EDA tool developed 
+iterative structure. The global view of the Talos EDA tool developed
 is shown in Figure~\ref{fig:talos-input-output}. Talos takes the 
 file describing the DNN (in ONNX format), an processes it in two
-levels (1st technology independent + 2nd technology dependent) in
+levels (first technology independent + second technology dependent) in
 which the user must add their PPA constraints (1st \& 2nd), provided a
 characterized IP pool (2nd phase), to finally generate the ranking of 
 architectures and mapping candidates of the DNN implementation (in
@@ -297,7 +297,7 @@ in the figure) holds its weights.
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=0.85\linewidth]{img/abstract_arch.png}
-  \caption{Abstract accelerator representation of a 4x4 Pe array used to connect Level~1
+  \caption{Abstract accelerator representation of a 4x4 PE array used to connect Level~1
   and Level~2. Adapted from the ZigZag hardware architecture
   documentation~\cite{zigzag_hardware_docs}.}
   \label{fig:abstract-arch}
@@ -318,8 +318,8 @@ first integration work with the selected exploration approach.
 
 The implementation started from the basic software skeleton of the
 project and progressively incorporated the main concepts defined in
-the previous phases. In particular, effort was dedicated not only in
-implementing functionality, but also in preserving the architectural
+the previous phases. In particular, effort was dedicated not only to
+implementing functionality, but also to preserving the architectural
 qualities defined during both design stages. This means keeping the
 code organized around well-separated components and maintaining a
 structure that would remain understandable as the project evolved.
@@ -561,7 +561,7 @@ format are fixed, it can be automated with a script that iterates over
 the variants, runs the synthesis and emits the pool entries. This is
 left as future work.
 
-\subsection{Summary of the chapter}
+\subsection{Summary of the Chapter}
 The development of Talos was guided by the decision to build a
 modular architectural exploration tool rather than a generator of one
 final accelerator.
